@@ -1,0 +1,22 @@
+#!/usr/local/bin/perl  -T
+
+################################################################################
+#
+# File:    status
+# Date:    $Date: 2008-03-28 19:15:31 -0500 (Fri, 28 Mar 2008) $
+# Version: $Revision: 98 $
+#
+# Print the status of all jobs that are scheduled to run today.                 
+#
+################################################################################
+
+use strict;
+use warnings;
+use TaskForest;
+
+my $task_forest = TaskForest->new();
+$task_forest->status();
+
+
+
+

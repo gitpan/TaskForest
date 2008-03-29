@@ -1,0 +1,28 @@
+Revision history for Perl module TaskForest
+
+1.00 Thu Mar 20 20:39:24 2008
+    - original version; created by ExtUtils::ModuleMaker 0.51
+
+1.01 Sat Mar 22 01:05:00 2008
+    - added bin files to MANIFEST and fixed test
+
+1.02 Sat Mar 22 07:22:00 2008
+    - fixed bug where options weren't being read from the command line properly
+
+1.03 Sat Mar 22 08:29:00 2008
+    - allow '-' within the job_dir, log_dir and family_dir
+
+1.04 Sun Mar 23 20:56:00 2008
+    - added a lot more documentation to the man page and the code
+    - gave files svn:keyword properties for Date and Revision
+    
+1.05 
+    - added more test cases
+    - fixed all known bugs
+       Family::readFromFile makes a Family no longer current        
+       Family::readFromFile now accepts both single and double quotes.  
+       getLogDir throws an exception if the mkdir fails            
+    - Added a DESIGN document
+    
+
+

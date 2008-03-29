@@ -1,0 +1,32 @@
+TODO list for Perl module TaskForest
+
+- More tests
+- Display should show start time and actual start time
+- Rerun job form
+- Time dependencies if it's a foreign time at the start of a new day?? -- offset
+- Log stderr and stdout as an option
+- Run as root
+- specify optional user to run as
+- Web control
+- Instructions on writing your own wrapper
+- Examples of jobs, families and wrappers
+- Read return code only in the case of failure
+- Make sure to document that a job may only appear once in a family.  All
+  occurrances of job J in family F refer TO THE SAME RUN.
+- Refactor Family::readFromFile
+- Family::okToRunToday should get day of week from readFromFile and not
+  call localtime
+- Family::readFormFile - get rid of $forest
+- Family::readFromFile - check for parens is not needed.  remove.
+- Think about what should happen if a job's start time with a foreign time
+  zone is in a different day than today in the local time zone
+- Family::readFromFile change the variable names for thisjobsdependency to
+  reflect the fact that it's a time dependency
+- Implement help() and usage() in Options.pm
+- Die in TimeDependency copy constructor if ref dt ne 'DateTime' 
+- default_timezone is not used because of the die in Family.pm. 
+- use Carp instead of die everywhere
+
+
+Done
+- Better documentation

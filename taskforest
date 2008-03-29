@@ -1,0 +1,22 @@
+#!/usr/local/bin/perl  -T
+
+################################################################################
+#
+# File:    taskforest
+# Date:    $Date: 2008-03-28 19:15:31 -0500 (Fri, 28 Mar 2008) $
+# Version: $Revision: 98 $
+#
+# The main program that processes jobs and families
+#
+################################################################################
+
+use strict;
+use warnings;
+use TaskForest;
+
+my $task_forest = TaskForest->new();
+$task_forest->runMainLoop();
+
+
+
+

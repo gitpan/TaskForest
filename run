@@ -1,0 +1,50 @@
+#!/usr/local/bin/perl
+
+################################################################################
+#
+# File:    run
+# Date:    $Date: 2008-03-28 19:15:31 -0500 (Fri, 28 Mar 2008) $
+# Version: $Revision: 98 $
+#
+# This is the default run wrapper program.  A run wrapper is responsible for
+# executing a job and maintaining 
+#
+################################################################################
+
+use strict;
+use warnings;
+
+
+my $family_name = shift;
+my $job_name = shift;
+my $job_file_name = shift;
+my $log_dir = shift;
+my $script_dir = shift;
+my $pid_file = shift;
+my $success_file = shift;
+my $failure_file = shift;
+
+print "Running job $family_name $job_name with pid $$\n";
+open (PID,  ">$pid_file") || die "Can't open PID file $pid_file";
+print PID "$$\n";
+close PID;
+
+my $script = "$script_dir/$job_file_name";
+
+system("$script");
+
+
+my $rc = $?;
+my $status_file;
+if ($rc) { 
+    $status_file = $failure_file;
+}
+else { 
+    $status_file = $success_file;
+}
+
+# touch status file
+open (S, ">$status_file") || die "can't open $status_file status file";
+print S "$rc\n";
+close S;
+
