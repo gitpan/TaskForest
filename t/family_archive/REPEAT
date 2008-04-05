@@ -2,7 +2,7 @@ start => '00:00', tz => 'America/Chicago', days => 'Mon,Tue,Wed,Thu,Fri,Sat,Sun'
 
 
  J9()
- J10(start=>'09:00', tz=>'America/New_York', every=>60, until=>'23:30')
+ J10(start=>'00:01', tz=>'America/New_York', every=>60, until=>'14:30')
  J11()
 
 

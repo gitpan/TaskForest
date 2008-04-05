@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 # 
-use Test::More tests => 15;
+use Test::More tests => 14;
 use strict;
 use warnings;
 use Data::Dumper;
@@ -47,7 +47,6 @@ is(ref($options),                'HASH',             'Option created');
 cmp_ok(scalar(keys(%$options)),  '>', 0,             '  and has more than 1 key');
 is($options->{end_time},         '2355',             '  end time');
 is($options->{wait_time},        '60',               '  wait time');
-is($options->{default_timezone}, 'GMT',              '  timezone');
 is($options->{run_wrapper},      "$cwd/bin/run",     "  run_wrapper");
 is($options->{family_dir},       "$cwd/t/families",  "  families");
 is($options->{job_dir},          "$cwd/t/jobs",      "  jobs");

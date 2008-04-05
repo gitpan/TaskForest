@@ -1,8 +1,8 @@
 ################################################################################
 #
 # File:    TaskForest
-# Date:    $Date: 2008-03-27 23:12:09 -0500 (Thu, 27 Mar 2008) $
-# Version: $Revision: 90 $
+# Date:    $Date: 2008-04-04 23:18:18 -0500 (Fri, 04 Apr 2008) $
+# Version: $Revision: 118 $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use TaskForest::Options;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.05';
+    $VERSION     = '1.06';
 }
 
 
@@ -204,12 +204,12 @@ TaskForest - Simple, powerful task scheduler
 
 The TaskForest Job Scheduler (TF) is a simple but expressive job
 scheduling system.  A job is defined as any executable program that
-resides on the file system.  Jobs can depend on each other.  Jobs can also
-have start times before which a job may not by run.  Jobs can be grouped
-together into "Families."  A family has a start time associated with it
-before which none of its jobs may run.  A family also has a list of
-days-of-the-week associated with it.  Jobs within a family may only run on
-these days of the week.
+resides on the file system.  Jobs can depend on each other.  Jobs can
+also have start times before which a job may not by run.  Jobs can be
+grouped together into "Families."  A family has a start time
+associated with it before which none of its jobs may run.  A family
+also has a list of days-of-the-week associated with it.  Jobs within a
+family may only run on these days of the week.
 
 Jobs and families are given simple names.  A family is described in a
 family file whose name is the family name.  Each family file is a text
@@ -230,7 +230,6 @@ family files should contain only family files.
 
 
 EXAMPLE 1 - Family file named F_ADMIN
--------------------------------------
 
     +---------------------------------------------------------------------
  01 |start => '02:00', tz => 'America/Chicago', days => 'Mon,Wed,Fri'
@@ -271,8 +270,8 @@ command line or in an environment variable.
 
 Now, let's look at a slightly more complicated example:
 
+
 EXAMPLE 2 - Job Dependencies
-----------------------------
 
 This family file is named WEB_ADMIN
 
@@ -312,7 +311,6 @@ J_EMAIL_WEB_RPT_done is run."
 
 
 EXAMPLE 3 - TIME DEPENDENCIES
------------------------------
 
 Let's say tha twe don't want J_RESOLVE_DNS to start before 9:00 a.m. because
 it's very IO-intensive and we want to wait until the relatively quiet
@@ -347,18 +345,17 @@ dependency as follows:
  05 | J_RESOLVE_DNS(start=>'10:00', tz=>'America/New_York')  Delete_Logs_Older_Than_A_Year()
 
 
- EXAMPLE 4 - JOB FORESTS
- -----------------------
+EXAMPLE 4 - JOB FORESTS
 
- You can see in the example above that line 03 is the start of a group of
- dependent job.  No job on any other line can start unless the job on line
- 03 succeeds.  What if you wanted two or more groups of jobs in the same
- family that start at the same time (barring any time dependencies) and
- proceed independently of each other?
+You can see in the example above that line 03 is the start of a group of
+dependent job.  No job on any other line can start unless the job on line
+03 succeeds.  What if you wanted two or more groups of jobs in the same
+family that start at the same time (barring any time dependencies) and
+proceed independently of each other?
 
- To do this you would separate the groups with a line containing one or
- more dashes (only).  Consider the following family:
- 
+To do this you would separate the groups with a line containing one or
+more dashes (only).  Consider the following family:
+
     +---------------------------------------------------------------------
  01 |start => '02:00', tz => 'America/Chicago', days => 'Mon,Wed,Fri'
  02 |
@@ -382,14 +379,14 @@ dependency as follows:
  20 |
     +---------------------------------------------------------------------
 
- Because of the lines of dashes on lines 11 and 17, the jobs on lines 03,
- 13 and 19 will all start at 02:00.  These jobs are indenpendent of each
- other.  J_ATTEMPT_CREDIT_CARD_PAYMENT will not run if
- J_UPDATE_ACCOUNTS_RECEIVABLE fails.  That failure, however will not
- prevent J_SEND_EXPIRING_CARDS_EMAIL from running.
+Because of the lines of dashes on lines 11 and 17, the jobs on lines
+03, 13 and 19 will all start at 02:00.  These jobs are independent of
+each other.  J_ATTEMPT_CREDIT_CARD_PAYMENT will not run if
+J_UPDATE_ACCOUNTS_RECEIVABLE fails.  That failure, however will not
+prevent J_SEND_EXPIRING_CARDS_EMAIL from running.
 
- Finally, you can specify a job to run repeatedly every 'n' minutes,
- as follows:
+Finally, you can specify a job to run repeatedly every 'n' minutes,
+as follows:
 
     +---------------------------------------------------------------------
  01 |start => '02:00', tz => 'America/Chicago', days => 'Mon,Wed,Fri'
@@ -398,22 +395,22 @@ dependency as follows:
  04 |
     +---------------------------------------------------------------------
 
- This means that J_CHECK_DISK_USAGE will be called every 30 minutes
- and will not run on or after 23:00.  By default, the 'until' time is
- 23:59.  If the job starts at 02:00 and takes 25 minutes to run to
- completion, the next occurance will still start at 02:30, and not at
- 02:55.  It is important to note that every repeat occurrance will
- only have one dependency - the time - and will not depend on earlier
- occurrances running successfully or even running at all.  If you want
- the job to run for the last time at 23:00, set the until time to
- 23:01.
+This means that J_CHECK_DISK_USAGE will be called every 30 minutes and
+will not run on or after 23:00.  By default, the 'until' time is
+23:59.  If the job starts at 02:00 and takes 25 minutes to run to
+completion, the next occurance will still start at 02:30, and not at
+02:55.  It is important to note that every repeat occurrance will only
+have one dependency - the time - and will not depend on earlier
+occurrances running successfully or even running at all.  If you want
+the job to run for the last time at 23:00, set the until time to
+23:01.
 
 =head1 USAGE
 
-  There are a few simple scripts in the bin directory that simplify
-  usage.  To run the program you must let it know where it can find
-  the necessary files and directories. This can be done by environment
-  variables, or via the command line:
+There are a few simple scripts in the bin directory that simplify
+usage.  To run the program you must let it know where it can find
+the necessary files and directories. This can be done by environment
+variables, or via the command line:
 
   export TF_JOB_DIR=/foo/jobs
   export TF_LOG_DIR=/foo/logs
@@ -428,18 +425,18 @@ dependency as follows:
     --job_dir=/foo/jobs \
     --family_dir=/foo/families
 
-  All jobs will run as the user who invoked taskforest.
+All jobs will run as the user who invoked taskforest.
 
-  To get the status of all currently running and recently run jobs,
-  enter the following command:
+To get the status of all currently running and recently run jobs,
+enter the following command:
 
   status
 
 =head1 OPTIONS
 
- The following command line options are required.  If they are not
- specified on the command line, the environment will be searched for
- corresponding environment variables.
+The following command line options are required.  If they are not
+specified on the command line, the environment will be searched for
+corresponding environment variables.
 
  --run_wrapper=/a/b/r  [or environment variable TF_RUN_WRAPPER]
     
@@ -484,7 +481,7 @@ dependency as follows:
    contain the characters a-z, A-Z, 0-9 and _.
    
 
- The following command line options are optional
+The following command line options are optional
     
  --once_only
 
@@ -516,21 +513,21 @@ dependency as follows:
 
 =head1 BUGS
 
- For an up-to-date bug listing and to submit a bug report, please
- visit our website at http://sourceforge.net/projects/taskforest/
+For an up-to-date bug listing and to submit a bug report, please
+visit our website at http://sourceforge.net/projects/taskforest/
 
 =head1 SUPPORT
 
- For support, please visit our website at
- http://sourceforge.net/projects/taskforest/
+For support, please visit our website at
+http://sourceforge.net/projects/taskforest/
 
 =head1 AUTHOR
 
- Aijaz A. Ansari
- http://sourceforge.net/projects/taskforest/
+Aijaz A. Ansari
+http://sourceforge.net/projects/taskforest/
 
- If you're using this program, I would love to hear from you.  Please
- visit our project website and let me know what you think of it.
+If you're using this program, I would love to hear from you.  Please
+visit our project website and let me know what you think of it.
 
 =head1 COPYRIGHT
 

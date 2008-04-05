@@ -1,22 +1,24 @@
 Revision history for Perl module TaskForest
 
-1.00 Thu Mar 20 20:39:24 2008
-    - original version; created by ExtUtils::ModuleMaker 0.51
-
-1.01 Sat Mar 22 01:05:00 2008
-    - added bin files to MANIFEST and fixed test
-
-1.02 Sat Mar 22 07:22:00 2008
-    - fixed bug where options weren't being read from the command line properly
-
-1.03 Sat Mar 22 08:29:00 2008
-    - allow '-' within the job_dir, log_dir and family_dir
-
-1.04 Sun Mar 23 20:56:00 2008
-    - added a lot more documentation to the man page and the code
-    - gave files svn:keyword properties for Date and Revision
+1.06 Mon Apr 04 22:00:00 2008
+    - fixed a bunch of minor bugs
+      - implement --help functionality
+      - added $VERSIONS and pod to every .pm file
+      - got rid of extra call to localtime
+      - removed the default_timezone command line option
+      - got rid of redundant regex match for parens in job name
+      - removed unused variable $forest from Family::readFromFile
+      - renamed $this_jobs_dependencies to $this_jobs_time_dependencies
+    - enhancements
+      - refactored Family::readFromFile into smaller functions
+      - use croak instead of die
+      - Added more detailed info into the pid file
+      - Added more test cases
+      - Made the Family->display() output prettier
+      - Added the StringHandle and StringHandleTier class to
+        make testing easier.
     
-1.05 
+1.05 Fri Mar 28 22:00:00 2008
     - added more test cases
     - fixed all known bugs
        Family::readFromFile makes a Family no longer current        
@@ -24,5 +26,19 @@ Revision history for Perl module TaskForest
        getLogDir throws an exception if the mkdir fails            
     - Added a DESIGN document
     
+1.04 Sun Mar 23 20:56:00 2008
+    - added a lot more documentation to the man page and the code
+    - gave files svn:keyword properties for Date and Revision
+    
+1.03 Sat Mar 22 08:29:00 2008
+    - allow '-' within the job_dir, log_dir and family_dir
 
+1.02 Sat Mar 22 07:22:00 2008
+    - fixed bug where options weren't being read from the command line properly
+
+1.01 Sat Mar 22 01:05:00 2008
+    - added bin files to MANIFEST and fixed test
+
+1.00 Thu Mar 20 20:39:24 2008
+    - original version; created by ExtUtils::ModuleMaker 0.51
 

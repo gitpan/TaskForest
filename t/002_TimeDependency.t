@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 # make sure TimeDependency works
-use Test::More tests => 10;
+use Test::More tests => 13;
 use strict;
 use warnings;
 
@@ -39,3 +39,15 @@ is($td->{status},    'Success',     '   still success');
 $td->{ep} -= 10;
 $td->check();
 is($td->{status},    'Success',     '   still success');
+
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+my $dt = DateTime->new(year      => $year + 1900,
+                       month     => $mon + 1,
+                       day       => $mday,
+                       hour      => 1,
+                       minute    => 0,
+                       time_zone => "UTC");
+my $td2 = TaskForest::TimeDependency->new($dt);
+isa_ok ($td2, 'TaskForest::TimeDependency',         'TaskForest::TimeDependency object created properly with copy constructor');
+is ($td2->{start},     '01:00',      '   start is ok');
+is($td2->{status},    'Waiting',     '   still waiting');

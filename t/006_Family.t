@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 # 
-use Test::More tests => 69;
+use Test::More tests => 74;
 use strict;
 use warnings;
 use Data::Dumper;
@@ -24,6 +24,7 @@ copy("$src_dir/SIMPLE", $dest_dir);
 
 
 $ENV{TF_RUN_WRAPPER} = "$cwd/bin/run";
+$ENV{TF_RUN_WRAPPER} = "$cwd/run";
 $ENV{TF_LOG_DIR} = "$cwd/t/logs";
 $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
@@ -40,7 +41,8 @@ is($sf->{tz},  'America/Chicago',   '  tz');
 foreach my $day qw (Mon Tue Wed Thu Fri Sat Sun) {
     is($sf->{days}->{$day}, 1, "  can run on $day");
 }
-is($sf->okToRunToday(), 1, '  Is ok to run today');
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $year += 1900; $mon ++;
+is($sf->okToRunToday($wday), 1, '  Is ok to run today');
 
 is(scalar(@{$sf->{time_dependencies}}), 1, '  has 1 time dependency');
 is(scalar(keys %{$sf->{jobs}}), 13, '  has 13 jobs');
@@ -148,9 +150,17 @@ foreach my $j (@success2) {
 sub touch_job {
     my ($file, $result) = @_;
     my $opened = open(O, ">$file.$result");
-    ok($opened, "  file $file opened");
+    ok($opened, "  file $file.$result opened");
     print O "$result\n";
     close O;
+
+    $opened = open(O, ">$file.pid");
+    ok($opened, "  file $file.pid opened");
+    print O "pid: 111\n";
+    print O "rc: $result\n";
+    close O;
+
+    
 }
     
 

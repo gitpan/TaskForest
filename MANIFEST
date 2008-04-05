@@ -11,6 +11,8 @@ lib/TaskForest/Job.pm
 lib/TaskForest/LogDir.pm
 lib/TaskForest/Options.pm
 lib/TaskForest/TimeDependency.pm
+lib/TaskForest/StringHandle.pm
+lib/TaskForest/StringHandleTier.pm
 run
 taskforest
 status
@@ -20,8 +22,10 @@ t/003_Options.t
 t/004_LogDir.t
 t/005_Job.t
 t/006_Family.t
+t/0065_StringHandle.t
 t/007_TaskForest.t
 t/008_Repeat.t
+t/009_Display.t
 t/logs/empty_file
 t/jobs/J1
 t/jobs/J2

@@ -45,7 +45,6 @@ DESCRIPTION
     family files should contain only family files.
 
     EXAMPLE 1 - Family file named F_ADMIN
-    -------------------------------------
 
         +---------------------------------------------------------------------
      01 |start => '02:00', tz => 'America/Chicago', days => 'Mon,Wed,Fri'
@@ -86,7 +85,8 @@ DESCRIPTION
 
     Now, let's look at a slightly more complicated example:
 
-    EXAMPLE 2 - Job Dependencies ----------------------------
+
+    EXAMPLE 2 - Job Dependencies
 
     This family file is named WEB_ADMIN
 
@@ -123,7 +123,8 @@ DESCRIPTION
     these jobs succeed, then J_WEB_REPORTS is run. If that job succeeds, the
     J_EMAIL_WEB_RPT_done is run."
 
-    EXAMPLE 3 - TIME DEPENDENCIES -----------------------------
+
+    EXAMPLE 3 - TIME DEPENDENCIES
 
     Let's say tha twe don't want J_RESOLVE_DNS to start before 9:00 a.m.
     because it's very IO-intensive and we want to wait until the relatively
@@ -157,8 +158,8 @@ DESCRIPTION
 
      05 | J_RESOLVE_DNS(start=>'10:00', tz=>'America/New_York')  Delete_Logs_Older_Than_A_Year()
 
+
      EXAMPLE 4 - JOB FORESTS
-     -----------------------
 
      You can see in the example above that line 03 is the start of a group of
      dependent job.  No job on any other line can start unless the job on line
@@ -193,7 +194,7 @@ DESCRIPTION
         +---------------------------------------------------------------------
 
      Because of the lines of dashes on lines 11 and 17, the jobs on lines 03,
-     13 and 19 will all start at 02:00.  These jobs are indenpendent of each
+     13 and 19 will all start at 02:00.  These jobs are independent of each
      other.  J_ATTEMPT_CREDIT_CARD_PAYMENT will not run if
      J_UPDATE_ACCOUNTS_RECEIVABLE fails.  That failure, however will not
      prevent J_SEND_EXPIRING_CARDS_EMAIL from running.

@@ -4,7 +4,6 @@
 use Test::More tests => 50;
 use strict;
 use warnings;
-use Data::Dumper;
 use Cwd;
 use File::Copy;
 
@@ -40,7 +39,8 @@ is($sf->{tz},  'America/Chicago',   '  tz');
 foreach my $day qw (Mon Tue Wed Thu Fri Sat Sun) {
     is($sf->{days}->{$day}, 1, "  can run on $day");
 }
-is($sf->okToRunToday(), 1, '  Is ok to run today');
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $year += 1900; $mon ++;
+is($sf->okToRunToday($wday), 1, '  Is ok to run today');
 
 is(scalar(@{$sf->{time_dependencies}}), 2, '  has 2 time dependencies');
 is(scalar(keys %{$sf->{jobs}}), 17, '  has 17 jobs');
@@ -62,7 +62,7 @@ isa_ok($d->{J10}->[1], 'TaskForest::TimeDependency',     '  and on its own time 
 is(scalar(@{$d->{J10}}), 2, '  and only on those');
 
 foreach my $n (1..14) {
-    isa_ok($d->{"J10--Repeat_$n--"}->[0], 'TaskForest::TimeDependency',     'Rpt $n has a dependency');
+    isa_ok($d->{"J10--Repeat_$n--"}->[0], 'TaskForest::TimeDependency',     'Rpt $n has a time dependency');
     is(scalar(@{$d->{"J10--Repeat_$n--"}}), 1, ' and is the only dep it has');
 }
 
