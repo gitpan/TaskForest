@@ -1,8 +1,8 @@
 ################################################################################
 #
 # File:    TaskForest
-# Date:    $Date: 2008-04-04 23:18:18 -0500 (Fri, 04 Apr 2008) $
-# Version: $Revision: 118 $
+# Date:    $Date: 2008-04-07 19:53:30 -0500 (Mon, 07 Apr 2008) $
+# Version: $Revision: 123 $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use TaskForest::Options;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.06';
+    $VERSION     = '1.08';
 }
 
 

@@ -1,8 +1,8 @@
 ################################################################################
 #
 # File:    Family
-# Date:    $Date: 2008-04-04 23:16:41 -0500 (Fri, 04 Apr 2008) $
-# Version: $Revision: 117 $
+# Date:    $Date: 2008-04-07 19:53:30 -0500 (Mon, 07 Apr 2008) $
+# Version: $Revision: 123 $
 #
 ################################################################################
 
@@ -220,7 +220,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.06';
+    $VERSION     = '1.08';
 }
 
 # ------------------------------------------------------------------------------
@@ -387,7 +387,8 @@ sub display {
 # ------------------------------------------------------------------------------
 sub getCurrent {
     my $self = shift;
-
+    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});
+    
     if ($self->{current}) {
         # nothing to do, really
         return;
@@ -405,6 +406,7 @@ sub getCurrent {
     $self->checkAllTimeDependencies();
 
     # Get a list of all jobs whose status is 'Waiting'
+    # Some of these may be running, and some may be ready
     #
     my $waiting_jobs = $self->getAllWaitingJobs();
     print "waiting: ", Dumper($waiting_jobs) if $self->{options}->{verbose};
@@ -414,6 +416,19 @@ sub getCurrent {
     #
     $self->{ready_jobs} = {};
     foreach my $job (values %$waiting_jobs) {
+        my $started_semaphore = "$log_dir/$self->{name}.$job->{name}.started";
+        if (-e $started_semaphore) { # already running
+            open (F, $started_semaphore) || croak "Can't open file $started_semaphore";
+            $_ = <F>;
+            close F;
+            if (/(\d\d):(\d\d)/) {
+                $job->{actual_start} ="$1:$2";
+            }
+            $job->{status} = 'Running';
+            $job->{stop} = '--:--';
+            $job->{rc} = '-';
+            next;
+        }
         # dependencies for each job
         #
         my $dependencies = $self->{dependencies}->{$job->{name}};
@@ -526,9 +541,11 @@ sub updateJobStatuses {
         $self->{jobs}->{$job_name}->{rc} = $_;
         close F;
 
+        print "file is $file\n";
         # read the pid file
         substr($file, -1, 1) = 'pid';
         open(F, $file) || croak "cannot open $file to read job data";
+        print "now file is $file\n";
         while (<F>) { 
             chomp;
             my ($k, $v) = /([^:]+): (.*)/;
@@ -581,6 +598,7 @@ sub runReadyJobs {
             # parent
             print "Forked child process $job->{name} $pid\n";
             $job->{status} = 'Running';
+            $self->writeSemaphoreFile("$log_dir/$self->{name}.$job->{name}.started", sprintf("%02d:%02d\n", $self->{hour}, $self->{min}));
         } else {
             #child - this code comes from perldoc perlsec
             croak "cannot fork: $!" unless defined $pid;
@@ -806,7 +824,7 @@ sub _initializeDataStructures {
 
     # get current time
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $year += 1900; $mon ++;
-    ($self->{year}, $self->{mon}, $self->{mday}, $self->{wday}) = ($year, $mon, $mday, $wday);
+    ($self->{year}, $self->{mon}, $self->{mday}, $self->{wday}, $self->{hour}, $self->{min}) = ($year, $mon, $mday, $wday, $hour, $min);
 
     
 }
@@ -1088,6 +1106,39 @@ sub _createRecurringJobs {
         $next_dt = $next_dt + $every_duration;
         $next_epoch = $next_dt->epoch();
     }
+}
+
+
+# ------------------------------------------------------------------------------
+=pod
+
+=over 4
+
+=item writeSemaphoreFile()
+
+ Usage     : $self->_writeSemaphoreFile($file_name)
+ Purpose   : Creates a semaphore file.  If the file already exists, do nothing. 
+ Returns   : Nothing
+ Argument  : Contents of the file
+ Throws    : Nothing
+
+=back
+
+=cut
+
+# ------------------------------------------------------------------------------
+sub writeSemaphoreFile {
+    my ($self, $file_name, $contents) = @_;
+
+    if (-e $file_name) {
+        return;
+    }
+    
+    open (F, ">$file_name") || croak "Cannot touch file $file_name";
+
+    print F $contents;
+    
+    close F;
 }
 
 

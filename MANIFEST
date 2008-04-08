@@ -26,6 +26,7 @@ t/0065_StringHandle.t
 t/007_TaskForest.t
 t/008_Repeat.t
 t/009_Display.t
+t/010_LongRunningJobs.t
 t/logs/empty_file
 t/jobs/J1
 t/jobs/J2
@@ -40,6 +41,8 @@ t/jobs/J10
 t/jobs/J11
 t/jobs/J12
 t/jobs/J13
+t/jobs/JLongRunning
 t/family_archive/SIMPLE
 t/family_archive/REPEAT
+t/family_archive/LONG_RUNNING
 META.yml                                 Module meta-data (added by MakeMaker)

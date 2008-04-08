@@ -1,8 +1,8 @@
 ################################################################################
 #
 # File:    Options
-# Date:    $Date: 2008-04-04 23:16:41 -0500 (Fri, 04 Apr 2008) $
-# Version: $Revision: 117 $
+# Date:    $Date: 2008-04-07 19:53:30 -0500 (Mon, 07 Apr 2008) $
+# Version: $Revision: 123 $
 #
 
 =head1 NAME
@@ -89,7 +89,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.06';
+    $VERSION     = '1.08';
 }
 
 # This is the main data structure that stores the options
