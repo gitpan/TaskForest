@@ -9,11 +9,15 @@ lib/TaskForest.pm
 lib/TaskForest/Family.pm
 lib/TaskForest/Job.pm
 lib/TaskForest/LogDir.pm
+lib/TaskForest/Mark.pm
 lib/TaskForest/Options.pm
+lib/TaskForest/Rerun.pm
 lib/TaskForest/TimeDependency.pm
 lib/TaskForest/StringHandle.pm
 lib/TaskForest/StringHandleTier.pm
 run
+rerun
+mark
 taskforest
 status
 t/001_DateTime.t
@@ -27,6 +31,10 @@ t/007_TaskForest.t
 t/008_Repeat.t
 t/009_Display.t
 t/010_LongRunningJobs.t
+t/011_NotEnoughTime.t
+t/012_Collapse.t
+t/013_Rerun.t
+t/014_Mark.t
 t/logs/empty_file
 t/jobs/J1
 t/jobs/J2
@@ -45,4 +53,6 @@ t/jobs/JLongRunning
 t/family_archive/SIMPLE
 t/family_archive/REPEAT
 t/family_archive/LONG_RUNNING
+t/family_archive/NOT_ENOUGH_TIME
+t/family_archive/COLLAPSE
 META.yml                                 Module meta-data (added by MakeMaker)

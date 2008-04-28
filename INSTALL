@@ -5,12 +5,8 @@ make
 make test
 make install
 
-The run_wrapper and the main taskforest script will be installed in the
-bin subdirectory of the directory from which you're performing this
-installation.
+If you don't have root permissions, to install in a local directory, say,
+~/perl, replace the first command with:
 
-I have recently added a lot more tests to the system than there were
-before. Please let me know if your tests fail for any reason.  I've tested
-the system out on Linux and Mac OS X.  
-
+perl Makefile.PL prefix=~/perl
 

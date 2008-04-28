@@ -1,8 +1,8 @@
 ################################################################################
 #
 # File:    Family
-# Date:    $Date: 2008-04-07 19:53:30 -0500 (Mon, 07 Apr 2008) $
-# Version: $Revision: 123 $
+# Date:    $Date: 2008-04-27 18:20:56 -0500 (Sun, 27 Apr 2008) $
+# Version: $Revision: 129 $
 #
 ################################################################################
 
@@ -220,7 +220,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.08';
+    $VERSION     = '1.09';
 }
 
 # ------------------------------------------------------------------------------
@@ -284,7 +284,9 @@ sub new {
 
  Usage     : $family->display()
  Purpose   : This method displays the status of all jobs in all
-             families that are scheduled to run today. 
+             families that are scheduled to run today.
+             If the --collapse option is given, pending repeat
+             jobs are not displayed.  
  Returns   : Nothing
  Argument  : None
  Throws    : Nothing
@@ -301,7 +303,7 @@ sub display {
 
     my $max_len_name = 0;
     my $max_len_tz = 0;
-    
+
     foreach my $job_name (sort
                           { $self->{jobs}->{$a}->{start} cmp $self->{jobs}->{$b}->{start} }
                           (keys (%{$self->{jobs}}))) {
@@ -310,10 +312,6 @@ sub display {
         my $job = $self->{jobs}->{$job_name};
         $l = length($job->{tz});
         $max_len_tz = $l if ($l > $max_len_tz);
-        
-        # dont show pending repeat jobs
-        # next if ($job->{status} eq 'Waiting' and $job->{name} =~ /--Repeat/);
-        # TODO: make this an option?
         
         my $job_hash = {};
         foreach my $k (keys %$job) { $job_hash->{$k} = $job->{$k}; }
@@ -346,7 +344,15 @@ sub display {
     printf($format, '', '', 'Return', 'Time', 'Sched', 'Actual', 'Stop');
     printf($format, 'Job', 'Status', 'Code', 'Zone', 'Start', 'Start', 'Time');
     print "\n";
+
+    my $collapse = $self->{options}->{collapse};
     foreach my $job (@{$display_hash->{all_jobs}}) {
+        if ($collapse and
+          $job->{name} =~ /--Repeat/ and
+          $job->{status} eq 'Waiting') {
+           
+            next;  # don't print every waiting repeat job
+        }
         printf($format,
                "$self->{name}::$job->{name}",
                $job->{status},
@@ -525,8 +531,19 @@ sub updateJobStatuses {
 
     foreach my $file (sort @files) { # the sort ensures that 1 overrides 0
         my ($job_name, $status) = $file =~ /$log_dir\/$self->{name}\.([^\.]+)\.([01])/;
+        my ($orig, $actual_name);
+        if ($job_name =~ /(^[^\-]+)--Orig/) {
+            $orig = 1;
+            $actual_name = $1;
+            $self->{jobs}->{$job_name} = TaskForest::Job->new('name' => $job_name);
+        }
+            
 
-        # when a job is rerun the .[01] file is moved to .r[01] file
+        # when a job is rerun the the job name in the job file has --Orig_n-- appended to it
+        
+        # when a job is marked successful (or failed) only the file
+        # name is changed to *.1 (or *.0).  The return code is not to
+        # be changed 
         if ($status == 1) {
             $self->{jobs}->{$job_name}->{status} = 'Failure';
         }
@@ -541,11 +558,9 @@ sub updateJobStatuses {
         $self->{jobs}->{$job_name}->{rc} = $_;
         close F;
 
-        print "file is $file\n";
         # read the pid file
         substr($file, -1, 1) = 'pid';
         open(F, $file) || croak "cannot open $file to read job data";
-        print "now file is $file\n";
         while (<F>) { 
             chomp;
             my ($k, $v) = /([^:]+): (.*)/;
@@ -555,7 +570,14 @@ sub updateJobStatuses {
             }
         }
         close F;
+        
+        if ($orig) {
+            $self->{jobs}->{$job_name}->{start} = $self->{jobs}->{$actual_name}->{start};
+            $self->{jobs}->{$job_name}->{tz}    = $self->{jobs}->{$actual_name}->{tz};
+        }
     }
+
+
 }
         
         
@@ -1037,7 +1059,7 @@ sub _parseJob {
         ($job_object->{start} , $job_object->{tz}) = ($args{start}, $args{tz});
         
         if ($args{every} and $args{every} !~ /\D/) {
-            $self->_createRecurringJobs($job_name, \%args);
+            $self->_createRecurringJobs($job_name, \%args, $job_object);
         }
     }
     
@@ -1055,12 +1077,17 @@ sub _parseJob {
 
 =item _createRecurringJobs()
 
- Usage     : $self->_createRecurringJobz($job_name, $args)
+ Usage     : $self->_createRecurringJobs($job_name, $args)
  Purpose   : If a job is a recurring job, create new jobs with a
              prefix of --Repeat_$n-- where $n specifies the
-             cardinality of the repeat job.  The newly created jobs
-             are *not* dependent on each other. They're only
-             dependent on their start times. 
+             cardinality of the repeat job.
+
+             By default, the newly created jobs are *not* dependent on
+             each other. They're only dependent on their start times.
+             If the 'chained=>1' option is given in the family file,
+             then the jobs are dependent on each other.  This is,
+             arguably, the more sensible behavior.
+
  Returns   : Nothing
  Argument  : None
  Throws    : Nothing
@@ -1071,7 +1098,10 @@ sub _parseJob {
 
 # ------------------------------------------------------------------------------
 sub _createRecurringJobs {
-    my ($self, $job_name, $args) = @_;
+    my ($self, $job_name, $args, $job_object) = @_;
+
+    my $chained = $args->{chained}; # if it's chained then each job is
+                                    # dependent on the other. 
     
     my $until = $args->{until};
     my ($until_mm, $until_hh);
@@ -1095,6 +1125,7 @@ sub _createRecurringJobs {
     my $next_dt = $start_dt + $every_duration;
     my $next_epoch = $next_dt->epoch();
     my $next_n = 0;
+    my $last_job = $job_object;
     while ($next_epoch <= $until_epoch) {
         $next_n++;
         my $jn = "$job_name--Repeat_$next_n--";
@@ -1102,9 +1133,14 @@ sub _createRecurringJobs {
         $self->{dependencies}->{$jn} = [$td];
         my $repeat_job_object = TaskForest::Job->new(name => $jn, tz=>$args->{tz}, start => $td->{start});
         $self->{jobs}->{$jn} = $repeat_job_object;
+        if ($chained) {
+            push(@{$self->{dependencies}->{$jn}}, $last_job)
+        }
 
         $next_dt = $next_dt + $every_duration;
         $next_epoch = $next_dt->epoch();
+
+        $last_job = $repeat_job_object;
     }
 }
 

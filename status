@@ -3,8 +3,8 @@
 ################################################################################
 #
 # File:    status
-# Date:    $Date: 2008-03-28 19:15:31 -0500 (Fri, 28 Mar 2008) $
-# Version: $Revision: 98 $
+# Date:    $Date: 2008-04-27 18:20:56 -0500 (Sun, 27 Apr 2008) $
+# Version: $Revision: 129 $
 #
 # Print the status of all jobs that are scheduled to run today.                 
 #
@@ -14,7 +14,8 @@ use strict;
 use warnings;
 use TaskForest;
 
-my $task_forest = TaskForest->new();
+
+my $task_forest = TaskForest->new(TF_JOB_DIR => "unnecessary", TF_RUN_WRAPPER=>"unnecessary");
 $task_forest->status();
 
 

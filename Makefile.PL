@@ -1,4 +1,5 @@
 
+use 5.008003;
 
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
@@ -14,9 +15,8 @@ WriteMakefile(
                     },
     INSTALLSITEBIN => "bin",
     INSTALLSCRIPT => "bin",
-    INSTALLSITESCRIPT => "bin",
     INSTALLBIN => "bin",
-    EXE_FILES => ["run", "taskforest", "status"],
+    EXE_FILES => ["run", "taskforest", "status", "rerun", "mark"],
 );
 
 

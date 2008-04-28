@@ -51,8 +51,15 @@ $line = shift(@lines); is($line, "Job                          Status      Code 
 $line = shift(@lines); is($line, "");
 $line = shift(@lines); is($line, "LONG_RUNNING::JLongRunning   Ready          -   America/Chicago   00:00   --:--   --:--");
 
-print "Running ready jobs\n";
-$tf->runMainLoop();
+print "Simulate running ready jobs\n";
+open (OUT, ">$log_dir/LONG_RUNNING.JLongRunning.pid") || die "Couldn't open pid file\n";
+print OUT "pid: 111\nactual_start: 111\n";
+close OUT;
+
+open (OUT, ">$log_dir/LONG_RUNNING.JLongRunning.started") || die "Couldn't open started file\n";
+print OUT "00:00\n";
+close OUT;
+
 
 $sh = TaskForest::StringHandle->start(*STDOUT);
 $tf->status();

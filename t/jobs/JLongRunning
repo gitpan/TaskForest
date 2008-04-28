@@ -1,6 +1,5 @@
 #!/bin/sh
 
 echo "Running JLongRunning"
-sleep 10
 
 exit 0

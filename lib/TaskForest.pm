@@ -1,8 +1,8 @@
 ################################################################################
 #
 # File:    TaskForest
-# Date:    $Date: 2008-04-07 19:53:30 -0500 (Mon, 07 Apr 2008) $
-# Version: $Revision: 123 $
+# Date:    $Date: 2008-04-27 18:31:06 -0500 (Sun, 27 Apr 2008) $
+# Version: $Revision: 130 $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use TaskForest::Options;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.08';
+    $VERSION     = '1.09';
 }
 
 
@@ -197,8 +197,18 @@ TaskForest - Simple, powerful task scheduler
   use TaskForest;
   my $task_forest = TaskForest->new();
   $task_forest->status();
-  
 
+  # Rerun job J_RESOLVE in family F_DNS
+  use TaskForest::Rerun;
+  rerun("F_DNS", "J_RESOLVE", $log_dir);
+    
+  # Rerun job J_RESOLVE in family F_DNS
+  use TaskForest::Rerun;
+  &TaskForest::Rerun::rerun("F_DNS", "J_RESOLVE", $log_dir);
+    
+  # Mark job J_RESOLVE in family F_DNS as Success
+  use TaskForest::Mark;
+  &TaskForest::Mark::mark("F_DNS", "J_RESOLVE", $log_dir, "Success");
 
 =head1 DESCRIPTION
 
@@ -228,8 +238,7 @@ contain family files, the directory that contains job files, and the
 directory where the logs will be written.  The directory that contains
 family files should contain only family files.  
 
-
-EXAMPLE 1 - Family file named F_ADMIN
+=head2 EXAMPLE 1 - Family file named F_ADMIN
 
     +---------------------------------------------------------------------
  01 |start => '02:00', tz => 'America/Chicago', days => 'Mon,Wed,Fri'
@@ -270,8 +279,7 @@ command line or in an environment variable.
 
 Now, let's look at a slightly more complicated example:
 
-
-EXAMPLE 2 - Job Dependencies
+=head2 EXAMPLE 2 - Job Dependencies
 
 This family file is named WEB_ADMIN
 
@@ -309,8 +317,7 @@ Delete_Logs_Older_Than_A_Year are started at the same time.  If both these
 jobs succeed, then J_WEB_REPORTS is run.  If that job succeeds, the
 J_EMAIL_WEB_RPT_done is run."
 
-
-EXAMPLE 3 - TIME DEPENDENCIES
+=head2 EXAMPLE 3 - TIME DEPENDENCIES
 
 Let's say tha twe don't want J_RESOLVE_DNS to start before 9:00 a.m. because
 it's very IO-intensive and we want to wait until the relatively quiet
@@ -344,8 +351,7 @@ dependency as follows:
 
  05 | J_RESOLVE_DNS(start=>'10:00', tz=>'America/New_York')  Delete_Logs_Older_Than_A_Year()
 
-
-EXAMPLE 4 - JOB FORESTS
+=head2 EXAMPLE 4 - JOB FORESTS
 
 You can see in the example above that line 03 is the start of a group of
 dependent job.  No job on any other line can start unless the job on line
@@ -399,11 +405,13 @@ This means that J_CHECK_DISK_USAGE will be called every 30 minutes and
 will not run on or after 23:00.  By default, the 'until' time is
 23:59.  If the job starts at 02:00 and takes 25 minutes to run to
 completion, the next occurance will still start at 02:30, and not at
-02:55.  It is important to note that every repeat occurrance will only
-have one dependency - the time - and will not depend on earlier
-occurrances running successfully or even running at all.  If you want
-the job to run for the last time at 23:00, set the until time to
-23:01.
+02:55.  By default, every repeat occurrance will only have one
+dependency - the time - and will not depend on earlier occurances
+running successfully or even running at all.  If line 03 were:
+
+ 03 | J_CHECK_DISK_USAGE(every=>'30', until=>'23:00', chained=>1)
+
+...then each repeat job will be dependent on the previous occurance.
 
 =head1 USAGE
 
@@ -427,10 +435,8 @@ variables, or via the command line:
 
 All jobs will run as the user who invoked taskforest.
 
-To get the status of all currently running and recently run jobs,
-enter the following command:
-
-  status
+You can rerun jobs or mark jobs as Success or Failure using the
+'rerun' and 'mark' commands as shown below. 
 
 =head1 OPTIONS
 
@@ -439,7 +445,7 @@ specified on the command line, the environment will be searched for
 corresponding environment variables.
 
  --run_wrapper=/a/b/r  [or environment variable TF_RUN_WRAPPER]
-    
+
    This is the location of the run wrapper that is used to execute the
    job files.  The run wrapper is also responsible for creating the
    semaphore files that denote whether a job ran successfully or not.
@@ -447,15 +453,15 @@ corresponding environment variables.
    functionality, like logging status to a database, you can create
    your own run wrapper, as long as it preserves the functionality of
    the default run_wrapper.   
-    
+
  --log_dir=/a/b/l  [or environment variable TF_LOG_DIR]
-    
+
    This is called the root log directory.  Every day a dated directory
    named in the form YYYYMMDD will be created and the semaphore files
    will be created in that directory.
 
  --job_dir=/a/b/j  [or environment variable TF_JOB_DIR]
-    
+
    This is the location of all the job files.  Each job file should be
    an executable file (e.g.: a binary file, a shell script, a perl or
    python script).  The file names are used as job names in the family
@@ -466,7 +472,7 @@ corresponding environment variables.
    If a job J1 is present in a family config file, any other
    occurrance of J1 in that family refers TO THAT SAME JOB INSTANCE.
    It does not mean that the job will be run twice.
-   
+
    If you want the same job running twice, you will have to put it in
    different families, or make soft links to it and have the soft
    link(s) in the family file along with the actual file name.
@@ -479,10 +485,9 @@ corresponding environment variables.
    This is the location of all the family files.  As is the case with
    jobs, family names are the file names.  Family names may only
    contain the characters a-z, A-Z, 0-9 and _.
-   
 
 The following command line options are optional
-    
+
  --once_only
 
    If this option is set, the system will check each family once, run
@@ -492,7 +497,7 @@ The following command line options are optional
    and not run and sleep all day.
 
  --end_time=HH:MM
-   
+
    If once_only is not set, this option determines when the main
    program loop should end.  This refers to the local time in 24-hour
    format.  By default it is set to 23:55.  This is the recommended
@@ -509,7 +514,43 @@ The following command line options are optional
  --help
 
    Display help text
- 
+
+=head1 DISPLAY STATUS
+
+To get the status of all currently running and recently run jobs,
+enter the following command:
+
+  status
+
+  OR
+
+  status --log_dir=/foo/logs --family_dir=/foo/families
+
+  OR
+
+  status --log_dir=/foo/logs --family_dir=/foo/families --collapse
+
+If the --collapse option is used then pending repeat jobs will not be
+displayed.
+
+=head1 RERUN A JOB
+
+To rerun a job, enter the following command:
+
+ rerun --log_dir=l_d --job=Ff::Jj 
+
+where l_d is the log directory and Ff is the family name and Jj is the
+job name.
+
+=head1 MARK A JOB SUCCESS OR FAILURE
+
+To mark a previously-run job as success or failure, enter the
+following command:
+
+ mark --log_dir=l_d --job=Ff::Jj --status=s
+
+where l_d is the log directory and Ff is the family name, Jj is the
+job name, and s is 'Success' or 'Failure'.
 
 =head1 BUGS
 
@@ -537,7 +578,6 @@ License.
 
 The full text of the license can be found in the
 LICENSE file included with this module.
-
 
 =head1 SEE ALSO
 

@@ -45,6 +45,7 @@ my @lines = split("\n", $stdout);
 my $line;
 my $regex;
 
+
 $line = shift(@lines); is($line, "                                     Return   Time               Sched   Actual  Stop ");
 $line = shift(@lines); is($line, "Job                        Status      Code   Zone               Start   Start   Time ");
 $line = shift(@lines); is($line, "");

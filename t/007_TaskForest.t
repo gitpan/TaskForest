@@ -42,13 +42,12 @@ $tf->runMainLoop();
 
 print "Waiting $SLEEP_TIME seconds for job to finish\n";
 
-sleep $SLEEP_TIME;
-
-# test out shebang
-my $pbail = join(" ", 
-                 "Make sure the 'shebang' (#!) line in bin/run",
-                 "(and bin/taskforest and bin/status) points to the correct",
-                 "location of perl on your machine, and is executable.");
+my $num_tries = 30;
+for (my $n = 1; $n <= $num_tries; $n++) { 
+    sleep $SLEEP_TIME;
+    last if -e "$log_dir/SIMPLE.J2.0";
+    diag("Haven't found job log files on try $n of $num_tries.  Sleeping another $SLEEP_TIME seconds");
+}
 
     
     

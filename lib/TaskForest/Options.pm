@@ -1,8 +1,8 @@
 ################################################################################
 #
 # File:    Options
-# Date:    $Date: 2008-04-07 19:53:30 -0500 (Mon, 07 Apr 2008) $
-# Version: $Revision: 123 $
+# Date:    $Date: 2008-04-27 18:20:56 -0500 (Sun, 27 Apr 2008) $
+# Version: $Revision: 129 $
 #
 
 =head1 NAME
@@ -89,7 +89,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.08';
+    $VERSION     = '1.09';
 }
 
 # This is the main data structure that stores the options
@@ -104,6 +104,7 @@ my %all_options = (end_time          => 's',
                    wait_time         => 's',
                    log_dir           => 's',
                    once_only         => undef, 
+                   collapse           => undef, 
                    job_dir           => 's',
                    family_dir        => 's',
                    run_wrapper       => 's',
@@ -206,6 +207,7 @@ sub getOptions {
     # The booleans are set to 1 or 0
     #
     if ($tainted_options->{once_only}) { $options->{once_only} = 1; } else { $options->{once_only} = 0; } 
+    if ($tainted_options->{collapse}) { $options->{collapse} = 1; } else { $options->{collapse} = 0; } 
     if ($tainted_options->{verbose}) { $options->{verbose} = 1; } else { $options->{verbose} = 0; } 
 
     # The non-booleans are scanned with regexes with the matches being
@@ -283,7 +285,7 @@ USAGE
       To get the status of all currently running and recently run jobs,
       enter the following command:
 
-      status
+      status --collapse
 
 For more detailed documentation, enter:
 

@@ -1,0 +1,51 @@
+#!/usr/local/bin/perl -T
+
+################################################################################
+#
+# File:    rerun
+# Date:    $Date: 2008-04-06 20:13:45 -0500 (Sun, 06 Apr 2008) $
+# Version: $Revision: 119 $
+#
+# Rerun a job that has already been rerun
+#
+################################################################################
+
+use strict;
+use warnings;
+use Carp;
+use TaskForest::LogDir;
+use TaskForest::Options;
+use File::Copy;
+use Getopt::Long;
+use TaskForest::Rerun;
+
+my $family_job_name = '';
+my $log_dir_root;
+my $help;
+
+my $got_options = Getopt::Long::GetOptions(
+    "job=s"     => \$family_job_name,
+    "log_dir=s" => \$log_dir_root,
+    "help"      => \$help,
+    );
+
+
+if ($help or !$log_dir_root or !$family_job_name) {
+    print "Usage: rerun --job=Ff::Jj --log_dir=log_directory\n\n";
+    exit 1;
+}
+
+
+if ($family_job_name !~ /^([a-z0-9_]+)::([a-z0-9_]+)$/i) {
+    print "Usage: rerun --job=Ff:Jj --log_dir=log_directory\n\n";
+    confess("\nThe --job command line argument must be of the form: Ff::Jj where\n",
+            "Ff is the family name and Jj is the job name\n",
+            "as specified in the family file.\n\n");
+}
+my ($family_name, $job_name) = ($1, $2);
+
+my $log_dir      = &TaskForest::LogDir::getLogDir($log_dir_root);
+
+&TaskForest::Rerun::rerun($family_name, $job_name, $log_dir);
+
+exit 0;

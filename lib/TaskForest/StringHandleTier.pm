@@ -1,7 +1,7 @@
 # ##############################################################################
 # File:    StringHandleTier
-# Date:    $Date: 2008-04-07 19:53:30 -0500 (Mon, 07 Apr 2008) $
-# Version: $Revision: 123 $
+# Date:    $Date: 2008-04-25 08:22:51 -0500 (Fri, 25 Apr 2008) $
+# Version: $Revision: 128 $
 # ##############################################################################
 
 
@@ -33,7 +33,7 @@ use warnings;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.08';
+    $VERSION     = '1.09';
 }
 
 sub TIEHANDLE {
