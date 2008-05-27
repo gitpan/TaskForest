@@ -1,20 +1,18 @@
 ################################################################################
 #
-# File:    Mark
-# Date:    $Date: 2008-04-25 08:22:51 -0500 (Fri, 25 Apr 2008) $
-# Version: $Revision: 128 $
+# $Id: Mark.pm 33 2008-05-26 20:48:52Z aijaz $
 # 
 ################################################################################
 
 =head1 NAME
 
-TaskForest::Rerun - Functions related to rerunning a job
+TaskForest::Mark - Functions related to marking a job as Success or Failure
 
 =head1 SYNOPSIS
 
- use TaskForest::Rerun;
+ use TaskForest::Mark;
 
- &TaskForest::Rerun::rerun($family_name, $job_name)
+ &TaskForest::Mark::mark($family_name, $job_name, $log_dir, $status, $cascade, $dependents_only, $family_dir)
 
 =head1 DOCUMENTATION
 
@@ -27,48 +25,6 @@ perldoc TaskForest
 OR
 
 man TaskForest
-
-If you're a developer and you want to understand the code, I would
-recommend that you read the pods in this order:
-
-=over 4
-
-=item *
-
-TaskForest
-
-=item *
-
-TaskForest::Job
-
-=item *
-
-TaskForest::Family
-
-=item *
-
-TaskForest::TimeDependency
-
-=item *
-
-TaskForest::LogDir
-
-=item *
-
-TaskForest::Options
-
-=item *
-
-TaskForest::StringHandleTier
-
-=item *
-
-TaskForest::StringHandle
-
-=back
-
-Finally, read the documentation in the source.  Great efforts have been
-made to keep it current and relevant.
 
 =head1 DESCRIPTION
 
@@ -84,10 +40,11 @@ use strict;
 use warnings;
 use Carp;
 use File::Copy;
+use TaskForest::Family;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.09';
+    $VERSION     = '1.10';
 }
 
 # ------------------------------------------------------------------------------
@@ -116,8 +73,42 @@ BEGIN {
 
 # ------------------------------------------------------------------------------
 sub mark {
+    my ($family_name, $job_name, $log_dir, $status, $cascade, $dependents_only, $family_dir) = @_;
+
+    my $jobs;
+    
+    if ($cascade or $dependents_only) {
+        $ENV{TF_JOB_DIR}     = 'unnecessary';
+        $ENV{TF_RUN_WRAPPER} = 'unnecessary';
+        $ENV{TF_LOG_DIR}     = $log_dir;
+        $ENV{TF_FAMILY_DIR}  = $family_dir;
+
+        my $family = TaskForest::Family->new(name => $family_name);
+
+        $jobs = $family->findDependentJobs($job_name);
+
+        print "Cascade Jobs is ", join(", ", @$jobs), "\n";
+
+        if ($cascade) {
+            push (@$jobs, $job_name);
+        }
+
+    }
+    else {
+        $jobs = [$job_name];
+    }
+
+    foreach my $job (@$jobs) { 
+        markHelp($family_name, $job, $log_dir, $status);
+    }
+}
+
+
+sub markHelp {
     my ($family_name, $job_name, $log_dir, $status) = @_;
 
+    print "Marking job $family_name","::","$job_name as $status.\n";
+    
     my $rc_file      = "$log_dir/$family_name.$job_name.";
     my $new_rc_file;
     

@@ -12,6 +12,8 @@ WriteMakefile(
     PREREQ_PM    => {
                      'Test::Simple' => 0.44,
                      'DateTime' => 0,
+                     'Config::General' => 2.38,
+                     'Log::Log4perl' => 1.16,
                     },
     INSTALLSITEBIN => "bin",
     INSTALLSCRIPT => "bin",

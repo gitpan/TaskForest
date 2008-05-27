@@ -1,44 +1,96 @@
 Revision history for Perl module TaskForest
 
+1.10 Mon May 26 2008
+
+Syntax error checking was added to the Family
+file parser.  Optional logging of STDOUT and
+STDERR is now possible.  The mark and rerun
+commands can now act on just the job specified,
+or on all its dependents or on both - the job and
+its dependents.  Finally, a config file can now
+be used in lieu of command-line options or
+environment variables. 
+
+New options are:
+
+--log
+
+--config_file
+
+--chained
+
+--log_threshold
+
+--log_file
+
+--err_file
+
+A sample config file can be found in the main
+directory as well as in the pod for TaskForest.
+
+Please see the TaskForest pod for more details:
+perldoc TaskForest
+OR
+man TaskForest
+
+Because of these changes, there are two new
+dependencies:
+
+Log::Log4perl version 1.16 or higher
+Config::General version 2.38 or higher
+
 1.09 Sun Apr 27 2008
-     Summary:
+
+    Summary:
      
-     Two new scripts were added: 'rerun' schedules a job to be rerun, and
-     'mark' marks a previously job as Success or Failure.  A new 'chained'
-     option was added to the definition of repeat jobs, and a
-     '--collapsed' option was added to the status script.
-
-     Details:
-
-     1) The 'rerun' script makes a job available to be rerun, regardless of
-        whether or not it ran successfuly.  It does this by renaming the
-        job's log files from FF.JJ.* to FF.JJ--Orig_n--.* where n is an
-        integer that starts at 1 for the first rerun, and is incremented
-        by one at every rerun.
-
-     2) The 'mark' job marks a job as 'Success' or 'Failure', regardless
-        of whether or not it ran successfully.  It does this by renaming
-        the job rc file from FF.JJ.x to FF.JJ.0 (in the case of Success)
-        or FF.JJ.1 (in the case of Failure).  If the job's status is
-        already as requested, a warning is printed, and nothing is done.
-
-     3) By default, repeat jobs (those that have the 'every' and 'until'
-        options) have only one dependency - their time dependency.  They
-        are not dependent on each other.  In retrospect, the correct
-        behavior should have been to make the jobs also dependent on each
-        other.  Consider the case where a job is to run every hour, but
-        for whatever reason, taskforest does not run until half-way
-        through the day.  This would cause half of the jobs to run at the
-        same time at the first opportunity.  The new 'chained' option
-        makes the repeat jobs dependent on each other.
-
-     4) Also related to repeat jobs: the new --collapsed option to the
-        status command prevents repeat jobs that are in the 'Waiting'
-        state from being displayed.  This is especially useful when you
-        have a job scheduled to be run once every minute, and it's only
-        8:00 a.m.  You probably wouldn't want to see 960 entries when one
-        would suffice. 
-
+    Two new scripts were added: 'rerun' schedules
+    A job to be rerun, and 'mark' marks a
+    previously job as Success or Failure.  A new
+    'chained' option was added to the definition
+    of repeat jobs, and a '--collapsed' option was
+    added to the status script.
+    
+    Details:
+    
+    1) The 'rerun' script makes a job available to be
+       rerun, regardless of whether or not it ran
+       successfuly.  It does this by renaming the
+       job's log files from FF.JJ.* to
+       FF.JJ--Orig_n--.* where n is an integer that
+       starts at 1 for the first rerun, and is
+       incremented by one at every rerun.
+    
+    2) The 'mark' job marks a job as 'Success' or
+       'Failure', regardless of whether or not it ran
+       successfully.  It does this by renaming the job
+       rc file from FF.JJ.x to FF.JJ.0 (in the case of
+       Success) or FF.JJ.1 (in the case of Failure).
+       If the job's status is already as requested, a
+       warning is printed, and nothing is done.
+    
+    3) By default, repeat jobs (those that have the
+       'every' and 'until' options) have only one
+       dependency - their time dependency.  They are
+       not dependent on each other.  In retrospect,
+       the correct behavior should have been to make
+       the jobs also dependent on each other.
+       Consider the case where a job is to run every
+       hour, but for whatever reason, taskforest does
+       not run until half-way through the day.  This
+       would cause half of the jobs to run at the same
+       time at the first opportunity.  The new
+       'chained' option makes the repeat jobs
+       dependent on each other.
+    
+    4) Also related to repeat jobs: the new
+       --collapsed option to the status command
+       prevents repeat jobs that are in the 'Waiting'
+       state from being displayed.  This is especially
+       useful when you have a job scheduled to be run
+       once every minute, and it's only 8:00 a.m.  You
+       probably wouldn't want to see 960 entries when
+       one would suffice.
+    
 1.08 Mon Apr 07 20:52:00 2008
      A couple of the files required for the most recent test case was
      missing from the distribution.  Added those files to the

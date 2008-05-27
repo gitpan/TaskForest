@@ -1,8 +1,6 @@
 ################################################################################
 #
-# File:    Family
-# Date:    $Date: 2008-04-27 18:20:56 -0500 (Sun, 27 Apr 2008) $
-# Version: $Revision: 129 $
+# $Id: Family.pm 33 2008-05-26 20:48:52Z aijaz $
 #
 ################################################################################
 
@@ -39,48 +37,6 @@ perldoc TaskForest
 OR
 
 man TaskForest
-
-If you're a developer and you want to understand the code, I would
-recommend that you read the pods in this order:
-
-=over 4
-
-=item *
-
-TaskForest
-
-=item *
-
-TaskForest::Job
-
-=item *
-
-TaskForest::Family
-
-=item *
-
-TaskForest::TimeDependency
-
-=item *
-
-TaskForest::LogDir
-
-=item *
-
-TaskForest::Options
-
-=item *
-
-TaskForest::StringHandleTier
-
-=item *
-
-TaskForest::StringHandle
-
-=back
-
-Finally, read the documentation in the source.  Great efforts have been
-made to keep it current and relevant.
 
 =head1 DESCRIPTION
 
@@ -220,7 +176,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.09';
+    $VERSION     = '1.10';
 }
 
 # ------------------------------------------------------------------------------
@@ -765,6 +721,7 @@ sub readFromFile {
     my $sections = $self->_getSections();     # get concurrent sections
     return unless @$sections;                 # the file is either blank, or does not need to run today
 
+    my @bad_lines = ();
     foreach my $section (@$sections) {
         my @lines = split(/[\r\n]/, $section);    # lines in the section
         
@@ -773,9 +730,19 @@ sub readFromFile {
         # encountered. 
         #
         $self->{last_dependency} = [ $self->{family_time_dependency} ];
+
+        # list of lines that failed to parse
+        my ($parsed_ok, $parse_error);
         foreach my $line (@lines) {
-            $self->_parseLine($line);
+            ($parsed_ok, $parse_error) = $self->_parseLine($line);
+            if (! $parsed_ok) {
+                push(@bad_lines, "$line --- $parse_error");
+            }
         }
+    }
+    
+    if (@bad_lines) {
+        die ("Family '$self->{name}' has unparseable lines:\n  ", join("  \n", @bad_lines), "\n");
     }
 
 }
@@ -927,15 +894,24 @@ sub _parseHeaderLine {
     #
     my $args = '';
     my $file = $self->{name};
+
+    # using this parsing means that extra junk in the header line is ignored - makes the parsing more
+    # resistant to errors
+    #
     if (/(start=>['"]\d+:\d+['"])/)      { $args .= "$1,"; } else { croak "No start time specified for Family $file"; }
     if (/(days=>['"][a-zA-Z0-9,]+['"])/) { $args .= "$1,"; } else { croak "No run days specified for Family $file"; }
     if (/(tz=>['"][a-zA-Z0-9\/]+['"])/)  { $args .= "$1,"; } else { croak "No time zone specified for Family $file"; }
              
-    my %args = eval($args);
+    my %args = eval($args); 
 
     $self->{start} = $args{start};          # set the start time
     my @days = split(/,/, $args{days});
+
+    my %valid_days = (Mon=>1, Tue=>1, Wed=>1, Thu=>1, Fri=>1, Sat=>1, Sun=>1);
     foreach my $day (@days) {
+        if (!($valid_days{$day})) {
+            croak "Day $day is not a valid day.  Valid days are: Mon, Tue, Wed, Thu, Fri, Sat and Sun";
+        }
         $self->{days}->{$day} = 1;          # valid to run on these days
     }
 
@@ -986,17 +962,37 @@ sub _parseLine {
     $self->{current_dependency} = [];
     $line =~ s/\s//g;                    # get rid of spaces
 
+    # make sure that the line looks like this:
+    # ([a-z0-9_]+\([^\)]*\) *)*
+    if ($line =~ /^([a-z0-9_]+\([^\)]*\))*$/i) {
+    }
+    else {
+        return (0, "This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'");
+    }
+
+    
     my @jobs = $line =~ /([a-z0-9_]+\([^\)]*\))/ig;  # parens may be empty
 
+    my @errors = ();
+    my ($retval, $error);
+        
     foreach my $job (@jobs) {
-        $self->_parseJob($job);
+        ($retval, $error) = $self->_parseJob($job);
+        if ($retval == 0) {
+            push (@errors, $error);
+        }
+    }
 
+    if (@errors) {
+        return (0, join(", ", @errors));
     }
 
     # set the list of dependencies for the next iteration in
     # the loop
     #
     $self->{last_dependency} = $self->{current_dependency};
+
+    return (1, "");
 }
 
 
@@ -1045,7 +1041,15 @@ sub _parseJob {
     }
     
     if ($args =~ /^\(\S/) {  # We have additional dependencies
-        my %args = eval ($args);
+        my %args = eval ($args); 
+        return (0, $@) if $@;
+        
+        # passed first level of checks
+        # now make sure that the only things within the parentheses are valid keys
+        my ($retval, $error) = $self->_verifyJobHash(\%args);
+        if ($retval == 0) { return (0, $error); }
+        
+        #print "\$\@ is $@ and \$\! is $! and args is ", Dumper(\%args);
         $args{tz} = $self->{tz} unless $args{tz}; # time zone defaults to family time zone
         if ($args{start}) {                       # time dependency
             my $td = TaskForest::TimeDependency->new(start => $args{start}, tz => $args{tz});
@@ -1065,10 +1069,56 @@ sub _parseJob {
     
     # push this job into the dependency array for the jobs in the next line
     #
-    push (@{$self->{current_dependency}}, $job_object)
+    push (@{$self->{current_dependency}}, $job_object);
 
+    return (1, "");
+        
 }    
 
+
+# ------------------------------------------------------------------------------
+=pod
+
+=over 4
+
+=item _verifyJobHash()
+
+ Usage     : $self->_verifyJobHash($args)
+ Purpose   : Verify that the hash created has valid keys
+
+ Returns   : 1 on success, 0 on failure
+ Argument  : $args - a reference to a hash 
+ Throws    : Nothing
+
+=back
+
+=cut
+
+# ------------------------------------------------------------------------------
+sub _verifyJobHash {
+    my ($self, $args) = @_;
+    
+    my $valid_job_args = {
+        "start"   => 1,
+        "tz"      => 1,
+        "every"   => 1,
+        "until"   => 1,
+        "chained" => 1
+    };
+
+    my @errors = ();
+
+    foreach (keys %$args) {
+        if (! ($valid_job_args->{$_})) {
+            push(@errors, "'$_' is not a recognized attribute");
+        }
+    }
+
+    if (@errors) {
+        return (0, join(", ", @errors));
+    }
+    return (1, '');
+}
 
 # ------------------------------------------------------------------------------
 =pod
@@ -1085,8 +1135,8 @@ sub _parseJob {
              By default, the newly created jobs are *not* dependent on
              each other. They're only dependent on their start times.
              If the 'chained=>1' option is given in the family file,
-             then the jobs are dependent on each other.  This is,
-             arguably, the more sensible behavior.
+             or in the options, then the jobs are dependent on each
+             other.  This is, arguably, the more sensible behavior.
 
  Returns   : Nothing
  Argument  : None
@@ -1100,8 +1150,8 @@ sub _parseJob {
 sub _createRecurringJobs {
     my ($self, $job_name, $args, $job_object) = @_;
 
-    my $chained = $args->{chained}; # if it's chained then each job is
-                                    # dependent on the other. 
+    my $chained = defined($args->{chained})? $args->{chained} : $self->{options}->{chained};
+    # if it's chained then each job is dependent on the other.
     
     my $until = $args->{until};
     my ($until_mm, $until_hh);
@@ -1175,6 +1225,55 @@ sub writeSemaphoreFile {
     print F $contents;
     
     close F;
+}
+
+
+
+
+# ------------------------------------------------------------------------------
+=pod
+
+=over 4
+
+=item findDependentJobs()
+
+ Usage     : $job_names = $self->findDependentJobs($job)
+ Purpose   : Find all jobs that are dependent on $job, either directly or
+             indirectly
+ Returns   : An array ref of job names
+ Argument  : The name of the job whose dependents you are looking for
+ Throws    : Nothing
+
+=back
+
+=cut
+
+# ------------------------------------------------------------------------------
+sub findDependentJobs {
+    my ($self, $job_name) = @_;
+
+    my @result = ();
+
+    # first make a reverse dependency list
+
+    $self->{dependents} = {};
+    foreach my $j (keys %{$self->{dependencies}}) {
+        foreach my $dep (grep { ref($_) eq 'TaskForest::Job' }@{$self->{dependencies}->{$j}}) {
+            push (@{$self->{dependents}->{$dep->{name}}}, $j);
+        }
+    }
+
+    # now get the dependent jobs
+    my $deps = $self->{dependents}->{$job_name};
+
+
+    while (my $j = shift(@$deps)) {
+        push (@result, $j);
+        unshift(@$deps, @{$self->{dependents}->{$j}}) if $self->{dependents}->{$j};
+    }
+
+    return \@result;
+            
 }
 
 

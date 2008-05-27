@@ -2,9 +2,7 @@
 
 ################################################################################
 #
-# File:    rerun
-# Date:    $Date: 2008-04-06 20:13:45 -0500 (Sun, 06 Apr 2008) $
-# Version: $Revision: 119 $
+# $Id$
 #
 # Rerun a job that has already been rerun
 #
@@ -22,22 +20,37 @@ use TaskForest::Rerun;
 my $family_job_name = '';
 my $log_dir_root;
 my $help;
+my $cascade = '';
+my $dependents_only = '';
+my $family_dir = '';
 
 my $got_options = Getopt::Long::GetOptions(
-    "job=s"     => \$family_job_name,
-    "log_dir=s" => \$log_dir_root,
-    "help"      => \$help,
+    "job=s"             => \$family_job_name,
+    "log_dir=s"         => \$log_dir_root,
+    "help"              => \$help,
+    "cascade"           => \$cascade,
+    "dependents_only"   => \$dependents_only,
+    "family_dir=s"      => \$family_dir,
     );
 
 
-if ($help or !$log_dir_root or !$family_job_name) {
-    print "Usage: rerun --job=Ff::Jj --log_dir=log_directory\n\n";
+if ($help
+    or !$log_dir_root
+    or !$family_job_name
+    or ($cascade and $dependents_only)
+    or (($cascade or $dependents_only) and !$family_dir)
+    ) {
+    print "Usage: rerun --job=Ff::Jj --log_dir=log_directory [[--cascade | --dependents_only] --family_dir=family_directory]\n";
+    print "  Specify either --cascade or --dependents_only or neither.  You can't specify both.\n";
+    print "  --cascade will mark the job and all its direct and indirect dependents for rerun.\n";
+    print "  --dependents_only will not mark the job but it will mark all its direct and indirect dependents for rerun.\n";
+    print "    If you specify either of these two, you must also specify family_dir.\n\n";
     exit 1;
 }
 
 
 if ($family_job_name !~ /^([a-z0-9_]+)::([a-z0-9_]+)$/i) {
-    print "Usage: rerun --job=Ff:Jj --log_dir=log_directory\n\n";
+    print "Usage: rerun --job=Ff:Jj --log_dir=log_directory [--cascade | --dependents_only]\n\n";
     confess("\nThe --job command line argument must be of the form: Ff::Jj where\n",
             "Ff is the family name and Jj is the job name\n",
             "as specified in the family file.\n\n");
@@ -46,6 +59,6 @@ my ($family_name, $job_name) = ($1, $2);
 
 my $log_dir      = &TaskForest::LogDir::getLogDir($log_dir_root);
 
-&TaskForest::Rerun::rerun($family_name, $job_name, $log_dir);
+&TaskForest::Rerun::rerun($family_name, $job_name, $log_dir, $cascade, $dependents_only, $family_dir);
 
 exit 0;

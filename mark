@@ -2,9 +2,7 @@
 
 ################################################################################
 #
-# File:    rerun
-# Date:    $Date: 2008-04-06 20:13:45 -0500 (Sun, 06 Apr 2008) $
-# Version: $Revision: 119 $
+# $Id$
 #
 # Explicitly Mark a job that has been already been run as 'success' or
 # 'failure', regardless of its original status.
@@ -23,19 +21,35 @@ my $family_job_name = '';
 my $log_dir_root;
 my $help;
 my $status = '';
+my $cascade = '';
+my $dependents_only = '';
+my $family_dir = '';
 
 my $got_options = Getopt::Long::GetOptions(
-    "job=s"     => \$family_job_name,
-    "log_dir=s" => \$log_dir_root,
-    "status=s"  => \$status,
-    "help"      => \$help,
+    "job=s"             => \$family_job_name,
+    "log_dir=s"         => \$log_dir_root,
+    "status=s"          => \$status,
+    "help"              => \$help,
+    "cascade"           => \$cascade,
+    "dependents_only"   => \$dependents_only,
+    "family_dir=s"      => \$family_dir,
     );
 
 
 $status = lc($status);
 
-if ($help or !$log_dir_root or !$family_job_name or ($status ne 'success' and $status ne 'failure')) {
-    print "Usage: mark --job=Ff::Jj --log_dir=log_directory --status=[Success | Failure]\n\n";
+if ($help 
+    or !$log_dir_root
+    or !$family_job_name
+    or ($status ne 'success' and $status ne 'failure')
+    or ($cascade and $dependents_only)
+    or (($cascade or $dependents_only) and !$family_dir)
+    ) {
+    print "Usage: mark --job=Ff::Jj --log_dir=log_directory --status=[Success | Failure] [[--cascade | --dependents_only] --family_dir=family_directory]\n";
+    print "  Specify either --cascade or --dependents_only or neither.  You can't specify both.\n";
+    print "  --cascade will mark the job and all its direct and indirect dependents.\n";
+    print "  --dependents_only will not mark the job but it will mark all its direct and indirect dependents.\n";
+    print "    If you specify either of these two, you must also specify family_dir.\n\n";
     exit 1;
 }
 
@@ -47,10 +61,9 @@ if ($family_job_name !~ /^([a-z0-9_]+)::([a-z0-9_\-]+)$/i) {
 }
 my ($family_name, $job_name) = ($1, $2);
 
-print "Marking job $family_job_name as $status.\n";
 
 my $log_dir      = &TaskForest::LogDir::getLogDir($log_dir_root);
 
-&TaskForest::Mark::mark($family_name, $job_name, $log_dir, $status);
+&TaskForest::Mark::mark($family_name, $job_name, $log_dir, $status, $cascade, $dependents_only, $family_dir);
 
 exit 0;

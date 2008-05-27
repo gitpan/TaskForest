@@ -2,9 +2,7 @@
 
 ################################################################################
 #
-# File:    taskforest
-# Date:    $Date: 2008-03-28 19:15:31 -0500 (Fri, 28 Mar 2008) $
-# Version: $Revision: 98 $
+# $Id$
 #
 # The main program that processes jobs and families
 #

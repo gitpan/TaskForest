@@ -1,8 +1,6 @@
 ################################################################################
 #
-# File:    TaskForest
-# Date:    $Date: 2008-04-27 18:31:06 -0500 (Sun, 27 Apr 2008) $
-# Version: $Revision: 130 $
+# $Id: TaskForest.pm 37 2008-05-27 01:23:47Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -16,11 +14,12 @@ use POSIX ":sys_wait_h";
 use Data::Dumper;
 use TaskForest::Family;
 use TaskForest::Options;
+use TaskForest::Logs qw /$log/;
 
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.09';
+    $VERSION     = '1.10';
 }
 
 
@@ -88,7 +87,15 @@ sub runMainLoop {
     my $end_time = $self->{options}->{end_time};
     my $wait_time = $self->{options}->{wait_time};
 
+    my $rerun = 0;
+    my $RELOAD = 1;
+
+    $self->{options} = &TaskForest::Options::getOptions($rerun);  $rerun = 1;
+    &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $RELOAD);
+    &TaskForest::Logs::init("New Loop");
+   
     while (1) {
+        
         my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 
         # get a fresh list of all family files
@@ -104,6 +111,11 @@ sub runMainLoop {
             #
             my ($name) = $family_name =~ /$self->{options}->{family_dir}\/(.*)/;
             my $family = TaskForest::Family->new(name => $name);
+
+            if (!defined $family) {
+                # there was a syntax error
+                
+            }
 
             # If there aren't any jobs in the family, we really don't
             # need to try.
@@ -126,10 +138,20 @@ sub runMainLoop {
         
         my $now = sprintf("%02d%02d", $hour, $min);
         print "It is $now, the time to end is $end_time\n" if $self->{options}->{verbose};
-        last if $now >= $end_time;
-        
+        if (($now + $wait_time) >= $end_time) {
+            $log->info("In $wait_time seconds it will be past $end_time.  Exiting loop.");
+            last;
+        }
+        $log->info("Sleeping $wait_time");
         sleep $wait_time;                         # by default: 60s
+
+        &TaskForest::Logs::resetLogs();
+        $self->{options} = &TaskForest::Options::getOptions($rerun); 
+        &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $RELOAD);
+        &TaskForest::Logs::init("New Loop");
+        
     }
+    
 }
 
 
@@ -201,14 +223,30 @@ TaskForest - Simple, powerful task scheduler
   # Rerun job J_RESOLVE in family F_DNS
   use TaskForest::Rerun;
   rerun("F_DNS", "J_RESOLVE", $log_dir);
-    
+
   # Rerun job J_RESOLVE in family F_DNS
   use TaskForest::Rerun;
-  &TaskForest::Rerun::rerun("F_DNS", "J_RESOLVE", $log_dir);
-    
+  &TaskForest::Rerun::rerun(
+    "F_DNS",            # family name
+    "J_RESOLVE",        # job name
+    $log_dir,           # log directory
+    $cascade,           # optional - apply to all dependent jobs as well
+    $dependents_only,   # optional - apply to dependent jobs only
+    $family_dir         # family directory
+    );
+
+
   # Mark job J_RESOLVE in family F_DNS as Success
   use TaskForest::Mark;
-  &TaskForest::Mark::mark("F_DNS", "J_RESOLVE", $log_dir, "Success");
+  &TaskForest::Mark::mark(
+    "F_DNS",            # family name
+    "J_RESOLVE",        # job name
+    $log_dir,           # log directory
+    "Success",          # status
+    $cascade,           # optional - apply to all dependent jobs as well
+    $dependents_only,   # optional - apply to dependent jobs only
+    $family_dir         # family directory
+    );
 
 =head1 DESCRIPTION
 
@@ -505,7 +543,8 @@ The following command line options are optional
 
  --wait_time
 
-   This is the amount of seconds to sleep at the end of every loop.
+   This is the amount of seconds to sleep at the end of every
+   loop. The default value is 60.
 
  --verbose
 
@@ -514,6 +553,39 @@ The following command line options are optional
  --help
 
    Display help text
+
+ --log
+
+   Log stdout and stderr to files
+
+ --log_threshold=t
+
+   Log messages at level t and above only will be printed to the
+   stdout log file.  The default value is "warn".
+
+ --log_file=o
+
+   Messages printed to stdout are saved to file o in the log_directory
+   (if --log is set).  The default value is "stdout".
+
+ --err_file=e
+
+   Messages printed to stderr are saved to file e in the log_directory
+   (if --log is set).  The default value is "stderr".
+
+ --config_file=f
+
+   Read configuration settings from config file f.
+
+ --chained
+
+   If this is set, all recurring jobs will have the chained attribute
+   set to 1 unless specified explicitly in the family file. 
+
+ --collapse
+
+   If this option is set then the status command will behave as if the
+   --collapse options was specified on the command line.
 
 =head1 DISPLAY STATUS
 
@@ -542,6 +614,20 @@ To rerun a job, enter the following command:
 where l_d is the log directory and Ff is the family name and Jj is the
 job name.
 
+If you run the command like this:
+
+ rerun --log_dir=l_d --job=Ff::Jj --cascade --family_dir=f_d
+
+then all the jobs that are directly or indirectly dependent on job Jj
+in family Ff will also be rerun. 
+
+If you run the command like this:
+
+ rerun --log_dir=l_d --job=Ff::Jj --dependents_only --family_dir=f_d
+
+then only those jobs that are directly or indirectly dependent on job Jj
+in family Ff will be rerun.  Job Jj will be unaffected. 
+
 =head1 MARK A JOB SUCCESS OR FAILURE
 
 To mark a previously-run job as success or failure, enter the
@@ -551,6 +637,105 @@ following command:
 
 where l_d is the log directory and Ff is the family name, Jj is the
 job name, and s is 'Success' or 'Failure'.
+
+If you run the command like this:
+
+ mark --log_dir=l_d --job=Ff::Jj --status=s --cascade --family_dir=f_d
+
+then all the jobs that are directly or indirectly dependent on job Jj
+in family Ff will also be marked. 
+
+If you run the command like this:
+
+ mark --log_dir=l_d --job=Ff::Jj --status=s --dependents_only --family_dir=f_d
+
+then only those jobs that are directly or indirectly dependent on job Jj
+in family Ff will be marked.  Job Jj will be unaffected.
+
+=head1 READING OPTIONS FROM A CONFIG FILE
+
+The 'taskforest' and 'status' commands now accept a "--config_file=f"
+option.  You can now specify commonly used options in the config file,
+so you do have to include them on the command line.  The config file
+should contain one option per command line.  The following sample
+config file shows the list of all supported options, and documents
+their usage.
+
+ # ########################################
+ # SAMPLE CONFIG FILE
+ # ########################################
+ # These are the four required command line arguments to taskforest
+ log_dir         = "t/logs"
+ family_dir      = "/usr/local/taskforest/families"
+ job_dir         = "/usr/local/taskforest/jobs"
+ run_wrapper     = "/usr/local/bin/run"
+
+ # wait this many seconds between iterations of the main loop
+ wait_time       = 60
+
+ # stop taskforest at this time of day
+ end_time        = 2355
+
+ # if set to 1, run taskforest once only and exit immediately after that
+ once_only       = 0
+
+ # print out extra logs - may be redundant, due to log_threshold, below
+ # THIS OPTION WILL BE DEPRECATED SOON.
+ verbose         = 0
+
+ # by default assume that the --collapse option was given to the status command
+ collapse        = 1  # change from previously default behavior
+
+ # by default assume that all repeating jobs have the --chained=>1 attribute set
+ chained         = 1  # change from previously default behavior
+
+ # log stdout and stderr to files
+ log             = 1
+
+ # by default, log stdout messages with status >= this vale.
+ # This only effects stdout
+ # The sequence of thresholds (smallest to largest) is:
+ # debug, info, warn, error, fatal
+ log_threshold   = "warn"
+
+ # The log_file and err_file names should NOT end with '.0' or '.1' 
+ # because then they will be mistaken for job log files
+ log_file        = "stdout"  
+ err_file        = "stderr"  
+
+ # currently unused
+ log_status      = 0
+
+=head1 PRECEDENCE OF DIFFERENT OPTIONS SOURCES
+
+All settings (required and optional) may be specified in a variety of
+ways: command line, environment variable and config file.  The order
+of preferences is this: Most options have default values.  Settings
+specified in the config file override those defaults.  Settings
+specified in environment variables take override those specified in
+the config file and the default values.  Setting specified on the
+command line override those specified in envrionment variables, and
+those specified in the config files and the default values.
+
+The names of the environment variable are the same as the names of the
+settings on the command line (or in the config file), but they should
+be in UPPER CASE, with "TF_" prepended.  For example, the environment
+variable name for the 'run_wrapper' setting is 'TF_RUN_WRAPPER'.
+
+=head1 LOGGING STDOUT AND STDERR
+
+If the --log option is set, then anything printed to stdout and stderr
+will be saved to log files. Before the logging start, the program will
+print onto stdout the names of the log file and error file.  The
+program logs incidents at different levels ("debug", "info",
+"warning", "error" and "fatal").  The "log_threshold" option sets the
+level at which logs are written to the stdout file.  If the value of
+log_threshold is "info", then only those log messages with a level of
+"info" or above ("warning", "error" or "fatal") will be written to the
+stdout log file.  The stderr log file always has logs printed at level
+"error" or above, as well as anything printed explicitly to STDERR.
+
+The log file and error file will be saved in the log_directory.  
 
 =head1 BUGS
 

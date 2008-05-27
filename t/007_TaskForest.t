@@ -27,6 +27,7 @@ $ENV{TF_RUN_WRAPPER} = "$cwd/blib/script/run";
 $ENV{TF_LOG_DIR} = "$cwd/t/logs";
 $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
+$ENV{TF_ONCE_ONLY} = 1;
 
 my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
 cleanup_files($log_dir);
@@ -40,12 +41,18 @@ $tf->{options}->{once_only} = 1;
 print "Running ready jobs\n";
 $tf->runMainLoop();
 
+$tf->{options}->{once_only} = 1;
+
 print "Waiting $SLEEP_TIME seconds for job to finish\n";
 
 my $num_tries = 30;
 for (my $n = 1; $n <= $num_tries; $n++) { 
     sleep $SLEEP_TIME;
-    last if -e "$log_dir/SIMPLE.J2.0";
+    last if (-e "$log_dir/SIMPLE.J2.0" and
+             -e "$log_dir/SIMPLE.J3.0" and
+             -e "$log_dir/SIMPLE.J6.0" and
+             -e "$log_dir/SIMPLE.J7.0" and
+             -e "$log_dir/SIMPLE.J9.0" );
     diag("Haven't found job log files on try $n of $num_tries.  Sleeping another $SLEEP_TIME seconds");
 }
 

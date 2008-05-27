@@ -1,8 +1,6 @@
 ################################################################################
 #
-# File:    TimeDependency
-# Date:    $Date: 2008-04-25 08:22:51 -0500 (Fri, 25 Apr 2008) $
-# Version: $Revision: 128 $
+# $Id: TimeDependency.pm 33 2008-05-26 20:48:52Z aijaz $
 #
 ################################################################################
 
@@ -41,48 +39,6 @@ OR
 
 man TaskForest
 
-If you're a developer and you want to understand the code, I would
-recommend that you read the pods in this order:
-
-=over 4
-
-=item *
-
-TaskForest
-
-=item *
-
-TaskForest::Job
-
-=item *
-
-TaskForest::Family
-
-=item *
-
-TaskForest::TimeDependency
-
-=item *
-
-TaskForest::LogDir
-
-=item *
-
-TaskForest::Options
-
-=item *
-
-TaskForest::StringHandleTier
-
-=item *
-
-TaskForest::StringHandle
-
-=back
-
-Finally, read the documentation in the source.  Great efforts have been
-made to keep it current and relevant.
-
 =head1 DESCRIPTION
 
 A TimeDependency is an object that a job depends on.  It has a time
@@ -105,7 +61,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.09';
+    $VERSION     = '1.10';
 }
 
 

@@ -1,9 +1,8 @@
 ################################################################################
 #
-# File:    Options
-# Date:    $Date: 2008-04-27 18:20:56 -0500 (Sun, 27 Apr 2008) $
-# Version: $Revision: 129 $
+# $Id: Options.pm 33 2008-05-26 20:48:52Z aijaz $
 #
+################################################################################
 
 =head1 NAME
 
@@ -28,48 +27,6 @@ OR
 
 man TaskForest
 
-If you're a developer and you want to understand the code, I would
-recommend that you read the pods in this order:
-
-=over 4
-
-=item *
-
-TaskForest
-
-=item *
-
-TaskForest::Job
-
-=item *
-
-TaskForest::Family
-
-=item *
-
-TaskForest::TimeDependency
-
-=item *
-
-TaskForest::LogDir
-
-=item *
-
-TaskForest::Options
-
-=item *
-
-TaskForest::StringHandleTier
-
-=item *
-
-TaskForest::StringHandle
-
-=back
-
-Finally, read the documentation in the source.  Great efforts have been
-made to keep it current and relevant.
-
 =head1 DESCRIPTION
 
 This is a convenience class that gets the required and optional
@@ -86,10 +43,12 @@ use warnings;
 use Getopt::Long;
 use Data::Dumper;
 use Carp;
+use Config::General qw(ParseConfig);
+use Log::Log4perl qw(:levels);
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.09';
+    $VERSION     = '1.10';
 }
 
 # This is the main data structure that stores the options
@@ -104,13 +63,20 @@ my %all_options = (end_time          => 's',
                    wait_time         => 's',
                    log_dir           => 's',
                    once_only         => undef, 
-                   collapse           => undef, 
+                   collapse          => undef, 
                    job_dir           => 's',
                    family_dir        => 's',
                    run_wrapper       => 's',
                    email_failure_to  => 's',
                    verbose           => undef,
                    help              => undef,
+                   config_file       => 's',
+                   chained           => undef,
+                   log_threshold     => 's',
+                   log               => undef,
+                   log_file          => 's',
+                   err_file          => 's',
+                   log_status        => undef,
     );
 
 # These are the required options. The absence of any one of these will
@@ -118,6 +84,34 @@ my %all_options = (end_time          => 's',
 #
 my @required_options = qw (run_wrapper log_dir job_dir family_dir);
 
+my $command_line_read = 0;
+
+my $command_line_options = undef;
+
+
+# ------------------------------------------------------------------------------
+=pod
+
+=over 4
+
+=item getConfig()
+
+ Usage     : my $config = &TaskForest::Options::getConfig($file)
+ Purpose   : This method reads a config file
+ Returns   : A hash ref of the options specified in the config file
+ Argument  : The name of the config file
+ Throws    : Nothing
+
+=back
+
+=cut
+
+# ------------------------------------------------------------------------------
+sub getConfig {
+    my $config_file = shift;
+    my %config = ParseConfig(-ConfigFile => $config_file);
+    return \%config;
+}
 
 # ------------------------------------------------------------------------------
 =pod
@@ -141,53 +135,62 @@ my @required_options = qw (run_wrapper log_dir job_dir family_dir);
 
 # ------------------------------------------------------------------------------
 sub getOptions {
+    my $reread = shift;
 
     # If the options hash is already populated, just return it 
-    return $options if (keys %$options);
+    if ((not defined $reread) and keys(%$options)) {
+        return $options;
+    }
 
-    # This hash is defined within the function and not in file scope
-    # because we want to allow the environment variables to be
-    # overwritten within the constructor of the TaskForest.
-    #
-    # The environment contains the default values of the required
-    # options if they're not specified on the command line.
-    #
-    my $default_options = {
-        end_time  => '2355',
-        wait_time => 60,
-        run_wrapper => $ENV{TF_RUN_WRAPPER},
-        log_dir => $ENV{TF_LOG_DIR},
-        family_dir => $ENV{TF_FAMILY_DIR},
-        job_dir => $ENV{TF_JOB_DIR},
+    my $new_options = {};
+
+    if (! defined($command_line_options)) {
+        # never do this more than once
+        $command_line_options = {};
+        GetOptions($command_line_options, map { if ($all_options{$_}) { "$_=$all_options{$_}"} else { $_ } } (keys %all_options));
+    }
         
-    };
-
     # As options are first retrieved, they're considered tainted and
-    # stored in this hash.  Upon untainting they're stred in $options.
+    # stored in this hash.  Upon untainting they're stored in $options.
     #
     my $tainted_options = {};
 
     # Every option starts of as undef
-    #
-    foreach my $option (keys %all_options) {
-        $tainted_options->{$option} = undef;
+    foreach my $option (keys %all_options) { $tainted_options->{$option} = undef; }
+
+    # Then it gets the command line value
+    foreach my $option (keys %all_options) { $tainted_options->{$option} = $command_line_options->{$option}; }
+
+    # Then it gets the environment variable value, if necessary
+    foreach my $option (keys %all_options) { $tainted_options->{$option} = $ENV{"TF_".uc($option)} unless defined $tainted_options->{$option} }
+
+    # Then it gets the config file value if necessary
+    my $config;
+    if ($tainted_options->{config_file}) {
+        my $config_file = $tainted_options->{config_file};
+        $config_file =~ s/;//g;
+        $config = getConfig($config_file);
     }
+    foreach my $option (keys %all_options) { $tainted_options->{$option} = $config->{$option} unless defined $tainted_options->{$option} }
 
-    # Get the command line options into $tainted_options
-    #
-    GetOptions($tainted_options, map { if ($all_options{$_}) { "$_=$all_options{$_}"} else { $_ } } (keys %all_options));
+    # Finally, pick a default value if necessary
+    $tainted_options->{wait_time}       = 60       unless defined $tainted_options->{wait_time};
+    $tainted_options->{end_time}        = '2355'   unless defined $tainted_options->{end_time};
+    $tainted_options->{once_only}       = 0        unless defined $tainted_options->{once_only};
+    $tainted_options->{verbose}         = 0        unless defined $tainted_options->{verbose};
+    $tainted_options->{collapse}        = 0        unless defined $tainted_options->{collapse};
+    $tainted_options->{chained}         = 0        unless defined $tainted_options->{chained};
+    $tainted_options->{log}             = 0        unless defined $tainted_options->{log};
+    $tainted_options->{log_threshold}   = 'info'   unless defined $tainted_options->{log_threshold};
+    $tainted_options->{log_file}        = "stdout" unless defined $tainted_options->{log_file};
+    $tainted_options->{err_file}        = "stderr" unless defined $tainted_options->{err_file};
+    $tainted_options->{log_status}      = 0        unless defined $tainted_options->{log_status};
+    
 
+    # show help
     if ($tainted_options->{help}) {
         showHelp();
         exit 0;
-    } 
-    
-    # get default options
-    #
-    foreach my $option (keys %$default_options) { 
-        if (!defined($tainted_options->{$option})) {
-            $tainted_options->{$option} = $default_options->{$option};
-        }
     }
 
     # Make sure all required options are present
@@ -198,46 +201,68 @@ sub getOptions {
         }
     }
     if (@missing) {
+        # TODO: check for required parameters
         croak "The following required options are missing: ", join(", ", @missing);
     }
     
     # Untaint each option
     #
-
     # The booleans are set to 1 or 0
     #
-    if ($tainted_options->{once_only}) { $options->{once_only} = 1; } else { $options->{once_only} = 0; } 
-    if ($tainted_options->{collapse}) { $options->{collapse} = 1; } else { $options->{collapse} = 0; } 
-    if ($tainted_options->{verbose}) { $options->{verbose} = 1; } else { $options->{verbose} = 0; } 
+    if ($tainted_options->{once_only})       { $new_options->{once_only}       = 1; } else { $new_options->{once_only}       = 0; } 
+    if ($tainted_options->{collapse})        { $new_options->{collapse}        = 1; } else { $new_options->{collapse}        = 0; } 
+    if ($tainted_options->{verbose})         { $new_options->{verbose}         = 1; } else { $new_options->{verbose}         = 0; } 
+    if ($tainted_options->{chained})         { $new_options->{chained}         = 1; } else { $new_options->{chained}         = 0; } 
+    if ($tainted_options->{log})             { $new_options->{log}             = 1; } else { $new_options->{log}             = 0; } 
 
     # The non-booleans are scanned with regexes with the matches being
-    # put into $options
+    # put into $new_options
     #
     if (defined ($tainted_options->{email_failure_to})) {
-        if ($tainted_options->{email_failure_to} =~ m!^([a-z0-9_:\.\@]+)!i) { $options->{email_failure_to} = $1; } else { croak "Bad email_failure_to"; }
+        if ($tainted_options->{email_failure_to} =~ m!^([a-z0-9_:\.\@]+)!i) { $new_options->{email_failure_to} = $1; } else { croak "Bad email_failure_to"; }
     }
     if (defined ($tainted_options->{run_wrapper})) {
-        if ($tainted_options->{run_wrapper} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $options->{run_wrapper} = $1; } else { croak "Bad run_wrapper"; }
+        if ($tainted_options->{run_wrapper} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $new_options->{run_wrapper} = $1; } else { croak "Bad run_wrapper"; }
     }
     if (defined ($tainted_options->{family_dir})) {
-        if ($tainted_options->{family_dir} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $options->{family_dir} = $1; } else { croak "Bad family_dir"; }
+        if ($tainted_options->{family_dir} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $new_options->{family_dir} = $1; } else { croak "Bad family_dir"; }
     }
     if (defined ($tainted_options->{job_dir})) {
-        if ($tainted_options->{job_dir} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $options->{job_dir} = $1; } else { croak "Bad job_dir"; }
+        if ($tainted_options->{job_dir} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $new_options->{job_dir} = $1; } else { croak "Bad job_dir"; }
     }
     if (defined ($tainted_options->{log_dir})) {
-        if ($tainted_options->{log_dir} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $options->{log_dir} = $1; } else { croak "Bad log_dir"; }
+        if ($tainted_options->{log_dir} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $new_options->{log_dir} = $1; } else { croak "Bad log_dir"; }
     }
     if (defined ($tainted_options->{end_time})) {
-        if ($tainted_options->{end_time} =~ /(\d{2}:?\d{2})/) { $options->{end_time} = $1; } else { croak "Bad end_time"; }
+        if ($tainted_options->{end_time} =~ /(\d{2}:?\d{2})/) { $new_options->{end_time} = $1; } else { croak "Bad end_time"; }
     }
-    $options->{end_time} =~ s/://g;
+    $new_options->{end_time} =~ s/://g;
     if (defined ($tainted_options->{wait_time})) {
-        if ($tainted_options->{wait_time} =~ /^(\d+)$/) { $options->{wait_time} = $1; } else { croak "Bad wait_time"; }
+        if ($tainted_options->{wait_time} =~ /^(\d+)$/) { $new_options->{wait_time} = $1; } else { croak "Bad wait_time"; }
+    }
+    if (defined ($tainted_options->{log_threshold})) {
+        if ($tainted_options->{log_threshold} =~ m!^([a-z0-9_:\.\@]+)!i) { $new_options->{log_threshold} = $1; } else { croak "Bad log_threshold"; }
+    }
+    if (defined ($tainted_options->{log_file})) {
+        if ($tainted_options->{log_file} =~ m!^([a-z0-9_:\.\-]+)!i) { $new_options->{log_file} = $1; } else { croak "Bad log_file"; }
+    }
+    if (defined ($tainted_options->{err_file})) {
+        if ($tainted_options->{err_file} =~ m!^([a-z0-9_:\.\-]+)!i) { $new_options->{err_file} = $1; } else { croak "Bad err_file"; }
     }
 
-    
-    print "options is ", Dumper($options) if $options->{verbose};
+
+    if (%$options) {
+        # if options have changed, let the user know
+        my %all_keys = map { $_ => 1 } (keys (%$options), keys (%$new_options));
+        foreach (keys %all_keys) {
+            if ($new_options->{$_} ne $options->{$_}) {
+                print "Option $_ has changed from $options->{$_} to $new_options->{$_}\n";
+            }
+        }
+    }
+    $options = $new_options;
+
+    print "options is ", Dumper($options)  if $options->{verbose};
 
     
     return $options;
@@ -275,10 +300,14 @@ USAGE
 
       OR
 
-      taskforest -run_wrapper=/foo/bin/run \
+      taskforest --run_wrapper=/foo/bin/run \
         --log_dir=/foo/logs \
         --job_dir=/foo/jobs \
         --family_dir=/foo/families
+
+      OR
+
+      taskforest --config_file=taskforest.cfg
 
       All jobs will run as the user who invoked taskforest.
 
@@ -297,3 +326,5 @@ perldoc TaskForest
  
 ^;
 }
+
+1
