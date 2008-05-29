@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Rerun.pm 33 2008-05-26 20:48:52Z aijaz $
+# $Id: Rerun.pm 38 2008-05-29 03:26:09Z aijaz $
 #
 ################################################################################
 
@@ -44,7 +44,7 @@ use TaskForest::Family;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.10';
+    $VERSION     = '1.11';
 }
 
 # ------------------------------------------------------------------------------
@@ -91,6 +91,11 @@ sub rerun {
     }
     else {
         $jobs = [$job_name];
+    }
+
+    unless (@$jobs) {
+        print STDERR "There are no jobs to rerun.  Did you misspell the job name?\n";
+        exit 1;
     }
 
     foreach my $job (@$jobs) { 

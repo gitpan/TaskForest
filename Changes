@@ -1,5 +1,11 @@
 Revision history for Perl module TaskForest
 
+1.11 Wed May 28 2008
+
+Minor errors in the documentation and logging
+were fixed. A test case that was returing
+false negatives was made more robust. 
+
 1.10 Mon May 26 2008
 
 Syntax error checking was added to the Family

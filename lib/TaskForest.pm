@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 37 2008-05-27 01:23:47Z aijaz $
+# $Id: TaskForest.pm 38 2008-05-29 03:26:09Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -19,7 +19,7 @@ use TaskForest::Logs qw /$log/;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.10';
+    $VERSION     = '1.11';
 }
 
 
@@ -656,7 +656,7 @@ in family Ff will be marked.  Job Jj will be unaffected.
 
 The 'taskforest' and 'status' commands now accept a "--config_file=f"
 option.  You can now specify commonly used options in the config file,
-so you do have to include them on the command line.  The config file
+so you do not have to include them on the command line.  The config file
 should contain one option per command line.  The following sample
 config file shows the list of all supported options, and documents
 their usage.
@@ -754,6 +754,13 @@ http://sourceforge.net/projects/taskforest/
 
 If you're using this program, I would love to hear from you.  Please
 visit our project website and let me know what you think of it.
+
+=head1 ACKNOWLEDGEMENTS
+
+Many thanks to the following for their help and support:
+
+ . SourceForge
+ . Rosco Rouse
 
 =head1 COPYRIGHT
 

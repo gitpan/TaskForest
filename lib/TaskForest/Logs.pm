@@ -1,8 +1,24 @@
 ################################################################################
 #
-# $Id: Logs.pm 33 2008-05-26 20:48:52Z aijaz $
+# $Id: Logs.pm 38 2008-05-29 03:26:09Z aijaz $
 #
 ################################################################################
+
+=head1 NAME
+
+TaskForest::Logs - Functions related to logging 
+
+=head1 SYNOPSIS
+
+ use TaskForest::Logs;
+
+ &TaskForest::Logs::init($banner); # print $banner and initialize the logger
+
+=head1 DOCUMENTATION
+
+More documentation will be made available in release 1.12
+
+=cut
 
 
 package TaskForest::Logs;
@@ -30,7 +46,7 @@ my $eobj;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.10';
+    $VERSION     = '1.11';
 }
 
 END {
@@ -57,7 +73,6 @@ sub init {
     # Define a layout
     my $layout = Log::Log4perl::Layout::PatternLayout::Multiline->new("%d %6p %4L:%-32F{1} - %m%n");
 
-    print "HERE!\n";
     if (!$options->{log}) {
         return;
     }
@@ -104,7 +119,9 @@ sub resetLogs {
     my $err_file = "$options->{log_dir}/$options->{err_file}";
     
     unless (-s $err_file) {
-        print "Deleting error log because it is empty\n";
+        if ($log) { 
+            $log->info("Deleting error log because it is empty\n");
+        }
         unlink $err_file;
     }
     else {

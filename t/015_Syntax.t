@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 # 
-use Test::More tests => 10;
+use Test::More tests => 18;
 use strict;
 use warnings;
 use Data::Dumper;
@@ -62,15 +62,26 @@ like($@, qr/Day Tues is not a valid day.  Valid days are: Mon, Tue, Wed, Thu, Fr
 eval {
     my $sf = TaskForest::Family->new(name=>"SYNTAX_5");
 };
-is($@, qq^Family 'SYNTAX_5' has unparseable lines:
-    J1( --- This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'  
-  J4) --- This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'  
-J12(   J13) --- Bareword "J13" not allowed while "strict subs" in use at (eval 813) line 1.
-  
----------- ---------------------------------------------------------------------- --- This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'  
-  J5()    J4(); --- This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'  
-HELLO WORLD  --- This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'  
-FOO --- This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'\n^, "Bad lines in family file");
+my @lines = split(/[\r\n]/, $@);
+like($lines[0], qr/Family 'SYNTAX_5' has unparseable lines:/, "Line 0 is correct");
+like($lines[1], qr/J1\( --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'/, "Line 1 is correct");
+like($lines[2], qr/J4\) --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'/, "Line 2 is correct");
+like($lines[3], qr/J12\(   J13\) --- Bareword "J13" not allowed while "strict subs" in use at \(eval .+\) line .+./, "Line 3 is correct");
+like($lines[4], qr/^ *$/, "Line 4 is correct");
+like($lines[5], qr/---------- ---------------------------------------------------------------------- --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'/, "Line 5 is correct");
+like($lines[6], qr/J5\(\)    J4\(\); --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'/, "Line 6 is correct");
+like($lines[7], qr/HELLO WORLD  --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'/, "Line 7 is correct");
+like($lines[8], qr/FOO --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'/, "Line 8 is correct");
+
+#like($@, qr/Family 'SYNTAX_5' has unparseable lines:
+#    J1\( --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'
+#  J4\) --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'
+#J12\(   J13\) --- Bareword "J13" not allowed while "strict subs" in use at \(eval .+\) line .+.
+#
+#---------- ---------------------------------------------------------------------- --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'
+#  J5\(\)    J4\(\); --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'
+#HELLO WORLD  --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'
+#FOO --- This line does not appear to contain a list of jobs that looks like \(for example\) 'J1\(\) J2\(\)'/, "Bad lines in family file");
 
 
 eval {
