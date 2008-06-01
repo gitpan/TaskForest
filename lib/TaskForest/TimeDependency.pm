@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TimeDependency.pm 38 2008-05-29 03:26:09Z aijaz $
+# $Id: TimeDependency.pm 39 2008-06-01 22:36:48Z aijaz $
 #
 ################################################################################
 
@@ -61,7 +61,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.11';
+    $VERSION     = '1.12';
 }
 
 
@@ -124,14 +124,11 @@ sub new {
 
         # create a DateTime object
         #
-        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-        ($hour, $min) = split(/:/, $self->{start});
-        $dt = DateTime->new(year      => $year + 1900,
-                               month     => $mon + 1,
-                               day       => $mday,
-                               hour      => $hour,
-                               minute    => $min,
-                               time_zone => $self->{tz});
+        $dt = DateTime->now(time_zone => $self->{tz});
+        my ($hour, $min) = split(/:/, $self->{start});
+        $dt->set(hour => $hour);
+        $dt->set(minute => $min);
+        #$dt->set_time_zone($self->{tz});
     }
 
     # set the ep attribute to the epoch value of the DateTime object.

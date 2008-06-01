@@ -2,17 +2,18 @@
 
 ################################################################################
 #
-# $Id: ErrLogger.pm 38 2008-05-29 03:26:09Z aijaz $
+# $Id: ErrLogger.pm 39 2008-06-01 22:36:48Z aijaz $
 #
 ################################################################################
 
 =head1 NAME
 
-TaskForest::OutLogger - Functions related to logging to stderr
+TaskForest::ErrLogger - Functions related to logging to stderr
 
 =head1 DOCUMENTATION
 
-More documentation will be made available in release 1.12
+This is a class that is used to tie prints to STDERR to $log->error();
+See Logger::Log4perl for more details. 
 
 =cut
 
@@ -26,7 +27,7 @@ use Log::Log4perl;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.11';
+    $VERSION     = '1.12';
 }
 
 sub TIEHANDLE {

@@ -45,7 +45,7 @@ $tf->{options}->{once_only} = 1;
 
 print "Waiting $SLEEP_TIME seconds for job to finish\n";
 
-my $num_tries = 30;
+my $num_tries = 10;
 for (my $n = 1; $n <= $num_tries; $n++) { 
     sleep $SLEEP_TIME;
     last if (-e "$log_dir/SIMPLE.J2.0" and
@@ -53,7 +53,7 @@ for (my $n = 1; $n <= $num_tries; $n++) {
              -e "$log_dir/SIMPLE.J6.0" and
              -e "$log_dir/SIMPLE.J7.0" and
              -e "$log_dir/SIMPLE.J9.0" );
-    diag("Haven't found job log files on try $n of $num_tries.  Sleeping another $SLEEP_TIME seconds");
+    diag("Haven't found job log files on try $n of $num_tries.  Sleeping another $SLEEP_TIME seconds");  # It's possible that the fork failed, or that we don't have write permission to the log dir. OR IT'S NOT TIME YET.
 }
 
     

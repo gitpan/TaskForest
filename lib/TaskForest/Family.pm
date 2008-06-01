@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 38 2008-05-29 03:26:09Z aijaz $
+# $Id: Family.pm 39 2008-06-01 22:36:48Z aijaz $
 #
 ################################################################################
 
@@ -176,7 +176,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.11';
+    $VERSION     = '1.12';
 }
 
 # ------------------------------------------------------------------------------
@@ -900,7 +900,7 @@ sub _parseHeaderLine {
     #
     if (/(start=>['"]\d+:\d+['"])/)      { $args .= "$1,"; } else { croak "No start time specified for Family $file"; }
     if (/(days=>['"][a-zA-Z0-9,]+['"])/) { $args .= "$1,"; } else { croak "No run days specified for Family $file"; }
-    if (/(tz=>['"][a-zA-Z0-9\/]+['"])/)  { $args .= "$1,"; } else { croak "No time zone specified for Family $file"; }
+    if (/(tz=>['"][a-zA-Z0-9\/\_]+['"])/)  { $args .= "$1,"; } else { croak "No time zone specified for Family $file"; }
              
     my %args = eval($args); 
 
@@ -923,6 +923,7 @@ sub _parseHeaderLine {
     # create main dependency - every job has at least one dependency:
     # a time dependency on the start time of the family.   
     #
+    $self->{tz} = $args{tz};
     my %td_args = ( start => $self->{start} );
     $td_args{tz} = $self->{tz};                  # for now, this is a required field
     $self->{family_time_dependency} = TaskForest::TimeDependency->new(%td_args);

@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Logs.pm 38 2008-05-29 03:26:09Z aijaz $
+# $Id: Logs.pm 39 2008-06-01 22:36:48Z aijaz $
 #
 ################################################################################
 
@@ -10,13 +10,22 @@ TaskForest::Logs - Functions related to logging
 
 =head1 SYNOPSIS
 
- use TaskForest::Logs;
+ use TaskForest::Logs qw/$log/;
 
  &TaskForest::Logs::init($banner); # print $banner and initialize the logger
+                                   # this will also tie stdout to $log->info() 
+                                   # and stderr to $log->error()
 
-=head1 DOCUMENTATION
+ # $log is a logger.  See Log::Log4perl
+ $log->debug("Debug message");
+ $log->info("Info message");
+ $log->warn("Warn message");
+ $log->error("Error message");
+ $log->fatal("Fatal message");
 
-More documentation will be made available in release 1.12
+ &TaskForest::Logs::resetLogs();
+ # This will delete the error file if it is empty, and also untie
+ # STDOUT and STDERR
 
 =cut
 
@@ -46,7 +55,7 @@ my $eobj;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.11';
+    $VERSION     = '1.12';
 }
 
 END {

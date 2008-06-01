@@ -1,5 +1,10 @@
 Revision history for Perl module TaskForest
 
+1.12 Sun Jun 01 2008
+
+A border-condition bug dealing with foreign timezones crossing a date
+boundary was fixed. 
+
 1.11 Wed May 28 2008
 
 Minor errors in the documentation and logging
