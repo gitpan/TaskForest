@@ -1,5 +1,11 @@
 Revision history for Perl module TaskForest
 
+1.13 Mon Jun 02 2008
+
+The behavior of recurring jobs that are scheduled in a foreign time zone
+was not well defined.  Now, the 'start' and 'until' of recurring jobs are
+always based on the most specific timezone of the job. 
+
 1.12 Sun Jun 01 2008
 
 A border-condition bug dealing with foreign timezones crossing a date

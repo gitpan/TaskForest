@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 39 2008-06-01 22:36:48Z aijaz $
+# $Id: Options.pm 40 2008-06-03 00:07:40Z aijaz $
 #
 ################################################################################
 
@@ -48,7 +48,7 @@ use Log::Log4perl qw(:levels);
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.12';
+    $VERSION     = '1.13';
 }
 
 # This is the main data structure that stores the options

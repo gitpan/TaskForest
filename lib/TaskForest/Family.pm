@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 39 2008-06-01 22:36:48Z aijaz $
+# $Id: Family.pm 40 2008-06-03 00:07:40Z aijaz $
 #
 ################################################################################
 
@@ -176,7 +176,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.12';
+    $VERSION     = '1.13';
 }
 
 # ------------------------------------------------------------------------------
@@ -813,7 +813,7 @@ sub _initializeDataStructures {
 
     # get current time
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $year += 1900; $mon ++;
-    ($self->{year}, $self->{mon}, $self->{mday}, $self->{wday}, $self->{hour}, $self->{min}) = ($year, $mon, $mday, $wday, $hour, $min);
+    ($self->{wday}, $self->{hour}, $self->{min}) = ($wday, $hour, $min);
 
     
 }
@@ -1161,14 +1161,23 @@ sub _createRecurringJobs {
 
     # get an epoch value for the the until time
     #
-    my $until_epoch = DateTime->new(year => $self->{year}, month => $self->{mon}, day => $self->{mday}, hour => $until_hh, minute => $until_mm, time_zone => $args->{tz})->epoch();
+    # Set the until_time to be based on the job or family timezone
+    my $until_dt = DateTime->now(time_zone => $args->{tz});
+    $until_dt->set(hour   => $until_hh);
+    $until_dt->set(minute => $until_mm);
+    my $until_epoch = $until_dt->epoch();
+   
+    
 
     # get a start time epoch value, defaulting to the family start time
     #
     my ($start_dt, $start_hh, $start_mm);
     $args->{start} = $self->{start} unless $args->{start};       # default start is famil start
     ($start_hh, $start_mm) = $args->{start} =~ /(\d\d):(\d\d)/;
-    $start_dt = DateTime->new(year => $self->{year},  month => $self->{mon}, day => $self->{mday}, hour => $start_hh, minute => $start_mm, time_zone => $args->{tz});
+    $start_dt = DateTime->now(time_zone => $args->{tz});
+    $start_dt->set(hour   => $start_hh);
+    $start_dt->set(minute => $start_mm);
+    
 
     # create a duration value that's added in every loop
     #

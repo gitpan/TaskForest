@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 39 2008-06-01 22:36:48Z aijaz $
+# $Id: TaskForest.pm 40 2008-06-03 00:07:40Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -19,7 +19,7 @@ use TaskForest::Logs qw /$log/;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.12';
+    $VERSION     = '1.13';
 }
 
 
