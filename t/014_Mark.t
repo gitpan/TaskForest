@@ -38,7 +38,7 @@ my $sf = TaskForest::Family->new(name=>'COLLAPSE');
 isa_ok($sf,  'TaskForest::Family',  'Created COLLAPSE family');
 is($sf->{name},  'COLLAPSE',   '  name');
 is($sf->{start},  '00:00',   '  start');
-is($sf->{tz},  'America/Chicago',   '  tz');
+is($sf->{tz},  'GMT',   '  tz');
 
 my $sh = TaskForest::StringHandle->start(*STDOUT);
 $sf->{options}->{collapse} = 1;
@@ -47,11 +47,11 @@ $sf->display();
 my $stdout = $sh->stop();
 
 
-my $expected = qq^                                       Return   Time              Sched   Actual  Stop 
-Job                          Status      Code   Zone              Start   Start   Time 
+my $expected = qq^                                       Return   Time   Sched   Actual  Stop 
+Job                          Status      Code   Zone   Start   Start   Time 
 
-COLLAPSE::J9                 Ready          -   America/Chicago   00:00   --:--   --:--
-COLLAPSE::J10                Waiting        -   America/Chicago   00:00   --:--   --:--
+COLLAPSE::J9                 Ready          -   GMT   00:00   --:--   --:--
+COLLAPSE::J10                Waiting        -   GMT   00:00   --:--   --:--
 ^;
 
 is ($stdout, $expected, "Got expected collapsed output 1");
@@ -69,11 +69,11 @@ $sf->display();
 $stdout = '';
 $stdout = $sh->stop();
 
-$expected = qq^                                       Return   Time              Sched   Actual  Stop 
-Job                          Status      Code   Zone              Start   Start   Time 
+$expected = qq^                                       Return   Time   Sched   Actual  Stop 
+Job                          Status      Code   Zone   Start   Start   Time 
 
-COLLAPSE::J9                 Success        0   America/Chicago   00:00   23:20   23:20
-COLLAPSE::J10                Ready          -   America/Chicago   00:00   --:--   --:--
+COLLAPSE::J9                 Success        0   GMT   00:00   04:20   04:20
+COLLAPSE::J10                Ready          -   GMT   00:00   --:--   --:--
 ^;
 is ($stdout, $expected, "Got expected collapsed output 2");
 
@@ -88,11 +88,11 @@ $sf->getCurrent();
 $sf->display();
 $stdout = $sh->stop();
 
-$expected = qq^                                       Return   Time              Sched   Actual  Stop 
-Job                          Status      Code   Zone              Start   Start   Time 
+$expected = qq^                                       Return   Time   Sched   Actual  Stop 
+Job                          Status      Code   Zone   Start   Start   Time 
 
-COLLAPSE::J9                 Failure        0   America/Chicago   00:00   23:20   23:20
-COLLAPSE::J10                Waiting        -   America/Chicago   00:00   --:--   --:--
+COLLAPSE::J9                 Failure        0   GMT   00:00   04:20   04:20
+COLLAPSE::J10                Waiting        -   GMT   00:00   --:--   --:--
 ^;
 is ($stdout, $expected, "Job J9 marked as failed");
 
@@ -106,12 +106,12 @@ $sf->getCurrent();
 $sf->display();
 $stdout = $sh->stop();
 
-$expected = qq^                                       Return   Time              Sched   Actual  Stop 
-Job                          Status      Code   Zone              Start   Start   Time 
+$expected = qq^                                       Return   Time   Sched   Actual  Stop 
+Job                          Status      Code   Zone   Start   Start   Time 
 
-COLLAPSE::J9--Orig_1--       Failure        0   America/Chicago   00:00   23:20   23:20
-COLLAPSE::J9                 Ready          -   America/Chicago   00:00   --:--   --:--
-COLLAPSE::J10                Waiting        -   America/Chicago   00:00   --:--   --:--
+COLLAPSE::J9--Orig_1--       Failure        0   GMT   00:00   04:20   04:20
+COLLAPSE::J9                 Ready          -   GMT   00:00   --:--   --:--
+COLLAPSE::J10                Waiting        -   GMT   00:00   --:--   --:--
 ^;
 is ($stdout, $expected, "Job J9 marked rerun");
 
@@ -123,12 +123,12 @@ $sf->getCurrent();
 $sf->display();
 $stdout = $sh->stop();
 
-$expected = qq^                                       Return   Time              Sched   Actual  Stop 
-Job                          Status      Code   Zone              Start   Start   Time 
+$expected = qq^                                       Return   Time   Sched   Actual  Stop 
+Job                          Status      Code   Zone   Start   Start   Time 
 
-COLLAPSE::J9--Orig_1--       Failure        0   America/Chicago   00:00   23:20   23:20
-COLLAPSE::J9                 Success        0   America/Chicago   00:00   23:20   23:20
-COLLAPSE::J10                Ready          -   America/Chicago   00:00   --:--   --:--
+COLLAPSE::J9--Orig_1--       Failure        0   GMT   00:00   04:20   04:20
+COLLAPSE::J9                 Success        0   GMT   00:00   04:20   04:20
+COLLAPSE::J10                Ready          -   GMT   00:00   --:--   --:--
 ^;
 is ($stdout, $expected, "Job J9 marked rerun");
 

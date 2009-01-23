@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: LogDir.pm 40 2008-06-03 00:07:40Z aijaz $
+# $Id: LogDir.pm 66 2009-01-23 02:53:39Z aijaz $
 # 
 ################################################################################
 
@@ -43,7 +43,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.13';
+    $VERSION     = '1.14';
 }
 
 my $log_dir_cached;
@@ -59,7 +59,9 @@ my $log_dir_cached;
  Purpose   : This method creates a dated subdirectory of its first
              parameter, if that directory doesn't already exist.  
  Returns   : The dated directory
- Argument  : $root - the parent directory of the dated directory
+ Argument  : $root -   the parent directory of the dated directory
+             $reload - If this is true, and we have a cached value,
+                       return the cached value
  Throws    : "mkdir $log_dir failed" if the log directory cannot be
              created 
 

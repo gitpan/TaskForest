@@ -34,7 +34,7 @@ my $sf = TaskForest::Family->new(name=>'REPEAT');
 isa_ok($sf,  'TaskForest::Family',  'Created REPEAT family');
 is($sf->{name},  'REPEAT',   '  name');
 is($sf->{start},  '00:00',   '  start');
-is($sf->{tz},  'America/Chicago',   '  tz');
+is($sf->{tz},  'GMT',   '  tz');
 
 foreach my $day qw (Mon Tue Wed Thu Fri Sat Sun) {
     is($sf->{days}->{$day}, 1, "  can run on $day");

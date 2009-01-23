@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 40 2008-06-03 00:07:40Z aijaz $
+# $Id: Family.pm 66 2009-01-23 02:53:39Z aijaz $
 #
 ################################################################################
 
@@ -173,10 +173,11 @@ use TaskForest::LogDir;
 use English '-no_match_vars';
 use FileHandle;
 use Carp;
+use Time::Local;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.13';
+    $VERSION     = '1.14';
 }
 
 # ------------------------------------------------------------------------------
@@ -277,21 +278,26 @@ sub display {
     foreach my $job (@{$display_hash->{Ready}}, @{$display_hash->{Waiting}}) {
         $job->{actual_start} = $job->{stop} = "--:--";
         $job->{rc} = '-';
+        $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 0;
     }
 
     foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}) {
         my $dt = DateTime->from_epoch( epoch => $job->{actual_start} );
         $dt->set_time_zone($job->{tz});
         $job->{actual_start} = sprintf("%02d:%02d", $dt->hour, $dt->minute);
+        $job->{has_actual_start} = 1;
+        $job->{has_rc} = 1;
 
         if ($job->{stop}) {
             $dt = DateTime->from_epoch( epoch => $job->{stop} );
             $dt->set_time_zone($job->{tz});
             $job->{stop} = sprintf("%02d:%02d", $dt->hour, $dt->minute);
+            $job->{has_stop} = 1;
         }
         else {
             $job->{stop} = '--:--';
             $job->{rc} = '-';
+            $job->{has_stop} = $job->{has_rc} = 0;
         }
     }
 
@@ -306,7 +312,7 @@ sub display {
         if ($collapse and
           $job->{name} =~ /--Repeat/ and
           $job->{status} eq 'Waiting') {
-           
+            $job->{is_repeat_waiting} = 1;
             next;  # don't print every waiting repeat job
         }
         printf($format,
@@ -320,7 +326,9 @@ sub display {
     }
 
 }
-    
+
+
+
 
 # ------------------------------------------------------------------------------
 =pod
@@ -603,6 +611,8 @@ sub runReadyJobs {
             
             my $job_file_name = $job->{name};
             $job_file_name =~ s/--Repeat.*//;
+
+            
             
             exec("$wrapper",
                  "$self->{name}",
@@ -915,6 +925,7 @@ sub _parseHeaderLine {
         $self->{days}->{$day} = 1;          # valid to run on these days
     }
 
+    
     if ($self->okToRunToday($self->{wday}) == 0) {  # nothing to do
         $fh->close();
         return 0;

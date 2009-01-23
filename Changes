@@ -1,5 +1,13 @@
 Revision history for Perl module TaskForest
 
+1.14 Thu Jan 22 2009
+
+A new config option (and command line argument) was added.  The
+ignore_regex option instructs the system to ignore any Family files whose
+names match the regular expressions specified by this option.  It's
+primarily used to ignore .bak and ~ files left by text editors.  Also
+fixed a bug so that invalid file names are excluded.
+
 1.13 Mon Jun 02 2008
 
 The behavior of recurring jobs that are scheduled in a foreign time zone

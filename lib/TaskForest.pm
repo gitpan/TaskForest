@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 40 2008-06-03 00:07:40Z aijaz $
+# $Id: TaskForest.pm 66 2009-01-23 02:53:39Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -15,11 +15,11 @@ use Data::Dumper;
 use TaskForest::Family;
 use TaskForest::Options;
 use TaskForest::Logs qw /$log/;
-
+use File::Basename;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.13';
+    $VERSION     = '1.14';
 }
 
 
@@ -100,9 +100,8 @@ sub runMainLoop {
 
         # get a fresh list of all family files
         #
-        my $glob_string = "$self->{options}->{family_dir}/*";
-        my @families = glob($glob_string);
-
+        my @families = $self->globFamilyFiles($self->{options}->{family_dir});
+        
         
         foreach my $family_name (@families) {
             # create a new family object. It is possible that this
@@ -157,8 +156,58 @@ sub runMainLoop {
 
 ################################################################################
 #
+# Name      : globFamilyFiles
+# usage     : $tf->globFamilyFiles();
+# Purpose   : Find all family files given the rules of what's a valid file name
+#             and what file names are to be ignored
+# Returns   : An array of file names
+# Argument  : The family directory to be searched
+# Throws    : 
+#
+################################################################################
+#
+sub globFamilyFiles {
+    my ($self, $dir) = @_;
+
+    my $glob_string = "$dir/*";
+    my @all_files = glob($glob_string);
+    my @families = ();
+
+    my @ignore_regexes = ();
+    if (ref($self->{options}->{ignore_regex}) eq 'ARRAY') {
+        @ignore_regexes = @{$self->{options}->{ignore_regex}};
+    }
+    elsif ($self->{options}->{ignore_regex}) {
+        @ignore_regexes = ($self->{options}->{ignore_regex});
+    }
+    
+
+    my @regexes = map { qr/$_/ } @ignore_regexes;
+    
+    foreach my $file (@all_files) {
+        my $basename = basename($file);
+        if ($basename =~ /[^a-zA-Z0-9_]/) {
+            next;
+        }
+        my $ok = 1;
+        foreach my $regex (@regexes) {
+            if ($basename =~ /$regex/) {
+                $ok = 0;
+                last;
+            }
+        }
+        if ($ok) {
+            push (@families, $file);
+        }
+    }
+
+    return @families;
+}
+
+################################################################################
+#
 # Name      : status
-# Usage     : $tf->status();
+# usage     : $tf->status();
 # Purpose   : This function prints the status of all families in the
 #             system, including ones that don't need to run today.  If
 #             a family has no jobs in it, it is skipped
@@ -173,8 +222,7 @@ sub status {
 
     # get a fresh list of all family files
     #
-    my $glob_string = "$self->{options}->{family_dir}/*";
-    my @families = glob($glob_string);
+    my @families = $self->globFamilyFiles($self->{options}->{family_dir});
     
     foreach my $family_name (@families) {
         # create a new Family object
@@ -201,7 +249,11 @@ sub status {
 
 =head1 NAME
 
-TaskForest - Simple, powerful task scheduler
+TaskForest - A simple but expressive job scheduler that allows you to chain jobs/tasks and create time dependencies. Uses text config files to specify task dependencies.
+
+=head1 VERSION
+
+This version is 1.13.
 
 =head1 SYNOPSIS
 
@@ -587,6 +639,15 @@ The following command line options are optional
    If this option is set then the status command will behave as if the
    --collapse options was specified on the command line.
 
+ --ignore_regex=r
+
+   If this option is set then the family files whose names match the
+   perl regular expression r will be ignored.  You can specify this
+   option more than once on the command line or in the configuration
+   file, but if you use the environment to set this option, you can
+   only set it to one value.  Look at the included configuration
+   file taskforest.cfg for examples.
+
 =head1 DISPLAY STATUS
 
 To get the status of all currently running and recently run jobs,
@@ -705,6 +766,11 @@ their usage.
 
  # currently unused
  log_status      = 0
+
+ # ignore family files whose names match these regexes
+ ignore_regex    = "~$"
+ ignore_regex    = ".bak$"
+ ignore_regex    = '\$'
 
 =head1 PRECEDENCE OF DIFFERENT OPTIONS SOURCES
 

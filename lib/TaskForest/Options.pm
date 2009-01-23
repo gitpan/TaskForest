@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 40 2008-06-03 00:07:40Z aijaz $
+# $Id: Options.pm 66 2009-01-23 02:53:39Z aijaz $
 #
 ################################################################################
 
@@ -48,7 +48,7 @@ use Log::Log4perl qw(:levels);
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.13';
+    $VERSION     = '1.14';
 }
 
 # This is the main data structure that stores the options
@@ -77,6 +77,7 @@ my %all_options = (end_time          => 's',
                    log_file          => 's',
                    err_file          => 's',
                    log_status        => undef,
+                   ignore_regex      => 's@',
     );
 
 # These are the required options. The absence of any one of these will
@@ -149,7 +150,7 @@ sub getOptions {
         $command_line_options = {};
         GetOptions($command_line_options, map { if ($all_options{$_}) { "$_=$all_options{$_}"} else { $_ } } (keys %all_options));
     }
-        
+
     # As options are first retrieved, they're considered tainted and
     # stored in this hash.  Upon untainting they're stored in $options.
     #
@@ -157,6 +158,8 @@ sub getOptions {
 
     # Every option starts of as undef
     foreach my $option (keys %all_options) { $tainted_options->{$option} = undef; }
+    # handle multiple value options specially
+    #$tainted_options->{ignore_regex} = [];
 
     # Then it gets the command line value
     foreach my $option (keys %all_options) { $tainted_options->{$option} = $command_line_options->{$option}; }
@@ -185,7 +188,7 @@ sub getOptions {
     $tainted_options->{log_file}        = "stdout" unless defined $tainted_options->{log_file};
     $tainted_options->{err_file}        = "stderr" unless defined $tainted_options->{err_file};
     $tainted_options->{log_status}      = 0        unless defined $tainted_options->{log_status};
-    
+    $tainted_options->{ignore_regex}    = []       unless defined $tainted_options->{ignore_regex};
 
     # show help
     if ($tainted_options->{help}) {
@@ -248,6 +251,9 @@ sub getOptions {
     }
     if (defined ($tainted_options->{err_file})) {
         if ($tainted_options->{err_file} =~ m!^([a-z0-9_:\.\-]+)!i) { $new_options->{err_file} = $1; } else { croak "Bad err_file"; }
+    }
+    if (defined ($tainted_options->{ignore_regex})) {
+        $new_options->{ignore_regex} = $tainted_options->{ignore_regex};
     }
 
 

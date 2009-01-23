@@ -41,6 +41,7 @@ t/013_Rerun.t
 t/014_Mark.t
 t/015_Syntax.t
 t/016_Cascade.t
+t/017_IgnoreRegex.t
 t/logs/empty_file
 t/jobs/J1
 t/jobs/J2
@@ -69,4 +70,10 @@ t/family_archive/SYNTAX_4
 t/family_archive/SYNTAX_5
 t/family_archive/SYNTAX_6
 t/family_archive/CASCADE
+t/family_archive/IGNORE01
+t/family_archive/IGNORE02
+t/family_archive/IGNORE03.bak
+t/family_archive/IGNORE04_HASH
+t/family_archive/IGNORE05_TILDE
+
 META.yml                                 Module meta-data (added by MakeMaker)
