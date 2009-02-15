@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Rerun.pm 66 2009-01-23 02:53:39Z aijaz $
+# $Id: Rerun.pm 98 2009-02-09 00:40:15Z aijaz $
 #
 ################################################################################
 
@@ -44,7 +44,7 @@ use TaskForest::Family;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.14';
+    $VERSION     = '1.15';
 }
 
 # ------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ BEGIN {
 
 # ------------------------------------------------------------------------------
 sub rerun {
-    my ($family_name, $job_name, $log_dir, $cascade, $dependents_only, $family_dir) = @_;
+    my ($family_name, $job_name, $log_dir, $cascade, $dependents_only, $family_dir, $quiet) = @_;
 
     my $jobs;
     
@@ -99,18 +99,18 @@ sub rerun {
     }
 
     foreach my $job (@$jobs) { 
-        rerunHelp($family_name, $job, $log_dir);
+        rerunHelp($family_name, $job, $log_dir, $quiet);
     }
 }
 
 
 sub rerunHelp {
-    my ($family_name, $job_name, $log_dir) = @_;
+    my ($family_name, $job_name, $log_dir, $quiet) = @_;
 
     my $rc = 0;
     
     
-    print "Making job $family_name $job_name available for rerun.\n";
+    print "Making job $family_name $job_name available for rerun.\n" unless $quiet;
 
     my $rc_file      = "$log_dir/$family_name.$job_name.0";
     my $pid_file     = "$log_dir/$family_name.$job_name.pid";

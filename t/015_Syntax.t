@@ -8,6 +8,7 @@ use Data::Dumper;
 use Cwd;
 use File::Copy;
 use TaskForest::Mark;
+use TaskForest::Test;
 
 BEGIN {
     use_ok( 'TaskForest::Family',     "Can use Family" );
@@ -17,7 +18,7 @@ BEGIN {
 }
 
 my $cwd = getcwd();
-cleanup_files("$cwd/t/families");
+&TaskForest::Test::cleanup_files("$cwd/t/families");
 
 my $src_dir = "$cwd/t/family_archive";
 my $dest_dir = "$cwd/t/families";
@@ -36,7 +37,7 @@ $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
 
 my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
-cleanup_files($log_dir);
+&TaskForest::Test::cleanup_files($log_dir);
 
 my $file_num;
 
@@ -90,51 +91,3 @@ eval {
 is($@, qq^Family 'SYNTAX_6' has unparseable lines:
   J2(start => '00:12', foo=>1)  J3() --- 'foo' is not a recognized attribute\n^, "Bad param");
 
-
-sub fakeRun {
-    my ($log_dir, $family, $job, $status) = @_;
-    
-    open (OUT, ">$log_dir/$family.$job.pid") || die "Couldn't open pid file\n";
-    print OUT "pid: 111\nactual_start: 1209270000\nstop: 1209270001\nrc: $status\n";
-    close OUT;
-    
-    open (OUT, ">$log_dir/$family.$job.started") || die "Couldn't open started file\n";
-    print OUT "00:00\n";
-    close OUT;
-
-    open (OUT, ">$log_dir/$family.$job.$status") || die "Couldn't open pid file\n";
-    print OUT "$status\n";
-    close OUT;
-    
-    
-}
-
-sub cleanup {
-    my $dir = shift;
-	local *DIR;
-    
-	opendir DIR, $dir or die "opendir $dir: $!";
-	my $found = 0;
-	while ($_ = readdir DIR) {
-        next if /^\.{1,2}$/;
-        my $path = "$dir/$_";
-		unlink $path if -f $path;
-		cleanup($path) if -d $path;
-	}
-	closedir DIR;
-	rmdir $dir or print "error - $!";
-}
-
-sub cleanup_files {
-    my $dir = shift;
-	local *DIR;
-    
-	opendir DIR, $dir or die "opendir $dir: $!";
-	my $found = 0;
-	while ($_ = readdir DIR) {
-        next if /^\.{1,2}$/;
-        my $path = "$dir/$_";
-		unlink $path if -f $path;
-	}
-	closedir DIR;
-}

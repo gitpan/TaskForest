@@ -10,15 +10,20 @@ WriteMakefile(
     AUTHOR       => 'Aijaz A. Ansari (v-cpan@enoor.com)',
     ABSTRACT     => 'Simple, powerful task scheduler',
     PREREQ_PM    => {
-                     'Test::Simple' => 0.44,
-                     'DateTime' => 0,
+                     'Test::Simple'    => 0.44,
+                     'DateTime'        => 0,
                      'Config::General' => 2.38,
-                     'Log::Log4perl' => 1.16,
+                     'Log::Log4perl'   => 1.16,
+                     'HTTP::Daemon'    => 5.818,
+                     'HTTP::Status'    => 5.817,
+                     'HTTP::Response'  => 5.820,
+                     'HTTP::Request'   => 5.818,
+                     
                     },
     INSTALLSITEBIN => "bin",
     INSTALLSCRIPT => "bin",
     INSTALLBIN => "bin",
-    EXE_FILES => ["run", "taskforest", "status", "rerun", "mark"],
+    EXE_FILES => ["run", "taskforest", "status", "rerun", "mark", "taskforestd", "gen_passwd", "taskforestdssl"],
 );
 
 

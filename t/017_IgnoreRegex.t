@@ -8,6 +8,7 @@ use warnings;
 use Data::Dumper;
 use Cwd;
 use File::Copy;
+use TaskForest::Test;
 
 BEGIN {
     use_ok( 'TaskForest'  );
@@ -19,7 +20,7 @@ my $src_dir = "$cwd/t/family_archive";
 my $dest_dir = "$cwd/t/families";
 mkdir $dest_dir unless -d $dest_dir;
 
-cleanup_files($dest_dir);
+&TaskForest::Test::cleanup_files($dest_dir);
 
 
 copy("$src_dir/IGNORE01", $dest_dir);
@@ -37,7 +38,7 @@ $ENV{TF_ONCE_ONLY}   = 1;
 $ENV{TF_LOG}         = 1;
 
 my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
-cleanup_files($log_dir);
+&TaskForest::Test::cleanup_files($log_dir);
 
 
 my $tf = TaskForest->new();
@@ -77,7 +78,7 @@ unlike ($files, qr/J5/, "J5 was not in contention");
 
 
 # SECOND TIME
-cleanup_files($log_dir);
+&TaskForest::Test::cleanup_files($log_dir);
 
 $ENV{TF_IGNORE_REGEX} = ['02$'];
 $tf = TaskForest->new();
@@ -120,16 +121,3 @@ unlike ($files, qr/J5/, "J5 was not in contention");
 
 
 
-sub cleanup_files {
-    my $dir = shift;
-	local *DIR;
-    
-	opendir DIR, $dir or die "opendir $dir: $!";
-	my $found = 0;
-	while ($_ = readdir DIR) {
-        next if /^\.{1,2}$/;
-        my $path = "$dir/$_";
-		unlink $path if -f $path;
-	}
-	closedir DIR;
-}

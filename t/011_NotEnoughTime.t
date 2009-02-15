@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use Cwd;
 use File::Copy;
+use TaskForest::Test;
 
 BEGIN {
     use_ok( 'TaskForest::Family',     "Can use Family" );
@@ -13,7 +14,7 @@ BEGIN {
 }
 
 my $cwd = getcwd();
-cleanup_files("$cwd/t/families");
+&TaskForest::Test::cleanup_files("$cwd/t/families");
 
 my $src_dir = "$cwd/t/family_archive";
 my $dest_dir = "$cwd/t/families";
@@ -28,7 +29,7 @@ $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
 
 my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
-cleanup_files($log_dir);
+&TaskForest::Test::cleanup_files($log_dir);
 
 my $sf = TaskForest::Family->new(name=>'NOT_ENOUGH_TIME');
 isa_ok($sf,  'TaskForest::Family',  'Created NOT_ENOUGH_TIME family');
@@ -69,32 +70,3 @@ foreach my $n (1..10) {
 }
 
 
-sub cleanup {
-    my $dir = shift;
-	local *DIR;
-    
-	opendir DIR, $dir or die "opendir $dir: $!";
-	my $found = 0;
-	while ($_ = readdir DIR) {
-        next if /^\.{1,2}$/;
-        my $path = "$dir/$_";
-		unlink $path if -f $path;
-		cleanup($path) if -d $path;
-	}
-	closedir DIR;
-	rmdir $dir or print "error - $!";
-}
-
-sub cleanup_files {
-    my $dir = shift;
-	local *DIR;
-    
-	opendir DIR, $dir or die "opendir $dir: $!";
-	my $found = 0;
-	while ($_ = readdir DIR) {
-        next if /^\.{1,2}$/;
-        my $path = "$dir/$_";
-		unlink $path if -f $path;
-	}
-	closedir DIR;
-}

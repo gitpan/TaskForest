@@ -1,0 +1,28 @@
+<include TaskForest::REST::PassThrough /head.html />
+
+<div class="title">Status</div>
+
+<table cellspacing=0 class=status>
+  <tr>
+    <th>Family</th>
+    <th>Job</th>
+    <th>Status</th>
+    <th>Return Code</th>
+    <th>Time Zone</th>
+    <th>Scheduled Start</th>
+    <th>Actual Start Time</th>
+    <th>Stop Time</th>
+  </tr><aohj a=status>
+  <tr>
+    <td class="oe_$oe"><a href="/families.html/$family_name">$family_name</a></td>
+    <td class="oe_$oe"><a href="/jobs.html/$base_name">$name</a></td>
+    <td class="oe_$oe">$status</td>
+    <td class="oe_$oe">$rc</td>
+    <td class="oe_$oe">$tz</td>
+    <td class="oe_$oe">$start</td>
+    <td class="oe_$oe">$actual_start</td>
+    <td class="oe_$oe">$stop</td>
+  </tr></aohj>
+</table>
+
+<include TaskForest::REST::PassThrough /foot.html />

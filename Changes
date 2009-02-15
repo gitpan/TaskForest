@@ -1,5 +1,23 @@
 Revision history for Perl module TaskForest
 
+1.15 Sun Feb 15 2009
+
+The ordering of jobs displayed by the status command was changed.  The
+status command now accepts a --date option, to view jobs that ran on a
+previous date.  When run for the current day, the status command now also
+displays all jobs that ran that are not currently in any Family.  This
+handles the case where the jobs are removed from family files intra-day,
+after running.  These jobs are displayed using the newly-supported
+default_time_zone option.
+
+This release also introduces taskforestd, a perl-only web server that
+implements a RESTful web service that can be used by programatic clients
+to access the Taskforest system.  The web server also includes a web site
+that can be used by humans to interact with Taskforest.  The web server
+uses Basic Authentication to authenticate the user, so if you wish to use
+it outside an intranet, you should use taskforestdssl, the SSL version of
+the program.  
+
 1.14 Thu Jan 22 2009
 
 A new config option (and command line argument) was added.  The

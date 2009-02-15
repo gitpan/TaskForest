@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Logs.pm 66 2009-01-23 02:53:39Z aijaz $
+# $Id: Logs.pm 98 2009-02-09 00:40:15Z aijaz $
 #
 ################################################################################
 
@@ -55,7 +55,7 @@ my $eobj;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.14';
+    $VERSION     = '1.15';
 }
 
 END {
@@ -153,7 +153,7 @@ sub cleanup {
 
     my $message = "Exiting $exit_code";
 
-    print "$message\n";
+    #print "$message\n";
 
     resetLogs();    
 

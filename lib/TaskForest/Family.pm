@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 66 2009-01-23 02:53:39Z aijaz $
+# $Id: Family.pm 109 2009-02-14 04:13:24Z aijaz $
 #
 ################################################################################
 
@@ -177,7 +177,7 @@ use Time::Local;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.14';
+    $VERSION     = '1.15';
 }
 
 # ------------------------------------------------------------------------------
@@ -240,12 +240,11 @@ sub new {
 =item display()
 
  Usage     : $family->display()
- Purpose   : This method displays the status of all jobs in all
+ Purpose   : This method displays the status of all jobs in this family.
              families that are scheduled to run today.
-             If the --collapse option is given, pending repeat
-             jobs are not displayed.  
  Returns   : Nothing
- Argument  : None
+ Argument  : A hash that will contain a list of jobs.  This hash can be
+             passed to other jobs as well.  
  Throws    : Nothing
 
 =back
@@ -254,75 +253,17 @@ sub new {
 
 # ------------------------------------------------------------------------------
 sub display {
-    my $self = shift;
-
-    my $display_hash = { all_jobs => [], Success  => [], Failure  => [], Ready  => [], Waiting  => [],  };
-
-    my $max_len_name = 0;
-    my $max_len_tz = 0;
+    my ($self, $display_hash) = @_;
 
     foreach my $job_name (sort
                           { $self->{jobs}->{$a}->{start} cmp $self->{jobs}->{$b}->{start} }
                           (keys (%{$self->{jobs}}))) {
-        my $l = length($job_name);
-        $max_len_name = $l if ($l > $max_len_name);
-        my $job = $self->{jobs}->{$job_name};
-        $l = length($job->{tz});
-        $max_len_tz = $l if ($l > $max_len_tz);
         
-        my $job_hash = {};
+        my $job_hash = { family_name => $self->{name} };
+        my $job      = $self->{jobs}->{$job_name};
         foreach my $k (keys %$job) { $job_hash->{$k} = $job->{$k}; }
         push (@{$display_hash->{all_jobs}}, $job_hash);
         push (@{$display_hash->{$job_hash->{status}}}, $job_hash);
-    }
-    foreach my $job (@{$display_hash->{Ready}}, @{$display_hash->{Waiting}}) {
-        $job->{actual_start} = $job->{stop} = "--:--";
-        $job->{rc} = '-';
-        $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 0;
-    }
-
-    foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}) {
-        my $dt = DateTime->from_epoch( epoch => $job->{actual_start} );
-        $dt->set_time_zone($job->{tz});
-        $job->{actual_start} = sprintf("%02d:%02d", $dt->hour, $dt->minute);
-        $job->{has_actual_start} = 1;
-        $job->{has_rc} = 1;
-
-        if ($job->{stop}) {
-            $dt = DateTime->from_epoch( epoch => $job->{stop} );
-            $dt->set_time_zone($job->{tz});
-            $job->{stop} = sprintf("%02d:%02d", $dt->hour, $dt->minute);
-            $job->{has_stop} = 1;
-        }
-        else {
-            $job->{stop} = '--:--';
-            $job->{rc} = '-';
-            $job->{has_stop} = $job->{has_rc} = 0;
-        }
-    }
-
-    $max_len_name += length($self->{name}) + 2;
-    my $format = "%-${max_len_name}s   %-7s   %6s   %-${max_len_tz}s   %-5s   %-6s  %-5s\n";
-    printf($format, '', '', 'Return', 'Time', 'Sched', 'Actual', 'Stop');
-    printf($format, 'Job', 'Status', 'Code', 'Zone', 'Start', 'Start', 'Time');
-    print "\n";
-
-    my $collapse = $self->{options}->{collapse};
-    foreach my $job (@{$display_hash->{all_jobs}}) {
-        if ($collapse and
-          $job->{name} =~ /--Repeat/ and
-          $job->{status} eq 'Waiting') {
-            $job->{is_repeat_waiting} = 1;
-            next;  # don't print every waiting repeat job
-        }
-        printf($format,
-               "$self->{name}::$job->{name}",
-               $job->{status},
-               $job->{rc},
-               $job->{tz},
-               $job->{start},
-               $job->{actual_start},
-               $job->{stop});
     }
 
 }
@@ -496,11 +437,18 @@ sub updateJobStatuses {
     foreach my $file (sort @files) { # the sort ensures that 1 overrides 0
         my ($job_name, $status) = $file =~ /$log_dir\/$self->{name}\.([^\.]+)\.([01])/;
         my ($orig, $actual_name);
+
+        
         if ($job_name =~ /(^[^\-]+)--Orig/) {
             $orig = 1;
             $actual_name = $1;
             $self->{jobs}->{$job_name} = TaskForest::Job->new('name' => $job_name);
+            next unless defined $self->{jobs}->{$actual_name};  # not defined if job is no longer in family, but ran ealier.
         }
+        else {
+            next unless defined $self->{jobs}->{$job_name};  # not defined if job is no longer in family, but ran ealier.
+        }
+            
             
 
         # when a job is rerun the the job name in the job file has --Orig_n-- appended to it

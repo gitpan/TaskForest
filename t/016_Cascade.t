@@ -7,6 +7,7 @@ use warnings;
 use Data::Dumper;
 use Cwd;
 use File::Copy;
+use TaskForest::Test;
 
 BEGIN {
     use_ok( 'TaskForest::Family',     "Can use Family" );
@@ -18,7 +19,7 @@ my $cwd = getcwd();
 my $src_dir = "$cwd/t/family_archive";
 my $dest_dir = "$cwd/t/families";
 mkdir $dest_dir unless -d $dest_dir;
-cleanup_files("$cwd/t/families");
+&TaskForest::Test::cleanup_files("$cwd/t/families");
 
 copy("$src_dir/CASCADE", $dest_dir);
 
@@ -29,7 +30,7 @@ $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
 
 my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
-cleanup_files($log_dir);
+&TaskForest::Test::cleanup_files($log_dir);
 
 my $sf = TaskForest::Family->new(name=>'CASCADE');
 isa_ok($sf,  'TaskForest::Family',  'Created CASCADE family');
@@ -65,32 +66,3 @@ sub touch_job {
 
 
 
-sub cleanup {
-    my $dir = shift;
-	local *DIR;
-    
-	opendir DIR, $dir or die "opendir $dir: $!";
-	my $found = 0;
-	while ($_ = readdir DIR) {
-        next if /^\.{1,2}$/;
-        my $path = "$dir/$_";
-		unlink $path if -f $path;
-		cleanup($path) if -d $path;
-	}
-	closedir DIR;
-	rmdir $dir or print "error - $!";
-}
-
-sub cleanup_files {
-    my $dir = shift;
-	local *DIR;
-    
-	opendir DIR, $dir or die "opendir $dir: $!";
-	my $found = 0;
-	while ($_ = readdir DIR) {
-        next if /^\.{1,2}$/;
-        my $path = "$dir/$_";
-		unlink $path if -f $path;
-	}
-	closedir DIR;
-}

@@ -1,0 +1,145 @@
+body { 
+	margin: 0;
+	padding: 0;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 85%;
+}
+
+div.header_navigation { 
+	background-color: #ccccf0;
+	border-top:       solid 1px #ddddff;
+	border-bottom:    solid 1px #9999bb;
+	padding:          4px;
+	margin:           0;
+    padding-left:     8px;
+	float: left;
+	width:  632px;
+}
+
+div.header_navigation a { 
+	margin-right: 2em;
+}
+
+form#rerun { 
+	padding-bottom: 8px; 
+	border-bottom: 1px dashed #9999bb;
+	margin-bottom: 8px;
+
+}
+
+form#mark { 
+	padding-bottom: 8px; 
+	border-bottom: 1px dashed #9999bb;
+	margin-bottom: 8px;
+
+}
+
+div#forms_div { 
+    width: 168px; 
+	float: left;
+	background-color: #ccccf0;
+	padding: 4px;
+}
+div#main_div { 
+	float: left;
+	padding: 4px;
+	padding-left: 8px;
+	width: 632px;
+	
+}
+
+div.cb { 
+  clear: both;
+}
+
+
+div.logo { 
+	background-color: #333366;
+	border-top:       1px solid #333366;
+	border-bottom:   1px solid #333366;
+	color:            #ccccf0;
+	width:  168px;
+	padding: 4px;
+	float: left;
+	font-weight: bold;
+	text-align: center;
+}
+
+
+label { 
+	font-size: 85%;
+	display: block;
+	margin-top: 4px;
+}
+
+input { 
+	background-color: #ddddff;
+}
+
+div.family_title,
+div.job_title,
+div.title
+{ 
+	font-size: 100%;
+	border-bottom: 2px solid black;
+	padding-bottom: 4px;
+	font-weight: bold;
+	margin: 1em 0 1em 0;
+}
+
+
+div.file_contents
+{ 
+	margin: 8px 0 8px 0;
+	background-color: #d0d0d0;
+	padding: 2px;
+	border: 1px dashed #000000;
+}
+
+textarea { 
+	background-color: #ddddff;
+	font-size: 100%;
+	font-family: monospace;
+}
+
+pre { 
+	padding: 2px;
+	margin: 0;
+}
+
+table.status { 
+	border-collapse: collapse;
+	border: 1px solid #666666;
+}
+
+table.status th { 
+	background-color: #333366;
+	color: white;
+	padding: 2px;
+	font-weight: normal;
+	padding: 2px 0.5em 2px 0.5em;
+	border: 1px solid #a0a0a0;
+}
+
+table.status td { 
+	border: 1px solid #666666;
+	padding: 2px 0.5em 2px 0.5em;
+}
+
+
+.oe_odd { 
+	background-color: #e0c0a0;
+}
+.oe_even { 
+	background-color: #f0f0d0;
+}
+
+div.error { 
+ 	border-top: 3px solid red;
+	padding: 1em;
+}
+
+div.system_error { 
+ 	border-bottom: 3px solid red;
+	padding: 1em;
+}

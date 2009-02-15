@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 66 2009-01-23 02:53:39Z aijaz $
+# $Id: TaskForest.pm 116 2009-02-15 22:03:03Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -10,16 +10,17 @@
 package TaskForest;
 use strict;
 use warnings;
-use POSIX ":sys_wait_h";
+use POSIX (":sys_wait_h", "strftime");
 use Data::Dumper;
 use TaskForest::Family;
 use TaskForest::Options;
 use TaskForest::Logs qw /$log/;
 use File::Basename;
+use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.14';
+    $VERSION     = '1.15';
 }
 
 
@@ -208,23 +209,27 @@ sub globFamilyFiles {
 #
 # Name      : status
 # usage     : $tf->status();
-# Purpose   : This function prints the status of all families in the
-#             system, including ones that don't need to run today.  If
-#             a family has no jobs in it, it is skipped
-# Returns   : Nothing
-# Argument  : 
+# Purpose   : This function determines the status of all jobs that have run
+#             today, as well as the the status of jobs that have not
+#             yet run (are in the "Waiting" or "Ready" state.  
+#             If the --collapse option is given, pending repeat
+#             jobs are not displayed.  
+# Returns   : A data structure representing all the jobs
+# Argument  : data-only - If this is true, then nothing is printed.
 # Throws    : 
 #
 ################################################################################
 #
 sub status {
-    my $self = shift;
+    my ($self, $data_only) = @_;
 
     # get a fresh list of all family files
     #
     my @families = $self->globFamilyFiles($self->{options}->{family_dir});
-    
-    foreach my $family_name (@families) {
+
+    my $display_hash = { all_jobs => [], Success  => [], Failure  => [], Ready  => [], Waiting  => [],  };
+
+    foreach my $family_name (sort @families) {
         # create a new Family object
         #
         my ($name) = $family_name =~ /$self->{options}->{family_dir}\/(.*)/;
@@ -239,7 +244,259 @@ sub status {
 
         # display the family
         #
-        $family->display();
+        $family->display($display_hash);
+    }
+
+    foreach my $job (@{$display_hash->{Ready}}, @{$display_hash->{Waiting}}) {
+        $job->{actual_start} = $job->{stop} = "--:--";
+        $job->{rc} = '-';
+        $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 0;
+    }
+
+    foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}) {
+        my $dt = DateTime->from_epoch( epoch => $job->{actual_start} );
+        $dt->set_time_zone($job->{tz});
+        $job->{actual_start} = sprintf("%02d:%02d", $dt->hour, $dt->minute);
+        $job->{has_actual_start} = 1;
+        $job->{has_rc} = 1;
+
+        if ($job->{stop}) {
+            $dt = DateTime->from_epoch( epoch => $job->{stop} );
+            $dt->set_time_zone($job->{tz});
+            $job->{stop} = sprintf("%02d:%02d", $dt->hour, $dt->minute);
+            $job->{has_stop} = 1;
+        }
+        else {
+            $job->{stop} = '--:--';
+            $job->{rc} = '-';
+            $job->{has_stop} = $job->{has_rc} = 0;
+        }
+    }
+
+    $self->getUnaccountedForJobs($display_hash);
+
+    map { ($_->{base_name}) = $_->{name} =~ /([^\-]+)/; } @{$display_hash->{all_jobs}};
+
+    my @sorted = sort  {
+        
+                               $a->{family_name} cmp $b->{family_name}                 # family first
+                                                  ||
+                                 $a->{base_name} cmp $b->{base_name}                    # base name
+                                                  ||
+                          $b->{has_actual_start} <=> $a->{has_actual_start}            # REady and Waiting after Success or Failed 
+                                                  ||
+
+                        # after this point they're either both run or both not run
+                                                      
+  (($a->{has_actual_start}) ? ($a->{actual_start} cmp $b->{actual_start}) :             # Actual start if possible (if both have started ELSE BOTH HAVE FAILED, THEN:
+                                    $a->{start} cmp $b->{start})                      # Waiting after Ready
+                                                  ||
+                                      $a->{name} cmp $b->{name}                        # Job Name
+               
+
+                              
+        
+    } @{$display_hash->{all_jobs}};
+
+    my $oe = 'odd';
+    foreach (@sorted) {
+        $_->{oe} = $oe = (($oe eq 'odd') ? 'even' : 'odd');
+    }
+    
+    $display_hash->{all_jobs} = \@sorted;
+
+    return $display_hash if $data_only;
+
+    ## ########################################
+    
+    my $max_len_name = 0;
+    my $max_len_tz = 0;
+    foreach my $job (@{$display_hash->{all_jobs}}) {
+        my $l = length($job->{full_name} = "$job->{family_name}::$job->{name}");
+        if ($l > $max_len_name) { $max_len_name = $l; }
+        
+        $l = length($job->{tz});
+        if ($l > $max_len_tz)   { $max_len_tz   = $l; }
+
+    }
+
+    my $format = "%-${max_len_name}s   %-7s   %6s   %-${max_len_tz}s   %-5s   %-6s  %-5s\n";
+    printf($format, '', '', 'Return', 'Time', 'Sched', 'Actual', 'Stop');
+    printf($format, 'Job', 'Status', 'Code', 'Zone', 'Start', 'Start', 'Time');
+    print "\n";
+    
+    my $collapse = $self->{options}->{collapse};
+   
+    foreach my $job (@{$display_hash->{all_jobs}}) {
+        if ($collapse and
+          $job->{name} =~ /--Repeat/ and
+          $job->{status} eq 'Waiting') {
+            next;  # don't print every waiting repeat job
+        }
+        printf($format,
+               $job->{full_name},
+               $job->{status},
+               $job->{rc},
+               $job->{tz},
+               $job->{start},
+               $job->{actual_start},
+               $job->{stop});
+    }
+    
+}
+
+
+
+################################################################################
+#
+# Name      : hist_status
+# usage     : $tf->status();
+# Purpose   : This function determines the status of all jobs that have run
+#             for a particular day.  If the --collapse option is given, 
+#             pending repeat jobs are not displayed.  
+# Returns   : A data structure representing all the jobs
+# Argument  : data-only - If this is true, then nothing is printed.
+# Throws    : 
+#
+################################################################################
+#
+sub hist_status {
+    my ($self, $date, $data_only) = @_;
+
+    my $display_hash = { all_jobs => [], Success  => [], Failure  => [], Ready  => [], Waiting  => [],  };
+    $self->getUnaccountedForJobs($display_hash, $date);
+
+    map { ($_->{base_name}) = $_->{name} =~ /([^\-]+)/; } @{$display_hash->{all_jobs}};
+
+    my @sorted = sort  {
+                               $a->{family_name} cmp $b->{family_name}                 # family first
+                                                  ||
+                                 $a->{base_name} cmp $b->{base_name}                   # base name
+                                                  ||
+                              $a->{actual_start} cmp $b->{actual_start}                # start_time 
+                                                  ||
+                                      $a->{name} cmp $b->{name}                        # Job Name
+    } @{$display_hash->{all_jobs}};
+    
+    my $oe = 'odd';
+    foreach (@sorted) {
+        $_->{oe} = $oe = (($oe eq 'odd') ? 'even' : 'odd');
+    }
+
+    $display_hash->{all_jobs} = \@sorted;
+
+    return $display_hash if $data_only;
+
+    my $max_len_name = 0;
+    my $max_len_tz = 0;
+    foreach my $job (@{$display_hash->{all_jobs}}) {
+        my $l = length($job->{full_name} = "$job->{family_name}::$job->{name}");
+        if ($l > $max_len_name) { $max_len_name = $l; }
+        
+        $l = length($job->{tz});
+        if ($l > $max_len_tz)   { $max_len_tz   = $l; }
+
+    }
+
+    my $format = "%-${max_len_name}s   %-7s   %6s   %-${max_len_tz}s   %-5s   %-6s  %-5s\n";
+    printf($format, '', '', 'Return', 'Time', 'Sched', 'Actual', 'Stop');
+    printf($format, 'Job', 'Status', 'Code', 'Zone', 'Start', 'Start', 'Time');
+    print "\n";
+    
+    my $collapse = $self->{options}->{collapse};
+   
+    foreach my $job (@{$display_hash->{all_jobs}}) {
+        if ($collapse and
+          $job->{name} =~ /--Repeat/ and
+          $job->{status} eq 'Waiting') {
+            next;  # don't print every waiting repeat job
+        }
+        printf($format,
+               $job->{full_name},
+               $job->{status},
+               $job->{rc},
+               $job->{tz},
+               $job->{start},
+               $job->{actual_start},
+               $job->{stop});
+    }
+}
+    
+
+################################################################################
+#
+# Name      : getUnaccountedForJobs
+# usage     : $tf->getUnaccountedForJobs($display_hash, "YYYYMMDD");
+# Purpose   : This function browses a log directory for a particular date
+#             and populates the input variable $display_hash with data
+#             about each job that ran that day.
+# Returns   : None
+# Argument  : $display_hash - the hash that will contain the data for
+#             all the jobs.
+#             $date - the date for which you want job data
+# Throws    : "Cannot open file"
+#
+################################################################################
+#
+sub getUnaccountedForJobs {
+    my ($self, $display_hash, $date) = @_;
+    my $log_dir;
+    if ($date) {
+        $log_dir = $self->{options}->{log_dir}."/$date";
+    }
+    else {
+        $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});  # TODO: should we RELOAD?
+    }
+    
+    my $seen  = {};
+    foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}) {
+        $seen->{"$job->{family_name}.$job->{name}"} = 1;
+    }
+    
+    # readdir
+    my $glob_string = "$log_dir/*.[01]";
+    my @files = glob($glob_string);
+
+    my $new = [];
+    my $file_name;
+    my %valid_fields = ( actual_start => 1, pid => 1, stop => 1, rc => 1, );
+    foreach my $file (@files) {
+        my ($family_name, $job_name, $status) = $file =~ /$log_dir\/([^\.]+)\.([^\.]+)\.([01])/;
+        my $full_name = "$family_name.$job_name";
+        next if $seen->{$full_name};  # don't update $seen, because we want to show every job that ran.
+
+        my $job = { family_name => $family_name,
+                    name => $job_name,
+                    full_name => $full_name,
+                    start => '--:--',
+                    status => ($status) ? 'Failure' : 'Success' };  # just a hash, not an object, since this is only used for display
+
+        # read the pid file
+        substr($file, -1, 1) = 'pid';
+        open(F, $file) || croak "cannot open $file to read job data";
+        while (<F>) { 
+            chomp;
+            my ($k, $v) = /([^:]+): (.*)/;
+            $v =~ s/[^a-z0-9_ ,.\-]/_/ig;
+            if ($valid_fields{$k}) {
+                $job->{$k} = $v;
+            }
+        }
+        close F;
+
+        my $tz                   = $self->{options}->{default_time_zone};
+        my $dt                   = DateTime->from_epoch( epoch => $job->{actual_start} );
+        $dt->set_time_zone($tz);
+        $job->{actual_start}     = sprintf("%02d:%02d", $dt->hour, $dt->minute);
+        $job->{actual_start_dt}  = sprintf("%d/%02d/%02d %02d:%02d", $dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute); #sprintf("%02d:%02d", $dt->hour, $dt->minute);
+        $dt                      = DateTime->from_epoch( epoch => $job->{stop} );
+        $dt->set_time_zone($tz);
+        $job->{stop}             = sprintf("%02d:%02d", $dt->hour, $dt->minute);
+        $job->{stop_dt}          = sprintf("%d/%02d/%02d %02d:%02d", $dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute);  #sprintf("%02d:%02d", $dt->hour, $dt->minute);
+        $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 1;
+        $job->{tz}               = $tz;
+
+        push (@{$display_hash->{all_jobs}}, $job);
     }
 }
 
@@ -253,7 +510,47 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.13.
+This version is 1.15.
+
+=head1 EXECUTIVE SUMMARY
+
+With the TaskForest Job Scheduler you can:
+
+=over 4
+
+=item * 
+
+schedule jobs run at predetermined times
+
+=item *
+
+have jobs be dependent on each other
+
+=item *
+
+rerun failed jobs
+
+=item *
+
+mark jobs as succeeded or failed
+
+=item *
+
+check the status of all jobs scheduled to run today
+
+=item *
+
+interact with the included web service using your own client code
+
+=item *
+
+interact with the included web server using your default browser
+
+=item *
+
+express the relationships between jobs using a simple text-based format (a big advantage if you like using 'grep')
+
+=back
 
 =head1 SYNOPSIS
 
@@ -387,10 +684,23 @@ This family file is named WEB_ADMIN
     +---------------------------------------------------------------------
 
 A few things to point out here:
-- Blank lines are ignored.
-- A hash (#) and anything after it, until the end of the line is treated
-  as a comment and ignored
-- Job and family names do not have to start with J_ or be in upper case.
+
+=over 4
+
+=item *
+
+Blank lines are ignored.
+
+=item *
+
+A hash (#) and anything after it, until the end of the line is treated
+as a comment and ignored
+
+=item *
+
+Job and family names do not have to start with J_ or be in upper case.
+
+=back
 
 Now then, all jobs on a single line are started AT THE SAME TIME.  All
 jobs on a line are started only when all jobs on the previous line are
@@ -648,6 +958,14 @@ The following command line options are optional
    only set it to one value.  Look at the included configuration
    file taskforest.cfg for examples.
 
+ --default_time_zone
+
+   This is the time zone in which jobs that ran on days in the past will
+   be displayed.  When looking at previous days' status, the system has no
+   way of knowing what time zone the job was originally scheduled for.
+   Therefore, the system will choose the time zone denoted by this
+   option.  The default value for this option is "America/Chicago".
+
 =head1 DISPLAY STATUS
 
 To get the status of all currently running and recently run jobs,
@@ -665,6 +983,24 @@ enter the following command:
 
 If the --collapse option is used then pending repeat jobs will not be
 displayed.
+
+The "status" command also accepts a "--date" option, in which case it
+displays all the jobs that ran for that date.  The date must be in the
+"YYYYMMDD" format:
+
+  status --log_dir=/foo/logs --family_dir=/foo/families --date 20090201
+
+If the date specified is not the same as the current date, the
+"--collapse" option doesn't make any sense, because there can't be any
+pending jobs for a date in the past.
+
+When displaying the status for days in the past, there is no way for the
+system to know what time zone the jobs were scheduled for.  This is
+because the corresponding family file could have changed between the time
+that the job ran and the time that you're running the status command.  To
+resolve this, the system will always display jobs in the time zone
+specified by the 'default_time_zone' option.  If the default time zone is
+not specified, its default value is "America/Chicago".
 
 =head1 RERUN A JOB
 
@@ -803,6 +1139,961 @@ stdout log file.  The stderr log file always has logs printed at level
 
 The log file and error file will be saved in the log_directory.  
 
+=head1 THE TASKFORESTD WEB SERVER
+
+The TaskForest package includes a simple, low-footprint web server, called
+taskforestd, written in perl.  The webserver uses the LWP library and its
+sole purpose is to give you an web-based interface to TaskForest.  I chose
+to write a perl-based web server because it is easy for users to download,
+install and deploy.  Also it may be too much to ask users to install and
+mantain Apache, and configure mod_perl, just to get this web-based access.
+
+Taskforestd's behavior is controlled with a configuration file,
+taskforestd.cfg.  This configuration file B<must> be customized as
+described below, before you can use the web server.  Once you have
+customized the configuration file, you can start web server like this:
+
+  taskforestd --config_file=taskforestd.cfg
+
+You can stop the web server like this:
+
+  taskforestd --config_file=taskforestd.cfg --stop
+
+For example, if the configuration file specifies that the host on
+which taskforestd runs is www.example.com, then the web server will be
+available at http://www.example.com/ .
+
+To use the webserver (or even the web service described below) you
+must have a valid userid and password.  Taskforestd does not ship with
+any default userid and password pairs.  A password is required to
+authenticate the person making requests via the web browswer.  This
+userid and password combination may be (and should be) different from
+the userid and password of the account under which taskforestd is
+running.
+
+Which reminds me, as you would expect, taskforestd runs with the
+privileges of the account that invoked the program.  If that account
+does not have permissions to read and write the job and family files,
+you will not be able to use the web server.
+
+It is B<not> a good idea to run taskforestd as root, because even
+though taskforestd is written with security in mind, running as root
+opens a huge security hole.  And anyway, you shouldn't run as root any
+program that you download off the 'net any more than you should give a
+stranger the keys to your house.
+
+The best method is to create a separate system user account for
+taskforest and taskforestd, and run the web server and command line
+requests as that user.
+
+Coming back to the taskforestd userid and password: The userids and
+passwords are specified in the configuration file using the same
+format as Apache's .htpasswd files.  You can see commented-out
+examples of this in the configuration file taskforestd.cfg.  For your
+convenience, the TaskForest distribution includes a program called
+gen_passwd that generates text that you can copy and paste into the
+config file:
+
+ gen_passwd foo bar
+
+The above command will print out somthing that looks like the following;
+
+ foo:4poVZGiAlO1BY
+
+This text can then be copied and pasted into the configuration file.
+
+Please see the included configuration file, C<taskforestd.cfg>, for a
+list of each configuration option, and what it means.
+
+B<Please keep in mind that the taskforestd server is not encrypted.  Your
+userid and password will be transmitted in cleartext.  This is a huge
+security hole.  Do not do this unless both the client and the server
+behind a firewall, for example in a local intranet.  If someone sniffs
+your unencrypted userid and password, they can change job files, family
+files, or delete them too.>
+
+If you wish to use an encrypted, SSL-enabled server, please use the
+included taskforestdssl program instead of taskforestd.  The only
+difference between the two is that the taskforestd uses HTTP::Daemon,
+and taskforestdssl uses HTTP::Daemon::SSL.  To set up SSL, you will
+need to set up a server key and a server certificate.  The locations
+of these files may be specified in the taskforestd configuration file,
+under server_key_file and server_cert file, respctively.  You can find
+more information in the documentation of HTTP::Daemon::SSL.
+
+If you would like to self-sign a certificate, there are some instructions
+in the HOWTO section later in this document.
+
+If your system does not support SSL (for example, with openssl), and you
+would like to use taskforestd across the Internet, my advice would be:
+"Don't."  If you do, you would essentially be giving the world the
+ability to run any command on your server.  If you still want to do it,
+at least make sure that the system account that taskforestd runs under
+does not have write access to any files, especially those in job_dir,
+log_dir and family_dir.  This means that you would not be able to change
+job or family files or schedule reruns using taskforestd, but neither
+would the rest of the world be able to do that on your machine.
+
+=head1 A SAMPLE TASKFORESTD CONFIGURATION FILE
+
+ # This is a sample taskforestd configuration file
+
+ # Please change all settings to values that make sense for you.
+
+ # These are the four required command line arguments to taskforest
+ log_dir         = "t/logs"
+ family_dir      = "t/families"
+ job_dir         = "t/jobs"
+
+ # This is a file that ensures that only one child process can accept 
+ # connections at any time
+ lock_file       = "t/lock_file"
+
+ # The HTTP server document_root
+ document_root   = "htdocs"
+
+ # The host on which the taskforest daemon will run
+ host            = "127.0.0.1"
+
+ # The port on which to listen for connections
+ port            = 1111
+
+ # The number of children that should be available at any time
+ child_count     = 10
+
+ # The number of requests each child process should serve before exiting.
+ # (To protect from memory leaks, etc)
+ requests_per_child = 40
+
+ # Every time a child dies wait this much time (in seconds) before starting 
+ # a new child. Do NOT set this value to less than 1, otherwise you may
+ # encounter CPU thrashing.  Set it to something like 10 seconds if you're
+ # testing.
+ respawn_wait    = 1
+
+ # my default, log stdout messages with status >= this.
+ # This only effects stdout
+ # The sequence of thresholds (smallest to largest is):
+ # debug, info, warn, error, fatal
+ log_threshold   = "info"
+
+ # The log_file and err_file names should NOT end with '.0' or '.1' 
+ # because then they will be mistaken for job log files
+ #log_file        = "taskforestd.%Y%m%d.%H%M%S.stdout"  
+ #err_file        = "taskforestd.%Y%m%d.%H%M%S.stderr"  
+ log_file        = "taskforestd.stdout"  
+ err_file        = "taskforestd.stderr"  
+ pid_file        = "taskforestd.pid"
+
+ # Run as a daemon (detach from terminal)
+ run_as_daemon   = 1
+
+ # 
+ # In order for the web site to work, you must have at least one valid
+ # user set up.  As the commented examples below show, you may have
+ # more than one.  The value of each valid_user option is the login
+ # followed by a colon (:) followed by a crypt hash of the password.
+ # There are many ways to generate the crypt hash, including using the
+ # crypt perl function.  You can also use the gen_password script
+ # included with this release.
+ #
+ #valid_user = "test:e3MdYgHPUo.QY"
+ #valid_user = "foo:jp8Xizm2S52yw"
+
+ # The path to the server private key file
+ server_key_file   = "certs/server-key.pem"
+
+ # The path to the server certificate
+ server_cert_file  = "certs/server-cert.pem"
+
+=head1 THE TASKFORESTD RESTFUL WEB SERVICE
+
+The TaskForest package includes a low-footprint web server written in
+perl.  The webserver hosts one or more RESTful Web Services.  The web
+service allows you to write, in any programming language, your own client
+software that integrates with TaskForest.
+
+For an introduction to RESTful web services, you can look at
+Wikipedia: http://en.wikipedia.org/wiki/Representational_State_Transfer
+
+=head2 A NOTE ABOUT URI NOTATION
+
+For the purposes of this document we will denote variable parts of
+URIs using braces.  For example, in the URI
+C</foo/bar.html/{variable_name}> the value of the variable
+C<variable_name> will replace the string C<variable_name>.
+
+=head2 RESTFUL WEB SERVICE VERSION 1.0
+
+All of the service's URIs for version 1.0 are in the /rest/1.0/
+hierarchy.  If the service upgrades to a newer version, 1.0 will be
+preserved, and the new service will be in, for example, the /rest/2.0/
+hierarchy.  This way, backward compatability is preserved while
+clients migrate to the new interface.
+
+The documentation that follows describes the common 'header' and
+'footer' XHTML.  This is followed by a list of all the URIs and
+families of URIs supported by the web service, the HTTP methods that
+each URI supports, and a description of the service for the client
+software developer.
+
+=head3 HEADERS AND FOOTERS
+
+Every page with an HTTP Status code of 200-207 served by version 1.0
+of the web service will start with the html shown below.
+
+    +----------------------------------------------------------------------------------------------------
+ 01 | <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+ 02 | <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+ 03 |  <head>
+ 04 |   <title>$title</title>
+ 05 |  </head>
+ 06 |  <body>
+ 07 | 
+ 08 |    <div class="header_navigation">
+ 09 |      <a href="/rest/1.0/familyList.html">Family List</a>
+ 10 |      <a href="/rest/1.0/jobList.html">Job List</a>
+ 11 |      <a href="/rest/1.0/status.html">Status</a>
+ 12 |    </div>
+ 13 | 
+ 14 |    <form id="rerun" class="request" method="POST" action="/rest/1.0/request.html">
+ 15 |      <label for="rerun_family">Family</label><input id="rerun_family" name="family" /><br />
+ 16 |      <label for="rerun_job">Job</label><input id="rerun_job" name="job" /><br />
+ 17 |      <label for="rerun_options">Options</label><select id="rerun_options" name="options">
+ 18 |        <option value="">None</option>
+ 19 |        <option value="cascade">Cascade</option>
+ 20 |        <option value="dependents_only">Dependents Only</option>
+ 21 |      </select>
+ 22 |      <input type=submit name=submit  value="Rerun"/>
+ 23 |    </form>
+ 24 | 
+ 25 |    <form id="mark" class="request" method="POST" action="/rest/1.0/request.html">
+ 26 |      <label for="mark_family">Family</label><input id="mark_family" name="family" /><br />
+ 27 |      <label for="mark_job">Job</label><input id="mark_job" name="job" /><br />
+ 28 |      <label for="mark_options">Options</label><select id="mark_options" name="options">
+ 29 |        <option value="">None</option>
+ 30 |        <option value="cascade">Cascade</option>
+ 31 |        <option value="dependents_only">Dependents Only</option>
+ 32 |      </select>
+ 33 |      <label for="mark_status">Status</label><select id="mark_status" name="status">
+ 34 |        <option value="Success">Success</option>
+ 35 |        <option value="Failure">Failure</option>
+ 36 |      </select>
+ 37 |      <input type=submit name=submit  value="Mark"/>
+ 38 |    </form>
+ 39 | 
+ 40 |    <form id="logs" class="request" method="GET" action="/rest/1.0/logs.html">
+ 41 |      <label for="logs_date">Date</label><input id="logs_date" name="date" size=8 maxlength=8/><br />
+ 42 |      <input type=submit name=submit  value="View Logs"/>
+ 43 |    </form>
+    +----------------------------------------------------------------------------------------------------
+
+Lines 01-02 describe the file as an XHTML file.  I chose XHTML because
+the output can be viewed by any web browser.  If you would like
+another format, drop me an email.
+
+Line 04 will display the value of the title for that page.  The C<$>
+sign is an artifact of the web development framework I'm using.
+
+Lines 08-12 are the main navigation hyperlinks.
+
+Lines 14-23 and 25-38 are the two forms that show up on every page.
+These forms allow you to rerun jobs, and mark jobs, respectively.
+They're essentially interfaces to the 'rerun' and 'mark' commands. 
+
+Every page with an HTTP Status code of 200-207 served by version 1.0
+of the web service will end with the html shown below.
+
+  </body>
+ </html>
+
+=head3 /rest/1.0/familyList.html
+
+ HEAD
+ ====
+       This URI does not support this method.
+
+ GET
+ ===
+       DESCRIPTION
+       ...........
+       Use this URI to retrieve a list of all Families.  These are all the
+       files in the directory specified by the family_dir option in the
+       taskforestd configuration file.
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The client should not send any content to this URI.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In a typical case, the server will send the header and footer, and
+       the 'real' content in between.  The content will look like this:
+
+       01 | <ul class=family_list>
+       02 |     <li class=family_name><a href="/rest/1.0/families.html/$file_name">$file_name</a></li>
+       03 | </ul>
+
+       Line 02 will appear 0 or more times, depending on how many Families
+       are present. 
+
+       HTTP STATUS CODES
+       .................
+       200 - Everything's OK
+       304 - The resource has not been modified since the time
+             specified in the request If-Modified-Since header,
+             OR 
+             The calculated Etag of the resource is the same as that
+             specified in the request If-None-Match header.
+       404 - The resource was not found
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ PUT
+ ===
+       This URI does not support this method.
+
+ POST
+ ====
+       This URI does not support this method.
+
+ DELETE
+ ======
+       This URI does not support this method. 
+
+=head3 /rest/1.0/families.html/{family_name}
+
+ HEAD
+ ====
+       DESCRIPTION
+       ...........
+       Send this URI the HEAD method to see if the family specified within
+       the URI has changed recently.
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The family name is represented by {family_name} and is part
+       of the URI.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       The HTTP content is empty.
+
+       HTTP STATUS CODES
+       .................
+       200 - Everything's OK
+       304 - The resource has not been modified since the time
+             specified in the request If-Modified-Since header,
+             OR 
+             The calculated Etag of the resource is the same as that
+             specified in the request If-None-Match header.
+       404 - The resource was not found
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ GET
+ ===
+       DESCRIPTION
+       ...........
+       Send this URI the GET method to retrieve the contents of the family
+       file whose name is specified within the URI. 
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The family name is represented by {family_name} and is part
+       of the URI.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In a typical case, the server will send the header and footer, and
+       the 'real' content in between.  The content will look like this:
+
+       01 | <div class="family_title">Viewing family $file_name</div>
+       02 | <div id="family_contents_div" class="file_contents"><pre>$file_contents</pre></div>
+       03 | <form name="family_form" action="/rest/1.0/families.html/$file_name" method="POST">
+       04 |   <input type=hidden name="_method" value="PUT">
+       05 |   <textarea name="file_contents" rows=20 cols=100>$file_contents</textarea>
+       06 |   <br>
+       07 |   <input type=submit value="Update Family" name=update />
+       08 | </form>
+
+       Line 01 displays the family name.  Line 02 displays the
+       contents of the family file in its own div.  Line 03-08 are a
+       form that can be used to update the family file.  Note here
+       that the method is POST, but there is a form variable called
+       "_method" whose value is "PUT".  This is a common idiom in
+       RESTful service development because most web browsers only
+       support GET and POST.  This is called overloaded POST.  
+
+       With the taskforestd web service, whenever you need to use the
+       HEAD, PUT or DELETE methods, you can use POST and define the
+       'real' method with the _method form variable.  
+
+       HTTP STATUS CODES
+       .................
+       200 - Everything's OK
+       304 - The resource has not been modified since the time
+             specified in the request If-Modified-Since header,
+             OR 
+             The calculated Etag of the resource is the same as that
+             specified in the request If-None-Match header.
+       404 - The resource was not found
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ PUT
+ ===
+       DESCRIPTION
+       ...........
+       Send this URI the PUT method to create a new family file or to
+       change the contents of an existing family file.   
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       If your client is really using the PUT method, the contents of
+       the family file should be sent in the contents of the HTTP
+       request.
+
+       If, however, your client is using overloaded POST, then the
+       content that you would have sent with the PUT must be in the
+       file_contents form variable.  Overloaded POST is explained in
+       the description of the GET method, above.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In the typical case, after creating the new family file, or
+       changing the contents of the existing family file, the server will
+       return the  same contents as in the case of the GET method.  
+
+       HTTP STATUS CODES
+       .................
+       200 - OK
+       400 - The file_contents form variable was missing, in the case of
+             Overloaded POST
+       500 - The file could not be written - likely a permission issue  
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ POST
+ ====
+       This URI does not support this method. 
+
+ DELETE
+ ======
+       DESCRIPTION
+       ...........
+       Send this URI the DELETE method to delete the family file named in
+       the URI. 
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The family name is represented by {family_name} and is part
+       of the URI.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In the case of DELETE, the server will never return any content.  
+
+       HTTP STATUS CODES
+       .................
+       204 - Delete was successful and the client should not expect any
+             content
+       500 - The file could not be deleted - likely a permission issue 
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Content-Length
+       o Content-Type
+
+=head3 /rest/1.0/jobList.html
+
+ HEAD
+ ====
+       This URI does not support this method.
+
+ GET
+ ===
+       DESCRIPTION
+       ...........
+       Use this URI to retrieve a list of all Jobs.  These are all the
+       files in the directory specified by the job_dir option in the
+       taskforestd configuration file.
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The client should not send any content to this URI.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In a typical case, the server will send the header and footer, and
+       the 'real' content in between.  The content will look like this:
+
+       01 | <ul class=job_list>
+       02 |     <li class=job_name><a href="/rest/1.0/jobs.html/$file_name">$file_name</a></li>
+       03 | </ul>
+
+       Line 02 will appear 0 or more times, depending on how many Jobs
+       are present. 
+
+       HTTP STATUS CODES
+       .................
+       200 - Everything's OK
+       304 - The resource has not been modified since the time
+             specified in the request If-Modified-Since header,
+             OR 
+             The calculated Etag of the resource is the same as that
+             specified in the request If-None-Match header.
+       404 - The resource was not found
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ PUT
+ ===
+       This URI does not support this method.
+
+ POST
+ ====
+       This URI does not support this method.
+
+ DELETE
+ ======
+       This URI does not support this method. 
+
+=head3 /rest/1.0/jobs.html/{job_name}
+
+ HEAD
+ ====
+       DESCRIPTION
+       ...........
+       Send this URI the HEAD method to see if the job specified within
+       the URI has changed recently.
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The job name is represented by {job_name} and is part
+       of the URI.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       The HTTP content is empty.
+
+       HTTP STATUS CODES
+       .................
+       200 - Everything's OK
+       304 - The resource has not been modified since the time
+             specified in the request If-Modified-Since header,
+             OR 
+             The calculated Etag of the resource is the same as that
+             specified in the request If-None-Match header.
+       404 - The resource was not found
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ GET
+ ===
+       DESCRIPTION
+       ...........
+       Send this URI the GET method to retrieve the contents of the job
+       file whose name is specified within the URI. 
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The job name is represented by {job_name} and is part
+       of the URI.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In a typical case, the server will send the header and footer, and
+       the 'real' content in between.  The content will look like this:
+
+       01 | <div class="job_title">Viewing job $file_name</div>
+       02 | <div id="job_contents_div" class="file_contents"><pre>$file_contents</pre></div>
+       03 | <form name="job_form" action="/rest/1.0/jobs.html/$file_name" method="POST">
+       04 |   <input type=hidden name="_method" value="PUT">
+       05 |   <textarea name="file_contents" rows=20 cols=100>$file_contents</textarea>
+       06 |   <br>
+       07 |   <input type=submit value="Update Job" name=update />
+       08 | </form>
+
+       Line 01 displays the job name.  Line 02 displays the contents of
+       the job file in its own div.  Line 03-08 are a form that can be
+       used to update the job file.  Note here that the method is POST,
+       but there is a form variable called "_method" whose value is "PUT".
+       This is a common idiom in RESTful service development because most
+       web browsers only support GET and POST.  This is called overloaded
+       POST.
+
+       With the taskforestd web service, whenever you need to use the
+       HEAD, PUT or DELETE methods, you can use POST and define the 'real'
+       method with the _method form variable.
+
+       HTTP STATUS CODES
+       .................
+       200 - Everything's OK
+       304 - The resource has not been modified since the time
+             specified in the request If-Modified-Since header,
+             OR 
+             The calculated Etag of the resource is the same as that
+             specified in the request If-None-Match header.
+       404 - The resource was not found
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ PUT
+ ===
+       DESCRIPTION
+       ...........
+       Send this URI the PUT method to create a new job file or to
+       change the contents of an existing job file.   
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       If your client is really using the PUT method, the contents of the
+       job file should be sent in the contents of the HTTP request.
+
+       If, however, your client is using overloaded POST, then the content
+       that you would have sent with the PUT must be in the file_contents
+       form variable.  Overloaded POST is explained in the description of
+       the GET method, above.
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In the typical case, after creating the new job file, or changing
+       the contents of the existing job file, the server will return the
+       same contents as in the case of the GET method.
+
+       HTTP STATUS CODES
+       .................
+       200 - OK
+       400 - The file_contents form variable was missing, in the case of
+             Overloaded POST
+       500 - The file could not be written - likely a permission issue  
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Last-Modified
+       o ETag
+       o Content-Length
+       o Content-Type
+
+ POST
+ ====
+       This URI does not support this method. 
+
+ DELETE
+ ======
+       DESCRIPTION
+       ...........
+       Send this URI the DELETE method to delete the job file named in the
+       URI.  
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The job name is represented by {job_name} and is part of the URI. 
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In the case of DELETE, the server will never return any content.  
+
+       HTTP STATUS CODES
+       .................
+       204 - Delete was successful and the client should not expect any
+             content
+       500 - The file could not be deleted - likely a permission issue 
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Content-Length
+       o Content-Type
+
+=head3 /rest/1.0/status.html
+
+ HEAD
+ ====
+       This URI does not support this method.
+
+ GET
+ ===
+       DESCRIPTION
+       ...........
+       Send this URI the GET method to get the status of today's jobs.  
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       None - no additional information is needed. 
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In a typical case, the server will send the header and footer, and
+       the 'real' content in between.  The content will look like this:
+
+       01 | <div class=status>
+       02 |     <dl class=job>
+       03 |       <dt>Family Name</dt>
+       04 |       <dd><a href="/rest/1.0/families.html/$family_name">$family_name</a></dd>
+       05 |       <dt>Job Name</dt>
+       06 |       <dd><a href="/rest/1.0/jobs.html/$base_name">$name</a></dd>
+       07 |       <dt>Status</dt>
+       08 |       <dd>$status</dd>
+       09 |       <dt>Return Code</dt>
+       10 |       <dd>$rc</dd>
+       11 |       <dt>Time Zone</dt>
+       12 |       <dd>$tz</dd>
+       13 |       <dt>Scheduled Start Time</dt>
+       14 |       <dd>$start</dd>
+       15 |       <dt>Actual Start Time</dt>
+       16 |       <dd>$actual_start</dd>
+       17 |       <dt>Stop Time</dt>
+       18 |       <dd>$stop</dd>
+       19 |     </dl>
+       20 | </div>
+
+       Lines 02-19 will appear 0 or more times, once for every job that
+       appears in the output of the status command.  The --collapse option
+       is implied in the web service; pending repeat jobs are not
+       displayed.        
+
+       HTTP STATUS CODES
+       .................
+       200 - OK
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Content-Length
+       o Content-Type
+
+ PUT
+ ===
+       This URI does not support this method.
+
+ POST
+ ====
+       This URI does not support this method.
+
+ DELETE
+ ======
+       This URI does not support this method.
+
+=head3 /rest/1.0/logs.html?date={date}
+
+ HEAD
+ ====
+       This URI does not support this method.
+
+ GET
+ ===
+       DESCRIPTION
+       ...........
+       Send this URI the GET method to browse the log directory for a
+       particular date - to see which jobs ran on that day, and when, and
+       what the exit codes were.
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       The date is specified as a query parameter.  The date must be in
+       the YYYYMMDD format.  If the date is omitted, then the date will
+       default to the current date, and jobs with a status of 'Ready' or
+       'Waiting' will also be displayed.           
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In a typical case, the server will send the header and footer, and
+       the 'real' content in between.  The content will look like this:
+
+       01 | <div class=status>
+       02 |     <dl class=job>
+       03 |       <dt>Family Name</dt>
+       04 |       <dd><a href="/rest/1.0/families.html/$family_name">$family_name</a></dd>
+       05 |       <dt>Job Name</dt>
+       06 |       <dd><a href="/rest/1.0/jobs.html/$base_name">$name</a></dd>
+       07 |       <dt>Status</dt>
+       08 |       <dd>$status</dd>
+       09 |       <dt>Return Code</dt>
+       10 |       <dd>$rc</dd>
+       11 |       <dt>Time Zone</dt>
+       12 |       <dd>$tz</dd>
+       13 |       <dt>Actual Start Time</dt>    
+       14 |       <dd>$actual_start_dt</dd>     
+       15 |       <dt>Stop Time</dt>            
+       16 |       <dd>$stop_dt</dd>             
+       17 |     </dl>              
+       18 | </div>                  
+
+       Lines 02-17 will appear 0 or more times, once for every job that
+       appears in the output of the status command.  
+
+       HTTP STATUS CODES
+       .................
+       200 - OK
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Content-Length
+       o Content-Type
+
+ PUT
+ ===
+       This URI does not support this method.
+
+ POST
+ ====
+       This URI does not support this method.
+
+ DELETE
+ ======
+       This URI does not support this method.
+
+=head3 /rest/1.0/request.html
+
+ HEAD
+ ====
+       This URI does not support this method.
+
+ GET
+ ===
+       This URI does not support this method.
+
+ PUT
+ ===
+       This URI does not support this method.
+
+ POST
+ ====
+       DESCRIPTION
+       ...........
+       Send a POST to this URI to request a job be marked as success or
+       failure, or be rerun.  
+
+       REPRESENTATION SENT BY CLIENT TO SERVER
+       .......................................
+       There are three required form variables: "family", "job", and
+       "submit".  The first is the name of the family, and the second is
+       the name of the job.  If the value of the "submit" variable is
+       "Rerun", then that job is rerun.  If the value is "Mark", then the
+       job will be marked based on the value of the form variable
+       "status", which can take a value of "Success" or "Failure".
+
+       In either case, mark or rerun, the optional variable "options" is
+       also permitted.  If it has a value, its value can be either
+       "cascade" or "dependents_only".  These are treated the same way as
+       the command line options to the 'rerun' and 'mark' commands. 
+
+       REPRESENTATION SENT BY SERVER TO CLIENT
+       .......................................
+       In every case, the server will send the header and footer, and
+       the 'real' content in between.  The content will look like this:
+
+       01 | Request accepted.
+
+       HTTP STATUS CODES
+       .................
+       200 - OK
+       500 - The request could not be honored. 
+
+       HTTP RESPONSE HEADERS
+       .....................
+       o Date
+       o Content-Length
+       o Content-Type
+
+ DELETE
+ ======
+       This URI does not support this method.
+
+=head1 HOWTO
+
+=head2 Run taskforest all day with cron
+
+This is the line I have in my crontab:
+
+ 02 00 * * * /usr/local/bin/taskforest --config_file=/foo/bar/taskforest.cfg
+
+=head2 Create a self-signed certificate with openssl.
+
+This is what works for me (instructions found at
+http://www.modssl.org/docs/2.8/ssl_faq.html#ToC25 ).
+
+ 1) Create a server key
+
+   openssl genrsa -des3 -out server.key.en 1024
+
+ 2) Make a decrypted version of it
+
+   openssl rsa -in server.key.en -out server-key.pem
+
+ 3) Create a CSR (Certificate Signing Request)
+
+   openssl req -new -key server-key.pem -out server.csr
+
+ 4) Create a CA Private Key
+
+   openssl genrsa -des3 -out ca.key.en 1024
+
+ 5) Create a decrypted version of it
+
+   openssl rsa -in ca.key.en -out ca.key
+
+ 6) Create a 10-yr self-signed CA cert with the CA key
+
+   openssl req -new -x509 -days 3650 -key ca.key -out my-ca.pem
+
+ 7) Sign the CSR
+
+    sign.sh server.csr
+
+    The sign.sh program can be found in the pkg.contrib/ subdirectory
+    of the mod_ssl distribution.  It is not clear whether or not I can
+    include that script in this distribution, so for now at least,
+    you'll have to use your own copy.  Make sure you specify the
+    locations of the files in the taskforestd configuration file.
+
 =head1 BUGS
 
 For an up-to-date bug listing and to submit a bug report, please
@@ -825,8 +2116,21 @@ visit our project website and let me know what you think of it.
 
 Many thanks to the following for their help and support:
 
- . SourceForge
- . Rosco Rouse
+=over 4
+
+=item *
+
+SourceForge
+
+=item *
+
+Rosco Rouse
+
+=back
+
+I would also like to thank Randal L. Schwartz for teaching the readers of
+the Feb 1999 issue of Web Techniques how to write a pre-forking web
+server, the code upon which the TaskForest Web server is built.
 
 =head1 COPYRIGHT
 

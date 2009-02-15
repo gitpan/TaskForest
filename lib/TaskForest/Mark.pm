@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Mark.pm 66 2009-01-23 02:53:39Z aijaz $
+# $Id: Mark.pm 98 2009-02-09 00:40:15Z aijaz $
 # 
 ################################################################################
 
@@ -44,7 +44,7 @@ use TaskForest::Family;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.14';
+    $VERSION     = '1.15';
 }
 
 # ------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ BEGIN {
 
 # ------------------------------------------------------------------------------
 sub mark {
-    my ($family_name, $job_name, $log_dir, $status, $cascade, $dependents_only, $family_dir) = @_;
+    my ($family_name, $job_name, $log_dir, $status, $cascade, $dependents_only, $family_dir, $quiet) = @_;
 
     my $jobs;
     
@@ -86,8 +86,6 @@ sub mark {
         my $family = TaskForest::Family->new(name => $family_name);
 
         $jobs = $family->findDependentJobs($job_name);
-
-        print "Cascade Jobs is ", join(", ", @$jobs), "\n";
 
         if ($cascade) {
             push (@$jobs, $job_name);
@@ -105,15 +103,15 @@ sub mark {
 
     
     foreach my $job (@$jobs) { 
-        markHelp($family_name, $job, $log_dir, $status);
+        markHelp($family_name, $job, $log_dir, $status, $quiet);
     }
 }
 
 
 sub markHelp {
-    my ($family_name, $job_name, $log_dir, $status) = @_;
+    my ($family_name, $job_name, $log_dir, $status, $quiet) = @_;
 
-    print "Marking job $family_name","::","$job_name as $status.\n";
+    print "Marking job $family_name","::","$job_name as $status.\n" unless $quiet;
     
     my $rc_file      = "$log_dir/$family_name.$job_name.";
     my $new_rc_file;

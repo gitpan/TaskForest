@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 66 2009-01-23 02:53:39Z aijaz $
+# $Id: Options.pm 98 2009-02-09 00:40:15Z aijaz $
 #
 ################################################################################
 
@@ -48,7 +48,7 @@ use Log::Log4perl qw(:levels);
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.14';
+    $VERSION     = '1.15';
 }
 
 # This is the main data structure that stores the options
@@ -78,6 +78,8 @@ my %all_options = (end_time          => 's',
                    err_file          => 's',
                    log_status        => undef,
                    ignore_regex      => 's@',
+                   default_time_zone => 's',
+                   date              => 's',
     );
 
 # These are the required options. The absence of any one of these will
@@ -177,18 +179,20 @@ sub getOptions {
     foreach my $option (keys %all_options) { $tainted_options->{$option} = $config->{$option} unless defined $tainted_options->{$option} }
 
     # Finally, pick a default value if necessary
-    $tainted_options->{wait_time}       = 60       unless defined $tainted_options->{wait_time};
-    $tainted_options->{end_time}        = '2355'   unless defined $tainted_options->{end_time};
-    $tainted_options->{once_only}       = 0        unless defined $tainted_options->{once_only};
-    $tainted_options->{verbose}         = 0        unless defined $tainted_options->{verbose};
-    $tainted_options->{collapse}        = 0        unless defined $tainted_options->{collapse};
-    $tainted_options->{chained}         = 0        unless defined $tainted_options->{chained};
-    $tainted_options->{log}             = 0        unless defined $tainted_options->{log};
-    $tainted_options->{log_threshold}   = 'info'   unless defined $tainted_options->{log_threshold};
-    $tainted_options->{log_file}        = "stdout" unless defined $tainted_options->{log_file};
-    $tainted_options->{err_file}        = "stderr" unless defined $tainted_options->{err_file};
-    $tainted_options->{log_status}      = 0        unless defined $tainted_options->{log_status};
-    $tainted_options->{ignore_regex}    = []       unless defined $tainted_options->{ignore_regex};
+    $tainted_options->{wait_time}         = 60                unless defined $tainted_options->{wait_time};
+    $tainted_options->{end_time}          = '2355'            unless defined $tainted_options->{end_time};
+    $tainted_options->{once_only}         = 0                 unless defined $tainted_options->{once_only};
+    $tainted_options->{verbose}           = 0                 unless defined $tainted_options->{verbose};
+    $tainted_options->{collapse}          = 0                 unless defined $tainted_options->{collapse};
+    $tainted_options->{chained}           = 0                 unless defined $tainted_options->{chained};
+    $tainted_options->{log}               = 0                 unless defined $tainted_options->{log};
+    $tainted_options->{log_threshold}     = 'info'            unless defined $tainted_options->{log_threshold};
+    $tainted_options->{log_file}          = "stdout"          unless defined $tainted_options->{log_file};
+    $tainted_options->{err_file}          = "stderr"          unless defined $tainted_options->{err_file};
+    $tainted_options->{log_status}        = 0                 unless defined $tainted_options->{log_status};
+    $tainted_options->{ignore_regex}      = []                unless defined $tainted_options->{ignore_regex};
+    $tainted_options->{default_time_zone} = 'America/Chicago' unless defined $tainted_options->{default_time_zone};
+    $tainted_options->{date}              = ''                unless defined $tainted_options->{date};
 
     # show help
     if ($tainted_options->{help}) {
@@ -254,6 +258,12 @@ sub getOptions {
     }
     if (defined ($tainted_options->{ignore_regex})) {
         $new_options->{ignore_regex} = $tainted_options->{ignore_regex};
+    }
+    if (defined ($tainted_options->{default_time_zone})) {
+        if ($tainted_options->{default_time_zone} =~ m!^([a-z0-9\/\_]+)!i) { $new_options->{default_time_zone} = $1; } else { croak "Bad default_time_zone"; }
+    }
+    if ($tainted_options->{date}) {
+        if ($tainted_options->{date} =~ m!^(\d{8})$!i) { $new_options->{date} = $1; } else { croak "Bad date"; }
     }
 
 
