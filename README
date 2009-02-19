@@ -4,7 +4,7 @@ NAME
     specify task dependencies.
 
 VERSION
-    This version is 1.15.
+    This version is 1.16.
 
 EXECUTIVE SUMMARY
     With the TaskForest Job Scheduler you can:
@@ -605,6 +605,10 @@ THE TASKFORESTD WEB SERVER
 
       taskforestd --config_file=taskforestd.cfg
 
+    You can stop the web server like this:
+
+      taskforestd --config_file=taskforestd.cfg --stop
+
     For example, if the configuration file specifies that the host on which
     taskforestd runs is www.example.com, then the web server will be
     available at http://www.example.com/ .
@@ -661,8 +665,10 @@ THE TASKFORESTD WEB SERVER
     included taskforestdssl program instead of taskforestd. The only
     difference between the two is that the taskforestd uses HTTP::Daemon,
     and taskforestdssl uses HTTP::Daemon::SSL. To set up SSL, you will need
-    to set up a server certificate. You can find more information in the
-    documentation of HTTP::Daemon::SSL.
+    to set up a server key and a server certificate. The locations of these
+    files may be specified in the taskforestd configuration file, under
+    server_key_file and server_cert file, respctively. You can find more
+    information in the documentation of HTTP::Daemon::SSL.
 
     If you would like to self-sign a certificate, there are some
     instructions in the HOWTO section later in this document.
@@ -741,6 +747,12 @@ A SAMPLE TASKFORESTD CONFIGURATION FILE
      #
      #valid_user = "test:e3MdYgHPUo.QY"
      #valid_user = "foo:jp8Xizm2S52yw"
+
+     # The path to the server private key file
+     server_key_file   = "certs/server-key.pem"
+
+     # The path to the server certificate
+     server_cert_file  = "certs/server-cert.pem"
 
 THE TASKFORESTD RESTFUL WEB SERVICE
     The TaskForest package includes a low-footprint web server written in
@@ -1482,9 +1494,6 @@ HOWTO
     This is what works for me (instructions found at
     http://www.modssl.org/docs/2.8/ssl_faq.html#ToC25 ).
 
-    All of the following should be done in the "certs" subdirectory of the
-    directory in which taskforestd is in.
-
      1) Create a server key
 
        openssl genrsa -des3 -out server.key.en 1024
@@ -1513,11 +1522,11 @@ HOWTO
 
         sign.sh server.csr
 
-        The sign.sh program can be found in the pkg.contrib/ subdirectory of
-        the mod_ssl distribution.  It is not clear whether or not I can
-        include that script in this distribution, so for now at least, you'll
-        have to use your own copy.  Make sure you save the signed certificate
-        as C<server-cert.pem> .
+        The sign.sh program can be found in the pkg.contrib/ subdirectory
+        of the mod_ssl distribution.  It is not clear whether or not I can
+        include that script in this distribution, so for now at least,
+        you'll have to use your own copy.  Make sure you specify the
+        locations of the files in the taskforestd configuration file.
 
 BUGS
     For an up-to-date bug listing and to submit a bug report, please visit

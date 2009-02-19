@@ -1,4 +1,3 @@
-#!/bin/bash
+#!/bin/sh
 
-# 2
 exit 0

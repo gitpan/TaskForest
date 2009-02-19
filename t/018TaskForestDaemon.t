@@ -18,7 +18,7 @@ my $has_ssl_client = 0;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.15';
+    $VERSION     = '1.16';
 
     if (eval("require FOO")) {
         $has_ssl_client = 1;
@@ -202,7 +202,7 @@ $request = HTTP::Request->new; ; $request->authorization_basic('test', 'test');
 $request->method("PUT");
 $request->uri("$uri_base/jobs.html/J1");
 $request->content(join("\n",
-                       "#!/bin/bash",
+                       "#!/bin/sh",
                        "",
                        "# 2",
                        "exit 0",
@@ -216,7 +216,7 @@ $request = HTTP::Request->new; ; $request->authorization_basic('test', 'test');
 $request->method("PUT");
 $request->uri("$uri_base/jobs.html/JNEW");
 $request->content(join("\n",
-                       "#!/bin/bash",
+                       "#!/bin/sh",
                        "",
                        "# This is a new job",
                        "exit 0",
@@ -232,7 +232,7 @@ $request = HTTP::Request->new; ; $request->authorization_basic('test', 'test');
 $request->method("PUT");
 $request->uri("$uri_base/jobs.html/JNEW");
 $request->content(join("\n",
-                       "#!/bin/bash",
+                       "#!/bin/sh",
                        "",
                        "# This is a new job",
                        "exit 0",
@@ -245,7 +245,7 @@ ok(-e "t/jobs/JNEW",  "PUT NEW created the file");
 
 # check overloaded post
 $request = POST  "$uri_base/jobs.html/JNEW", [ _method => "PUT", file_contents => join("\n",
-                                                                                       "#!/bin/bash",
+                                                                                       "#!/bin/sh",
                                                                                        "",
                                                                                        "# POST OVERLOADED modified new",
                                                                                        "exit 0",
@@ -260,7 +260,7 @@ $request = HTTP::Request->new; ; $request->authorization_basic('test', 'test');
 $request->method("PUT");
 $request->uri("$uri_base/jobs.html/JNEW");
 $request->content(join("\n",
-                       "#!/bin/bash",
+                       "#!/bin/sh",
                        "",
                        "# This is a new job idempotent",
                        "exit 0",
@@ -406,7 +406,7 @@ $request = HTTP::Request->new; ; $request->authorization_basic('test', 'test');
 $request->method("PUT");
 $request->uri("$uri_base/families.html/IGNORENEW");
 $request->content(join("\n",
-                       "#!/bin/bash",
+                       "#!/bin/sh",
                        "",
                        "# This is a new job",
                        "exit 0",
@@ -422,7 +422,7 @@ $request = HTTP::Request->new; ; $request->authorization_basic('test', 'test');
 $request->method("PUT");
 $request->uri("$uri_base/families.html/IGNORENEW");
 $request->content(join("\n",
-                       "#!/bin/bash",
+                       "#!/bin/sh",
                        "",
                        "# This is a new job",
                        "exit 0",
@@ -435,7 +435,7 @@ ok(-e "t/families/IGNORENEW",  "PUT NEW created the file");
 
 # check overloaded post
 $request = POST  "$uri_base/families.html/IGNORENEW", [ _method => "PUT", file_contents => join("\n",
-                                                                                       "#!/bin/bash",
+                                                                                       "#!/bin/sh",
                                                                                        "",
                                                                                        "# POST OVERLOADED modified new",
                                                                                        "exit 0",
@@ -450,7 +450,7 @@ $request = HTTP::Request->new; ; $request->authorization_basic('test', 'test');
 $request->method("PUT");
 $request->uri("$uri_base/families.html/IGNORENEW");
 $request->content(join("\n",
-                       "#!/bin/bash",
+                       "#!/bin/sh",
                        "",
                        "# This is a new job idempotent",
                        "exit 0",

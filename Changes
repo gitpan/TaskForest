@@ -1,5 +1,12 @@
 Revision history for Perl module TaskForest
 
+1.16 Wed Feb 18 2009
+
+Minor bug fix.  An incorrect test job file was shipped in the previous
+version.  This file relied on /bin/bash, and not /bin/sh.  This caused
+test 017 to fail on any machine that did not have /bin/bash.  The file has
+been fixed in this release.  
+
 1.15 Sun Feb 15 2009
 
 The ordering of jobs displayed by the status command was changed.  The
