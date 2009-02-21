@@ -1,5 +1,15 @@
 Revision history for Perl module TaskForest
 
+1.17 Sat Feb 21 2009
+
+The major change in this release is the addition of an alternative run
+wrapper script called run_with_log.  It performs the same functions as the
+original wrapper, and also creates a log file that captures both STDOUT
+and STDERR of the job being run.  On the website you can now display the
+log file of any running or completed job, by clicking on the displayed
+status of the job.  The RESTful web service also supports this.  A couple
+of entries have also been added to the HOWTO section of the documentation.
+
 1.16 Wed Feb 18 2009
 
 Minor bug fix.  An incorrect test job file was shipped in the previous

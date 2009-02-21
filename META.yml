@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               TaskForest
-version:            1.16
+version:            1.17
 abstract:           Simple, powerful task scheduler
 author:
     - Aijaz A. Ansari (v-cpan@enoor.com)

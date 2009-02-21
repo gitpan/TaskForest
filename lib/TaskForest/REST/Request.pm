@@ -51,10 +51,11 @@ sub POST {
         };
         $error = $@;
         if ($error) {
-            $hash->{message} = "Error.  Either the job hasn't run yet or is already marked as requested.  The system returned the following error:";
-            $hash->{error} = $error;
-            $hash->{error} =~ s/</&lt;/g;
-            $hash->{error} =~ s/>/&gt;/g;
+            $hash->{message}            = "Error.  Either the job hasn't run yet or is already marked ".
+                                          "as requested.  The system returned the following error:";
+            $hash->{error}              = $error;
+            $hash->{error}              =~ s/</&lt;/g;
+            $hash->{error}              =~ s/>/&gt;/g;
             $parent_hash->{http_status} = RC_INTERNAL_SERVER_ERROR;
         }
     }
@@ -64,15 +65,17 @@ sub POST {
         };
         $error = $@;
         if ($error) {
-            $hash->{message} = "Error.  Either the job hasn't run yet or some of the supporting files are missing.  The system returned the following error:";
-            $hash->{error} = $error;
-            $hash->{error} =~ s/</&lt;/g;
-            $hash->{error} =~ s/>/&gt;/g;
+            $hash->{message}            = "Error.  Either the job hasn't run yet or some of the ".
+                                          "supporting files are missing.  The system returned the following error:";
+            $hash->{error}              = $error;
+            $hash->{error}              =~ s/</&lt;/g;
+            $hash->{error}              =~ s/>/&gt;/g;
             $parent_hash->{http_status} = RC_INTERNAL_SERVER_ERROR;
         }
     }
     else {
         $parent_hash->{http_status} = RC_BAD_REQUEST;
+        $parent_hash->{http_content} = "500 - Bad Request.  The only supported TaskForest requests are Mark and Rerun.";
     }
 
     

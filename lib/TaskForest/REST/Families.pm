@@ -21,7 +21,7 @@ sub handle {
     return $hash;
 }
 
-sub POST    { &TaskForest::REST::methodNotAllowed($_[1], 'GET'); }
+sub POST    { &TaskForest::REST::methodNotAllowed($_[1], 'HEAD,GET,PUT,DELETE'); }
 
 
 sub DELETE  {

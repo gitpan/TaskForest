@@ -23,7 +23,7 @@ WriteMakefile(
     INSTALLSITEBIN => "bin",
     INSTALLSCRIPT => "bin",
     INSTALLBIN => "bin",
-    EXE_FILES => ["run", "taskforest", "status", "rerun", "mark", "taskforestd", "gen_passwd", "taskforestdssl"],
+    EXE_FILES => ["run", "run_with_log", "taskforest", "status", "rerun", "mark", "taskforestd", "gen_passwd", "taskforestdssl"],
 );
 
 

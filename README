@@ -4,7 +4,7 @@ NAME
     specify task dependencies.
 
 VERSION
-    This version is 1.16.
+    This version is 1.17.
 
 EXECUTIVE SUMMARY
     With the TaskForest Job Scheduler you can:
@@ -306,10 +306,24 @@ OPTIONS
        This is the location of the run wrapper that is used to execute the
        job files.  The run wrapper is also responsible for creating the
        semaphore files that denote whether a job ran successfully or not.
-       You can use the provided run wrapper (bin/run).  If you need more
-       functionality, like logging status to a database, you can create
-       your own run wrapper, as long as it preserves the functionality of
-       the default run_wrapper.   
+       The system comes with two run wrappers:
+        bin/run
+        and
+        bin/run_with_log
+
+       The first provides the most basic functionality, while the second
+       also captures the stdout and stderr from the invoked job and saves
+       it to a file in the log directory.  You may use either run wrapper.
+       If you need additional functionality, you can create your own run
+       wrapper, as long as it preserves the functionality of the default
+       run_wrapper.
+
+       You are encouraged to use run_with_log because of the extra
+       functionality available to you.  If you also use the included web
+       server to look at the status of today's job, or to browser the logs
+       from earlier days, clicking on a the status of a job that's already
+       run will bring up the log file associated with that job.  This is
+       very convenient if you're trying to investigate a job failure.
 
      --log_dir=/a/b/l  [or environment variable TF_LOG_DIR]
 
@@ -1335,7 +1349,14 @@ THE TASKFORESTD RESTFUL WEB SERVICE
            Lines 02-19 will appear 0 or more times, once for every job that
            appears in the output of the status command.  The --collapse option
            is implied in the web service; pending repeat jobs are not
-           displayed.        
+           displayed.
+
+           If the job has an associated log file (in other words: if the
+           wrapper script that ran it was run_with_log, and the status is
+           either Running, Success or Failure) then line 08 will look like
+           this:
+
+           08 |       <dd><a href="/logFile.html/$output_file">$status</a></dd>
 
            HTTP STATUS CODES
            .................
@@ -1406,6 +1427,13 @@ THE TASKFORESTD RESTFUL WEB SERVICE
            Lines 02-17 will appear 0 or more times, once for every job that
            appears in the output of the status command.  
 
+           If the job has an associated log file (in other words: if the
+           wrapper script that ran it was run_with_log, and the status is
+           either Running, Success or Failure) then line 08 will look like
+           this:
+
+           08 |       <dd><a href="/logFile.html/$output_file">$status</a></dd>
+
            HTTP STATUS CODES
            .................
            200 - OK
@@ -1413,6 +1441,97 @@ THE TASKFORESTD RESTFUL WEB SERVICE
            HTTP RESPONSE HEADERS
            .....................
            o Date
+           o Content-Length
+           o Content-Type
+
+     PUT
+     ===
+           This URI does not support this method.
+
+     POST
+     ====
+           This URI does not support this method.
+
+     DELETE
+     ======
+           This URI does not support this method.
+
+   /rest/1.0/logFile.html/{file}
+     HEAD
+     ====
+           DESCRIPTION
+           ...........
+           Send this URI the HEAD method to see if the log file specified
+           within the URI has changed recently.
+
+           REPRESENTATION SENT BY CLIENT TO SERVER
+           .......................................
+           The name of the log file is represented by {file} and is part
+           of the URI. 
+
+           REPRESENTATION SENT BY SERVER TO CLIENT
+           .......................................
+           The HTTP content is empty.
+
+           HTTP STATUS CODES
+           .................
+           200 - Everything's OK
+           304 - The resource has not been modified since the time
+                 specified in the request If-Modified-Since header,
+                 OR 
+                 The calculated Etag of the resource is the same as that
+                 specified in the request If-None-Match header.
+           404 - The resource was not found
+
+           HTTP RESPONSE HEADERS
+           .....................
+           o Date
+           o Last-Modified
+           o ETag
+           o Content-Length
+           o Content-Type
+
+     GET
+     ===
+           DESCRIPTION
+           ...........
+           Send this URI the HEAD method to browse the log file specified
+           within the URI. 
+
+           Send this URI the GET method to browse the log directory for a
+           particular date - to see which jobs ran on that day, and when, and
+           what the exit codes were.
+
+           REPRESENTATION SENT BY CLIENT TO SERVER
+           .......................................
+           The name of the log file is represented by {file} and is part
+           of the URI. 
+
+           REPRESENTATION SENT BY SERVER TO CLIENT
+           .......................................
+           In a typical case, the server will send the header and footer,
+           and the 'real' content in between.  The content will look like
+           this: 
+
+           01 | <div class="title">Viewing log file $file_name</div>
+           02 |
+           03 | <div id="file_contents_div" class="file_contents"><pre>$file_contents</pre></div>
+
+           HTTP STATUS CODES
+           .................
+           200 - Everything's OK
+           304 - The resource has not been modified since the time
+                 specified in the request If-Modified-Since header,
+                 OR 
+                 The calculated Etag of the resource is the same as that
+                 specified in the request If-None-Match header.
+           404 - The resource was not found
+
+           HTTP RESPONSE HEADERS
+           .....................
+           o Date
+           o Last-Modified
+           o ETag
            o Content-Length
            o Content-Type
 
@@ -1489,6 +1608,48 @@ HOWTO
     This is the line I have in my crontab:
 
      02 00 * * * /usr/local/bin/taskforest --config_file=/foo/bar/taskforest.cfg
+
+  Allow a user to view the web site
+    Please make sure you read the section entitled "The Taskforestd Web
+    Server" for important security considerations.
+
+    Having said that, : The userids and passwords are specified in the
+    configuration file using the same format as Apache's .htpasswd files.
+    You can see commented-out examples of this in the configuration file
+    taskforestd.cfg. For your convenience, the TaskForest distribution
+    includes a program called gen_passwd that generates text that you can
+    copy and paste into the config file:
+
+     gen_passwd foo bar
+
+    The above command will print out somthing that looks like the following;
+
+     foo:4poVZGiAlO1BY
+
+    This text can then be copied and pasted into the configuration file.
+
+    Make sure you stop the server and restart it after making any changes to
+    the configuration file.
+
+  Start the web server
+    To start the web server, run the taskforestd program with the
+    --config_file and --start options. For example:
+
+     taskforestd --config_file=taskforestd.cfg  --start
+
+    Or, in the case of the ssl version of the server:
+
+     taskforestdssl --config_file=taskforestd.cfg  --start
+
+  Stop the web server
+    To start the web server, run the taskforestd program with the
+    --config_file and --stop options. For example:
+
+     taskforestd --config_file=taskforestd.cfg  --stop
+
+    Or, in the case of the ssl version of the server:
+
+     taskforestdssl --config_file=taskforestd.cfg  --stop
 
   Create a self-signed certificate with openssl.
     This is what works for me (instructions found at

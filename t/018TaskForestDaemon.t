@@ -1,6 +1,6 @@
 # -*- perl -*-
 
-use Test::More tests => 305;
+use Test::More tests => 306;
 
 use strict;
 use warnings;
@@ -18,17 +18,17 @@ my $has_ssl_client = 0;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.16';
+    $VERSION     = '1.17';
 
-    if (eval("require FOO")) {
-        $has_ssl_client = 1;
-    }
-    else {
-        $has_ssl_client = 0;
-        diag("The SSL client socket doesn't appear to be installed.");
-        diag("I won't try connecting to an SSL server, but will try");
-        diag("to connect to a non-SSL server instead");
-    }
+#     if (eval("require FOO")) {
+#         $has_ssl_client = 1;
+#     }
+#     else {
+#         $has_ssl_client = 0;
+#         diag("The SSL client socket doesn't appear to be installed.");
+#         diag("I won't try connecting to an SSL server, but will try");
+#         diag("to connect to a non-SSL server instead");
+#     }
 }
 
 #END { killTaskforestd(); }
@@ -55,7 +55,7 @@ copy("$src_dir/IGNORE04_HASH", "$dest_dir/#IGNORE04#");
 copy("$src_dir/IGNORE05_TILDE", "$dest_dir/IGNORE05~");
 
 
-print "has_ssl_client = $has_ssl_client\n";
+#print "has_ssl_client = $has_ssl_client\n";
 
 
 my $skip = 0;
@@ -91,7 +91,7 @@ my $skip = 0;
 
 SKIP : {
 
-skip "taskforestd web server not running", 305 if $skip;
+skip "taskforestd web server not running", 306 if $skip;
 my $user_agent = LWP::UserAgent->new;
 $user_agent->agent("MyApp/0.1 ");
 my $uri_base = "http://127.0.0.1:1111/rest/1.0";
@@ -577,7 +577,23 @@ ok($response->code == RC_OK, "Status Invoked");
                 ["SMALL_CASCADE", "J8",           "Waiting", "-", "America/Chicago", "00:00", "--:--", "--:--"],
             ]);
 
-} 
+
+# now test BAD request
+ $request = POST  "$uri_base/request.html", [ 
+     family => 'SMALL_CASCADE',
+     job => 'J2',
+     submit => 'JUNK',
+     options => 'cascade',
+     ]; ; $request->authorization_basic('test', 'test'); 
+$response = $user_agent->request($request);
+ok($response->code == RC_BAD_REQUEST, "Bad Request for Request handled.");
+
+
+}
+
+
+
+
 #killTaskforestd();
 
 

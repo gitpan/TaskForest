@@ -21,7 +21,7 @@ sub handle {
     return $hash;
 }
 
-sub POST    { &TaskForest::REST::methodNotAllowed($_[1], 'GET'); }
+sub POST    { &TaskForest::REST::methodNotAllowed($_[1], 'HEAD,GET,PUT,DELETE'); }
 
 
 sub DELETE  {
@@ -29,7 +29,7 @@ sub DELETE  {
 
     my $dir       = $parent_hash->{config}->{job_dir};
     my $file_name = $h->{path_info};
-    $file_name    =~ s/[^a-z0-9_\-\/\-\:\,\.]//ig;
+    $file_name    =~ s/[^a-z0-9_\-\:\,\.]//ig;
 
     # save this for the getModified function
     $hash->{_resource_file_name} = "$dir/$file_name";
@@ -46,7 +46,7 @@ sub PUT     {
 
     my $dir       = $parent_hash->{config}->{job_dir};
     my $file_name = $h->{path_info};
-    $file_name    =~ s/[^a-z0-9_\-\/\-\:\,\.]//ig;
+    $file_name    =~ s/[^a-z0-9_\-\:\,\.]//ig;
 
     # save this for the getModified function
     $hash->{_resource_file_name} = "$dir/$file_name";

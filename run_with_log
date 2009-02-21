@@ -1,0 +1,134 @@
+#!/usr/local/bin/perl
+
+################################################################################
+#
+# File:    run
+# Date:    $Date: 2008-04-06 20:13:45 -0500 (Sun, 06 Apr 2008) $
+# Version: $Revision: 119 $
+#
+# This is the default run wrapper program.  A run wrapper is responsible for
+# executing a job and maintaining 
+#
+################################################################################
+
+use strict;
+use warnings;
+use DateTime;
+
+
+my $family_name   = shift;
+my $job_name      = shift;
+my $job_file_name = shift;
+my $log_dir       = shift;
+my $script_dir    = shift;
+my $pid_file      = shift;
+my $success_file  = shift;
+my $failure_file  = shift;
+
+
+my $start_time    = time;
+my $pid           = $$;
+
+print "Running job $family_name $job_name with pid $$\n";
+open (PID,  ">$pid_file") || die "Can't open PID file $pid_file";
+print PID "pid: $pid\n";
+print PID "actual_start: $start_time\n";
+close PID;
+
+my $script = "$script_dir/$job_file_name";
+
+# write header to log file
+#
+my $start       = localtime($start_time);
+my $stdout_file = "$log_dir/$family_name.$job_name.$pid.$start_time.stdout";
+
+my $header      = join("\n",
+                       "**********************************************************************",
+                       "Start Time:   $start",                 
+                       "Family:       $family_name",        
+                       "Job:          $job_name",              
+                       "Job File:     $job_file_name",    
+                       "Log Dir:      $log_dir",           
+                       "Script Dir:   $script_dir",     
+                       "Pid File:     $pid_file",         
+                       "Success File: $success_file", 
+                       "Failure File: $failure_file", 
+                       "Out/Err File: $stdout_file",   
+                       "",
+                       "**********************************************************************",
+                       "");
+                  
+if (open (STDOUT_FH, ">$stdout_file")) {
+    print STDOUT_FH $header;
+    close STDOUT_FH;
+}
+
+system("$script >>$stdout_file 2>&1");
+my $rc = $?;
+
+# append footer to log file
+#
+my $end_time    = time;
+my $end      = localtime($end_time);
+my $start_dt = DateTime->from_epoch(epoch => $start_time);
+my $end_dt   = DateTime->from_epoch(epoch => $end_time);
+my $dur      = $end_dt->subtract_datetime($start_dt);
+
+my ($days, $hours, $minutes, $seconds) = $dur->in_units('days', 'hours', 'minutes', 'seconds');
+
+my @dur_text = ();
+if ($days)     { push(@dur_text, getPlurals($days, 'day')); }
+if ($hours)    { push(@dur_text, getPlurals($hours, 'hour')); }
+if ($minutes)  { push(@dur_text, getPlurals($minutes, 'minute')); }
+
+push(@dur_text, getPlurals($seconds, 'second')); 
+my $dur_text = join(", ", @dur_text);
+
+my $footer   = join("\n",
+                    "",
+                    "**********************************************************************",
+                    "Start Time: $start",
+                    "End Time:   $end",
+                    "Duration:   $dur_text",
+                    "Exit Code:  $rc",
+                    "**********************************************************************",
+                    "");
+                    
+if (open (STDOUT_FH, ">>$stdout_file")) {
+    print STDOUT_FH $footer;
+    close STDOUT_FH;
+}
+
+
+
+
+
+open (PID,  ">>$pid_file") || die "Can't open PID file $pid_file";
+print PID "stop: $end_time\n";
+
+my $status_file;
+if ($rc) { 
+    $status_file = $failure_file;
+}
+else { 
+    $status_file = $success_file;
+}
+
+print PID "rc: $rc\n";
+close PID;
+
+# touch status file
+open (S, ">$status_file") || die "can't open $status_file status file";
+print S "$rc\n";
+close S;
+
+
+sub getPlurals {
+    my ($num, $unit) = @_;
+    if ($num == 1) {
+        return "$num $unit";
+    }
+    else {
+        return "$num ${unit}s";
+    }
+}
