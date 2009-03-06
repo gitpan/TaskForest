@@ -1,74 +1,262 @@
 body { 
-	margin: 0;
+   font-family: Helvetica, Arial, sans-serif;
+   /*
+   background-image: url(/grid974.gif);
+   */
+   background-repeat: repeat-y;   
+   margin: 10px;
+   text-align: left;
+   color: #000033;
+}
+
+
+div#bar { 
+   margin: 10px 0 0 0;
+   border-bottom: 4px solid #333366;
+}
+
+div#thin_bar { 
+   border-bottom: 1px solid #333366;
+   margin: 0px 0 10px 0;
+}
+
+
+div.logo { 
+   font-size: 197%;
+   font-weight: bold;
+   width: 164px;
+   height: 80px;
+   float: left;
+   padding: 4px 0 0 0px;
+   background-image: url(/logo.gif);
+   background-repeat: no-repeat;
+   margin-top: 8px;
+}
+
+div.main_title { 
+   font-size: 197%;
+   font-weight: bold;
+   width: 164px;
+   float: left;
+   padding: 4px 0 0 0px;
+}
+
+div.nav { 
+	width: 810px; 
+	float: left;
+	padding: 0 0 0 0;
+	margin: 24px 0 0 0;
+}
+
+div#nav { 
+	position: absolute;
+	left: 174px;  /* 164 px + 10 px body margin */
+	top: 72px;
 	padding: 0;
-	font-family: Helvetica, Arial, sans-serif;
-	font-size: 85%;
+	margin: 0;
 }
 
-div.header_navigation { 
-	background-color: #ccccf0;
-	border-top:       solid 1px #ddddff;
-	border-bottom:    solid 1px #9999bb;
-	padding:          4px;
-	margin:           0;
-    padding-left:     8px;
+
+
+div.link_small { 
+	width: 65px; 
+	border-right: 1px solid #ffffff;
+	height: 16px;
+	padding: 4px 4px 4px 2px;
 	float: left;
-	width:  632px;
+	margin-right: 10px;
 }
 
-div.header_navigation a { 
-	margin-right: 2em;
-}
-
-form#rerun { 
-	padding-bottom: 8px; 
-	border-bottom: 1px dashed #9999bb;
+div.link { 
+	width: 75px; 
+	border-right: 1px solid #ffffff;
+	background-color: #333366;
+	height: 16px;
+	padding: 4px 2px 4px 4px;
+	float: left;
+	cursor: pointer;
+	font-size: 93%;
 	margin-bottom: 8px;
-
 }
 
-form#mark { 
-	padding-bottom: 8px; 
-	border-bottom: 1px dashed #9999bb;
+div.linkh { 
+	width: 75px; 
+	background-color: #468966;
+	border-right: 1px solid #ffffff;
+	height: 16px;
+	padding: 4px 2px 4px 4px;
+	float: left;
+	cursor: pointer;
 	margin-bottom: 8px;
+	font-size: 93%;
 
 }
 
-div#forms_div { 
-    width: 168px; 
+div.link_last { 
+	width: 318px; 
+	height: 16px;
+	padding: 4px 0 4px 0;
 	float: left;
-	background-color: #ccccf0;
-	padding: 4px;
+    border-right: 0;
+	background-color: #333366;
+	margin-bottom: 8px;
 }
-div#main_div { 
-	float: left;
-	padding: 4px;
-	padding-left: 8px;
-	width: 632px;
-	
+
+a:link							{ text-decoration: none; }
+a:visited						{ text-decoration: none; }
+a:hover							{ text-decoration: none; }
+a:active						{ text-decoration: none; }
+
+div.link a:link					{ text-decoration: none; color: #ffffff; }
+div.link a:visited				{ text-decoration: none; color: #ffffff; }
+div.link a:hover				{ text-decoration: none; color: #ffffff; }
+div.link a:active				{ text-decoration: none; color: #ffffff; }
+
+div.linkh a:link				{ text-decoration: none; color: #ffffff; }
+div.linkh a:visited				{ text-decoration: none; color: #ffffff; }
+div.linkh a:hover				{ text-decoration: none; color: #ffffff; }
+div.linkh a:active				{ text-decoration: none; color: #ffffff; }
+
+
+div.logo a { 
+   text-decoration: none; 
+   color: #333366;
+}
+
+div.version { 
+	position: absolute;
+	left: 174px; 
+	top: 50px;
+	font-size: 77%;
+	width: 164px;
+}
+
+div.blurb { 
+   font-size: 93%;
+   width: 318px;
+   float: left;
+   padding: 4px 0 0 0;
+}
+
+
+div.clear_both { 
+   clear: both;
 }
 
 div.cb { 
   clear: both;
 }
 
+div#main_body { 
+	   width: 974px;
+	/* 
+	   */
+}
 
-div.logo { 
-	background-color: #333366;
-	border-top:       1px solid #333366;
-	border-bottom:   1px solid #333366;
-	color:            #ccccf0;
-	width:  168px;
-	padding: 4px;
-	float: left;
+h1 { 
+	font-size: 174%;
+    /*
+	0 1 2 3 4 5 6 7 8 9 a b c d e f 10  fe = e * 16^0 + f * 16^1
+	1011
+    color: #995533;
+    */
 	font-weight: bold;
-	text-align: center;
+    margin: 0 0 1em 0px;
 }
 
 
-label { 
+
+div.width1		{ width: 72px;	float: left;	margin-right: 10px; }
+div.width2		{ width: 154px;	float: left;	margin-right: 10px; }
+div.width3		{ width: 236px;	float: left;	margin-right: 10px; }
+div.width4		{ width: 318px;	float: left;	margin-right: 10px; }
+div.width6		{ width: 482px;	float: left;	margin-right: 10px; }
+div.width8		{ width: 646px;	float: left;	margin-right: 10px; }
+div.width9		{ width: 728px;	float: left;	margin-right: 10px; }
+div.width10		{ width: 810px;	float: left;	margin-right: 10px; }
+div.width10nm	{ width: 810px;	float: left;	margin-right: 0; }
+
+
+div.last { 
+	margin-right: 0;
+}
+
+
+div.primary_header { 
+	font-size: 131%;
+	font-weight: bold;
+	margin-bottom: 6px;
+}
+
+div.section_header { 
+	font-size: 108%;
+	font-weight: bold;
+	margin-bottom: 6px;
+}
+
+div.new_section_header { 
+	font-size: 108%;
+	font-weight: bold;
+	margin-bottom: 6px;
+	margin-top: 2em;
+	border-top: 1px solid #333366;
+	padding-top: 0.5em;
+}
+
+p { 
+	margin-bottom: 1em;
+}
+
+
+
+ul { 
+	margin: 1em 0 0 1em;
+}
+
+ol.inner { 
+	margin-left: 1em;
+}
+
+#inner_nav li { 
+	margin-bottom: 0.25em;
+}
+#inner_nav ol li { 
+	border-left: 2px solid #ffffff;
+	padding-left: 4px;
+}
+#inner_nav ol li.highlight1 { 
+	border-left: 2px solid #468966;
+}
+ul.bullet li{ 
+	list-style-image: url(/bullet.gif);
+}
+
+div.code { 
+	border: 1px solid #be9090;
+	padding: 4px;
+	background-color: #fef8f0;
+	margin: 1em 0 1em 0 ;
 	font-size: 85%;
-	display: block;
+	/* 
+	   */
+}
+
+div.config_file { 
+	border: 1px solid #be9090;
+	padding: 4px;
+	background-color: #fef8f0;
+	margin: 1em 0 1em 0 ;
+	font-size: 85%;
+}
+
+span.comments { 
+	color: #006600;
+}
+
+
+
+div.label { 
+	text-align: right;
 	margin-top: 4px;
 }
 
@@ -80,9 +268,10 @@ div.family_title,
 div.job_title,
 div.title
 { 
-	font-size: 100%;
+	font-size: 116%;
+	/*
 	border-bottom: 2px solid black;
-	padding-bottom: 4px;
+	*/
 	font-weight: bold;
 	margin: 1em 0 1em 0;
 }
@@ -113,7 +302,7 @@ table.status {
 }
 
 table.status th { 
-	background-color: #333366;
+	background-color: #333333;
 	color: white;
 	padding: 2px;
 	font-weight: normal;
@@ -128,10 +317,10 @@ table.status td {
 
 
 .oe_odd { 
-	background-color: #e0c0a0;
+	background-color: #ffffff;
 }
 .oe_even { 
-	background-color: #f0f0d0;
+	background-color: #c0c0c0;
 }
 
 div.error { 

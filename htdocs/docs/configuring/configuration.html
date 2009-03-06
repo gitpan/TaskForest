@@ -1,0 +1,82 @@
+<include TaskForest::REST::PassThrough /head.html />
+
+<include TaskForest::REST::PassThrough /head_docs.html />
+
+<div class="width6 last">
+  <div class="section_header">Configuration File</div>
+
+  <p>
+    The 'taskforest' and 'status' commands now accept a
+    ``<a href="/docs/configuring/options.html#config_file">--config_file=f</a>'' option. You can now specify commonly used options
+    in the config file, so you do not have to include them on the command
+    line. The config file should contain one option per command line. The
+    following sample config file shows the list of all supported options,
+    and documents their usage.
+  </p>
+
+  <div class="config_file"><pre><code>
+<span class="comments"># ########################################</span>
+<span class="comments"># SAMPLE CONFIG FILE</span>
+<span class="comments"># ########################################</span>
+<span class="comments"># These are the four required command line</span>
+<span class="comments"># arguments to taskforest</span>
+<a class="config_file" href="/docs/configuring/options.html#log_dir">log_dir</a>         = "t/logs"
+<a class="config_file" href="/docs/configuring/options.html#family_dir">family_dir</a>      = "/usr/local/taskforest/families"
+<a class="config_file" href="/docs/configuring/options.html#job_dir">job_dir</a>         = "/usr/local/taskforest/jobs"
+<a class="config_file" href="/docs/configuring/options.html#run_wrapper">run_wrapper</a>     = "/usr/local/bin/run"
+
+<span class="comments"># wait this many seconds between iterations of</span>
+<span class="comments"># the main loop</span>
+<a class="config_file" href="/docs/configuring/options.html#wait_time">wait_time</a>       = 60
+
+<span class="comments"># stop taskforest at this time of day</span>
+<a class="config_file" href="/docs/configuring/options.html#end_time">end_time</a>        = 2355
+
+<span class="comments"># if set to 1, run taskforest once only and</span>
+<span class="comments"># exit immediately after that</span>
+<a class="config_file" href="/docs/configuring/options.html#once_only">once_only</a>       = 0
+
+<span class="comments"># print out extra logs - may be redundant,</span>
+<span class="comments"># due to log_threshold, below</span>
+<span class="comments"># THIS OPTION WILL BE DEPRECATED SOON.</span>
+<a class="config_file" href="/docs/configuring/options.html#verbose">verbose</a>         = 0
+
+<span class="comments"># by default assume that the --collapse option</span>
+<span class="comments"># was given to the status command</span>
+<a class="config_file" href="/docs/configuring/options.html#collapse">collapse</a>        = 1  <span class="comments"># change from previously</span>
+                     <span class="comments"># default behavior</span>
+
+<span class="comments"># by default assume that all repeating jobs</span>
+<span class="comments"># have the --chained=>1 attribute set</span>
+<a class="config_file" href="/docs/configuring/options.html#chained">chained</a>         = 1  <span class="comments"># change from previously</span>
+                     <span class="comments"># default behavior</span>
+
+<span class="comments"># log stdout and stderr to files</span>
+<a class="config_file" href="/docs/configuring/options.html#log">log</a>             = 1
+
+<span class="comments"># by default, log stdout messages with status >= this value.</span>
+<span class="comments"># This only effects stdout</span>
+<span class="comments"># The sequence of thresholds (smallest to largest) is:</span>
+<span class="comments"># debug, info, warn, error, fatal</span>
+<a class="config_file" href="/docs/configuring/options.html#log_threshold">log_threshold</a>   = "warn"
+
+<span class="comments"># The log_file and err_file names should NOT end with</span>
+<span class="comments"># '.0' or '.1' because then they will be mistaken for</span>
+<span class="comments"># job log files</span>
+<a class="config_file" href="/docs/configuring/options.html#log_file">log_file</a>        = "stdout"  
+<a class="config_file" href="/docs/configuring/options.html#err_file">err_file</a>        = "stderr"  
+
+<span class="comments"># currently unused</span>
+<a class="config_file" href="/docs/configuring/options.html#log_status">log_status</a>      = 0
+
+<span class="comments"># ignore family files whose names match these regexes</span>
+<a class="config_file" href="/docs/configuring/options.html#ignore_regex">ignore_regex</a>    = "~&#036;"
+<a class="config_file" href="/docs/configuring/options.html#ignore_regex">ignore_regex</a>    = ".bak&#036;"
+<a class="config_file" href="/docs/configuring/options.html#ignore_regex">ignore_regex</a>    = '\&#036;'
+  </code></pre></div>
+
+  
+<div class="clear_both"></div>
+
+
+<include TaskForest::REST::PassThrough /foot.html />

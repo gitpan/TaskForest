@@ -1,61 +1,85 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
- <head>
-  <title>TaskForest - $title</title>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  "http://www.w3.org/TR/html4/loose.dtd">
 
-  <link rel=stylesheet TYPE="text/css" href="/css/styles.css">
+<html>
+  <head> 
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+
+<!-- This must be the first css link.  Reset everything -->
+<link rel="stylesheet" type="text/css" href="/yui/build/reset-fonts-grids/reset-fonts-grids.css">
+
+<!-- Fonts CSS - Recommended but not required -->
+<link rel="stylesheet" type="text/css" href="/yui/build/fonts/fonts-min.css">
+
+<!-- Core + Skin CSS -->
+<link rel="stylesheet" type="text/css" href="/yui/build/menu/assets/skins/sam/menu.css">
+
+<!-- Dependencies --> 
+<script type="text/javascript" src="/yui/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="/yui/build/container/container_core-min.js"></script>
+<script type="text/javascript" src="/yui/build/yahoo/yahoo-min.js"></script>
+
+
+<!-- Source File -->
+<script type="text/javascript" src="/yui/build/menu/menu-min.js"></script>
+<script type="text/javascript" src="/yui/build/event/event-min.js"></script>
+<script type="text/javascript" src="/yui/build/connection/connection-min.js"></script>
+
+<script type="text/javascript">
+  function mc (loc) {
+     window.location = loc;
+  }
+  function mor (id) {
+     var e = document.getElementById(id);
+     e.className = "linkh";
+  }
+  function mot (id) {
+     var e = document.getElementById(id);
+     e.className = "link";
+  }
+  function morl (id) {
+     var e = document.getElementById(id);
+     e.className = "link_lasth";
+  }
+  function motl (id) {
+     var e = document.getElementById(id);
+     e.className = "link_last";
+  }
+</script>
+
+<title>TaskForest - $title</title>
+
+   <link rel=stylesheet TYPE="text/css" href="/css/styles.css">
+
+   <!-- Boy, do I hate IE -->
+<!--[if IE]>
+  <link rel="stylesheet" type="text/css" href="/css/iestyles.css">
+<![endif]-->
+
+  </head>
+  <body class="yui-skin-sam">
+    <div id=main_body>
   
- </head>
- <body class="yui-skin-sam">
+      <div id=bar></div>
+      <div class="logo"></div>
+      <div class="width8">
+        <div class="main_title">TaskForest</div>
+        <div class="blurb">A simple, expressive, open-source, text-file-based Job Scheduler with console, HTTP, and RESTful API interfaces. </div>
+        <div class="version">Version 1.18</div>
+      </div>
+      <div id="nav">
+        <div id="link1" class="link"      onMouseOver="mor('link1')" onMouseOut="mot('link1')" onClick="mc('/familyList.html')" ><a href="/familyList.html">Families</a></div>
+        <div id="link2" class="link"      onMouseOver="mor('link2')" onMouseOut="mot('link2')" onClick="mc('/jobList.html')"    ><a href="/jobList.html">Jobs</a></div>
+        <div id="link3" class="link"      onMouseOver="mor('link3')" onMouseOut="mot('link3')" onClick="mc('/status.html')"     ><a href="/status.html">Status</a></div>
+        <div id="link6" class="link"      onMouseOver="mor('link6')" onMouseOut="mot('link6')" onClick="mc('/logs_form.html')"  ><a href="/logs_form.html">Logs</a></div>
+        <div id="link7" class="link"      onMouseOver="mor('link7')" onMouseOut="mot('link7')" onClick="mc('/about.html')"      ><a href="/about.html">About</a></div>
+        <div id="link8" class="link"      onMouseOver="mor('link8')" onMouseOut="mot('link8')" onClick="mc('/docs.html')"       ><a href="/docs.html">Help</a></div>
+        <div id="link9" class="link_last"                                                                                       >&nbsp;</div>
+        <div class="clear_both"></div>
+      </div>
+      <div class="clear_both"></div>
+      
+      <div id=thin_bar></div>
 
-   <div class=logo>TaskForest 1.17</div>
-   <div class="header_navigation">
-     <a href="/familyList.html">Family List</a>
-     <a href="/jobList.html">Job List</a>
-     <a href="/status.html">Status</a>
-   </div>
-   <div class=cb></div>
-   
-
-   <div id="forms_div">
- 
-   <form id="rerun" class="request" method="POST" action="/request.html">
-     <label for="rerun_family">Family</label><input id="rerun_family" name="family" />
-     <label for="rerun_job">Job</label><input id="rerun_job" name="job" />
-     <label for="rerun_options">Options</label><select id="rerun_options" name="options">
-       <option value="">None</option>
-       <option value="cascade">Cascade</option>
-       <option value="dependents_only">Dependents Only</option>
-     </select>
-     <input type=submit name=submit  value="Rerun"/>
-   </form>
-
-   
-   <form id="mark" class="request" method="POST" action="/request.html">
-     <label for="mark_family">Family</label><input id="mark_family" name="family" /><br />
-     <label for="mark_job">Job</label><input id="mark_job" name="job" /><br />
-     <label for="mark_options">Options</label><select id="mark_options" name="options">
-       <option value="">None</option>
-       <option value="cascade">Cascade</option>
-       <option value="dependents_only">Dependents Only</option>
-     </select>
-     <label for="mark_status">Status</label><select id="mark_status" name="status">
-       <option value="Success">Success</option>
-       <option value="Failure">Failure</option>
-     </select>
-     <input type=submit name=submit  value="Mark"/>
-   </form>
-
-
-   <form id="logs" class="request" method="GET" action="/logs.html">
-     <label for="logs_date">Date</label><input id="logs_date" name="date" size=8 maxlength=8/><br />
-     <input type=submit name=submit  value="View Logs"/>
-   </form>
-
-   
-
-   </div>
-
-   <div id="main_div">
-       
-       
+      </div>
+      

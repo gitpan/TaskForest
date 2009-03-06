@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 119 2009-02-20 04:56:23Z aijaz $
+# $Id: Family.pm 132 2009-03-05 01:32:59Z aijaz $
 #
 ################################################################################
 
@@ -177,7 +177,7 @@ use Time::Local;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.17';
+    $VERSION     = '1.18';
 }
 
 # ------------------------------------------------------------------------------
@@ -329,15 +329,26 @@ sub getCurrent {
     foreach my $job (values %$waiting_jobs) {
         my $started_semaphore = "$log_dir/$self->{name}.$job->{name}.started";
         if (-e $started_semaphore) { # already running
-            open (F, $started_semaphore) || croak "Can't open file $started_semaphore";
-            $_ = <F>;
-            close F;
-            if (/(\d\d):(\d\d)/) {
-                $job->{actual_start} ="$1:$2";
-            }
+            #open (F, $started_semaphore) || croak "Can't open file $started_semaphore";
+            #$_ = <F>;
+            #close F;
+            #if (/(\d\d):(\d\d)/) {
+            #    $job->{actual_start} ="$1:$2";
+            #}
             $job->{status} = 'Running';
             $job->{stop} = '--:--';
             $job->{rc} = '-';
+            my $pid_file = "$log_dir/$self->{name}.$job->{name}.pid";
+            open (F, $pid_file) || croak "Can't open file $pid_file";
+            while(<F>) {
+                if (/^pid: (\d+)/) {
+                    $job->{pid} ="$1";
+                }
+                elsif (/^actual_start: (\d+)/) {
+                    $job->{actual_start} = $1;
+                }
+            }
+            close F;
             next;
         }
         # dependencies for each job

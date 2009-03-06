@@ -1,0 +1,87 @@
+<include TaskForest::REST::PassThrough /head.html />
+
+<div class="width10">
+  <div class="demarcated">
+    <div class="width4">
+      <div class="home_page_headline">New Features in Version 1.17</div>
+      <p class=front_news>
+        The major change in this release is the addition of an alternative run
+        wrapper script called run_with_log.  It performs the same functions as
+        the original wrapper, and also creates a log file that captures both
+        STDOUT and STDERR of the job being run.
+      </p>
+      <p class="front_news">
+        On the website you can now display the log file of any running or
+        completed job, by clicking on the displayed status of the job.
+        The RESTful web service also supports this.  A couple of entries
+        have also been added to the HOWTO section of the documentation.
+      </p>
+      <p class="front_news">
+        To see an example of this, click the 'Play' button on the video to
+        the right. (Flash support required)
+      </p>
+      <p class="front_news">
+        You can download the latest release <a href="/download.html">here</a>.
+      </p>
+    </div>
+    <div class="width6 last">
+      <object type="application/x-shockwave-flash" data="/movies/TaskForest_New_1_17.swf" width="482" height="380" id="movie1">
+        <param name="movie" value="/movies/TaskForest_New_1_17.swf">
+        <p>You need the Flash plugin.</p>
+        <p><a href="http://www.macromedia.com/go/getflashplayer/">Download Macromedia Flash Player</a></p>
+      </object>
+      <!--embed src="/movies/TaskForest_New_1_17.swf" HEIGHT="380" WIDTH="482" -->
+    </div>
+    <div class="clear_both"></div>
+  </div>
+</div>
+
+<div class="width2 last">
+  <div class="width2 last demarcated">
+    <div class="section_header">Latest Releases</div>
+    <b>1.17</b> 2009-02-21 <!--a href="/changes.html#1.17">Notes</a --><br>
+    <b>1.16</b> 2009-02-18 <!--a href="/changes.html#1.16">Notes</a --><br>
+    <b>1.15</b> 2009-02-15 <!--a href="/changes.html#1.15">Notes</a --><br>
+    <b>1.14</b> 2009-01-22 <!--a href="/changes.html#1.14">Notes</a --><br>
+    <b>1.13</b> 2008-06-02 <!--a href="/changes.html#1.13">Notes</a --><br>
+  </div>
+  <div class="width2 last demarcated">
+    <div class="section_header">Quick Links</div>
+    <a href="/docs/webSecurity.html">Security</a><br >
+    <a href="/docs/bugs.html">Report a bug</a><br >
+    <a href="/docs/howto.html">HOWTO</a><br >
+  </div>
+</div>
+<div class="clear_both"></div>
+
+<div class="width4 demarcated">
+  <div class="home_page_headline">Features Coming Soon</div>
+  <dl>
+    <dt>Tokens</dt>
+    <dd>A new kind of dependency.  You can create groups of tokens and add
+        optionally add 'ownership' of one or more tokens from one or more
+        groups to the dependency list of a job.  Since there is a finite
+        set of tokens, you can use tokens to prevent too many jobs from
+        running at the same time.
+    </dd>
+    <dt>Calendars</dt>
+    <dd>Define arbitrary run-day calendars to give you more flexibility on
+        when certain jobs may run.
+    </dd>
+    <dt>Multiple Hosts</dt>
+    <dd>Specify which host on a network a job should run on, and what
+        userid it should run as.
+    </dd>
+  </dl>
+</div>  
+<div class="width4 demarcated">
+  <div class="home_page_headline">Latest News</div>
+  <ul>
+    <li>2009/02/21 - Version 1.17 Released</li>
+    <li>2009/02/18 - Version 1.16 Released</li>
+    <li>2009/02/15 - Version 1.15 Released</li>
+  </ul>
+</div>  
+<div class="clear_both"></div>
+
+<include TaskForest::REST::PassThrough /foot.html />

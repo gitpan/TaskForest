@@ -31,9 +31,10 @@ sub GET {
     my ($q, $parent_hash, $h, $hash) = @_;
 
     my $file_name = $h->{path_info};
-    $file_name    =~ s/[^a-z0-9_\-\:\,\.]//ig;
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $mon++; $year += 1900;
-    my $log_dir = sprintf("$parent_hash->{config}->{log_dir}/%4d%02d%02d", $year, $mon, $mday);
+    $file_name    =~ s/[^a-z0-9_\-\:\,\.\/]//ig;
+    $file_name    =~ s/\.\./__/ig;
+    #my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $mon++; $year += 1900;
+    my $log_dir = $parent_hash->{config}->{log_dir};
 
 
     # save this for the getModified function

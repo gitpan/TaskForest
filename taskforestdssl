@@ -36,7 +36,7 @@ $|++;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.17';
+    $VERSION     = '1.18';
 }
 
 
@@ -362,7 +362,7 @@ sub handle_one_connection {     # return void
     }
 
     my ($hash, $text);
-    $hash = { response_headers => $resp_headers, http_content => undef , method => $method, config => $config, request_headers => $request->headers, request => $request };
+    $hash = { response_headers => $resp_headers, http_content => undef , method => $method, config => $config, request_headers => $request->headers, request => $request, file => $file, basename => $basename, dir => $dir, type => $type };
 
 
     if ($ct ne 'text/html') {
@@ -425,6 +425,7 @@ sub handleNonHTMLFile {
             $hash->{response_headers}->date(time);
             $hash->{response_headers}->last_modified($last_modified);
             $hash->{response_headers}->header('ETag', $etag);
+            $hash->{response_headers}->header('Cache-Control', 'Public');
             return;
         }
 
@@ -433,6 +434,7 @@ sub handleNonHTMLFile {
         $hash->{response_headers}->date(time);
         $hash->{response_headers}->last_modified($last_modified);
         $hash->{response_headers}->header('ETag', $etag);
+        $hash->{response_headers}->header('Cache-Control', 'Public');
         if ($method eq "HEAD") {
             $hash->{http_content} = "";
         }

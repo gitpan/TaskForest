@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Mark.pm 119 2009-02-20 04:56:23Z aijaz $
+# $Id: Mark.pm 132 2009-03-05 01:32:59Z aijaz $
 # 
 ################################################################################
 
@@ -44,7 +44,7 @@ use TaskForest::Family;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.17';
+    $VERSION     = '1.18';
 }
 
 # ------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ sub markHelp {
     my $rc_file      = "$log_dir/$family_name.$job_name.";
     my $new_rc_file;
     
-    if ($status eq 'success') {
+    if ($status =~ /success/i) {
         $new_rc_file = $rc_file . "0";
         $rc_file .= '1';
     }

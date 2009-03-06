@@ -41,6 +41,7 @@ sub GET {
         $parent_hash->{http_status} = RC_NOT_MODIFIED;
         $parent_hash->{response_headers}->last_modified($last_modified);
         $parent_hash->{response_headers}->header('ETag', $etag);
+        $parent_hash->{response_headers}->header('Cache-Control', 'Public');
         return;
     }
 
@@ -49,6 +50,7 @@ sub GET {
     $parent_hash->{http_status} = RC_OK;
     $parent_hash->{response_headers}->last_modified($last_modified);
     $parent_hash->{response_headers}->header('ETag', $etag);
+    $parent_hash->{response_headers}->header('Cache-Control', 'Public');
 }
 
 

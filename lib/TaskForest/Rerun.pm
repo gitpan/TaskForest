@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Rerun.pm 119 2009-02-20 04:56:23Z aijaz $
+# $Id: Rerun.pm 132 2009-03-05 01:32:59Z aijaz $
 #
 ################################################################################
 
@@ -44,7 +44,7 @@ use TaskForest::Family;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.17';
+    $VERSION     = '1.18';
 }
 
 # ------------------------------------------------------------------------------
@@ -115,6 +115,8 @@ sub rerunHelp {
     my $rc_file      = "$log_dir/$family_name.$job_name.0";
     my $pid_file     = "$log_dir/$family_name.$job_name.pid";
     my $started_file = "$log_dir/$family_name.$job_name.started";
+    my $actual_start;
+    my $pid;
 
     if (!(-e $pid_file)) {
         confess("The pid file $pid_file is missing.  You will need to rerun the job manually.  See rerun --help for instructions.");
@@ -131,6 +133,20 @@ sub rerunHelp {
         }
     }
 
+    open (S, $pid_file) || confess ("Can't open $started_file: $!");
+    while (<S>) {
+        if (/^actual_start: (\d+)/) {
+            $actual_start = $1;
+        }
+        if (/^pid: (\d+)/) {
+            $pid = $1;
+        }
+        last if ($actual_start && $pid);
+    }
+    close (S);
+    my $log_file = "$log_dir/$family_name.$job_name.$pid.$actual_start.stdout";
+
+
     my @origs = glob("$log_dir/$family_name.$job_name"."--Orig_*--.pid");
     my $next_id = 1;
     if (@origs) {
@@ -142,10 +158,14 @@ sub rerunHelp {
     my $new_rc_file      = "$log_dir/$family_name.$job_name--Orig_$next_id--.$rc";
     my $new_pid_file     = "$log_dir/$family_name.$job_name--Orig_$next_id--.pid";
     my $new_started_file = "$log_dir/$family_name.$job_name--Orig_$next_id--.started";
+    my $new_log_file     = "$log_dir/$family_name.$job_name--Orig_$next_id--.$pid.$actual_start.stdout";
 
     move($pid_file, $new_pid_file)         || confess ("couldn't move $pid_file to $new_pid_file: $!");
     move($started_file, $new_started_file) || confess ("couldn't move $started_file to $new_started_file: $!");
     move($rc_file, $new_rc_file)           || confess ("couldn't move $rc_file to $new_rc_file: $!");
+    if (-e $log_file) { 
+        move($log_file, $new_log_file)     || confess ("couldn't move $log_file to $new_log_file: $!");
+    }
 
 }
 

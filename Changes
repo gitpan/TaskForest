@@ -1,5 +1,28 @@
 Revision history for Perl module TaskForest
 
+1.18 Fri Mar 06 2009
+
+All of the changes in this release are related to the website.
+o Made sure that if a job file dies after the fork but before ceding
+  control back to the wrapper, you can at least see its log, if it was run
+  with run_with_log
+o The website now shows the log file for running jobs, not just jobs that
+  have completed.
+o Fixed bug where marking a job as Success was not working after it had
+  been marked as Failure
+o Moved mark and rerun forms to buttons on the status and logs tables
+o Changed website to a horizontal layout, so that we have the full window 
+  width for tables 
+o Fixed a bug so that rerun jobs log files are displayed correctly on the
+  web site. 
+o Added 'Cache-Control: Public' HTTP response header to allow Firefox 3 to
+  cache SSL pages which it does not do by default. This greatly improves
+  website performance if you're using Firefox 3.  Firefox 2 does not
+  support the Cache-Control response header, so the website will be slower
+  if you're using SSL and Firefox 2 or earlier.
+o Added the 'help' and 'about' documentation sections to the website.
+
+
 1.17 Sat Feb 21 2009
 
 The major change in this release is the addition of an alternative run

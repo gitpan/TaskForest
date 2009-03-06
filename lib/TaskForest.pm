@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 120 2009-02-21 03:02:03Z aijaz $
+# $Id: TaskForest.pm 136 2009-03-06 05:21:49Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.17';
+    $VERSION     = '1.18';
 }
 
 
@@ -226,11 +226,14 @@ sub status {
 
     my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});
     
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $mon++; $year += 1900;
+    my $log_date = sprintf("%4d%02d%02d", $year, $mon, $mday);
+    
     # get a fresh list of all family files
     #
     my @families = $self->globFamilyFiles($self->{options}->{family_dir});
 
-    my $display_hash = { all_jobs => [], Success  => [], Failure  => [], Ready  => [], Waiting  => [],  };
+    my $display_hash = { all_jobs => [], Success  => [], Failure  => [], Ready  => [], Waiting  => [],  Running => []};
 
     foreach my $family_name (sort @families) {
         # create a new Family object
@@ -256,7 +259,7 @@ sub status {
         $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 0;
     }
 
-    foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}) {
+    foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}, @{$display_hash->{Running}}) {
         my $dt = DateTime->from_epoch( epoch => $job->{actual_start} );
         $dt->set_time_zone($job->{tz});
         $job->{actual_start_epoch} = $job->{actual_start};
@@ -264,11 +267,17 @@ sub status {
         $job->{has_actual_start} = 1;
         $job->{has_rc} = 1;
 
-        if ($job->{stop}) {
+        if (($job->{stop}) && ($job->{status} ne "Running")) {
             $dt = DateTime->from_epoch( epoch => $job->{stop} );
             $dt->set_time_zone($job->{tz});
             $job->{stop} = sprintf("%02d:%02d", $dt->hour, $dt->minute);
             $job->{has_stop} = 1;
+            if ($job->{status} eq 'Success') {
+                $job->{is_success} = 1;
+            }
+            else { 
+                $job->{is_success} = 0;
+            }
         }
         else {
             $job->{stop} = '--:--';
@@ -310,6 +319,7 @@ sub status {
             $_->{output_file} = "$_->{family_name}.$_->{name}.$_->{pid}.$_->{actual_start_epoch}.stdout";
             if (-e "$log_dir/$_->{output_file}") {
                 $_->{has_output_file} = 1;
+                $_->{log_date} = $log_date;
             }
         }
     }
@@ -374,7 +384,7 @@ sub status {
 #
 sub hist_status {
     my ($self, $date, $data_only) = @_;
-    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});
+    my $log_dir = $self->{options}->{log_dir}."/$date";
 
     my $display_hash = { all_jobs => [], Success  => [], Failure  => [], Ready  => [], Waiting  => [],  };
     $self->getUnaccountedForJobs($display_hash, $date);
@@ -398,6 +408,7 @@ sub hist_status {
         $_->{output_file} = "$_->{family_name}.$_->{name}.$_->{pid}.$_->{actual_start_epoch}.stdout";
         if (-e "$log_dir/$_->{output_file}") {
             $_->{has_output_file} = 1;
+            $_->{log_date} = $date;
         }
     }
 
@@ -529,7 +540,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.17.
+This version is 1.18.
 
 =head1 EXECUTIVE SUMMARY
 
@@ -636,13 +647,14 @@ any).
 Family names and job names should contain only the characters shown below:
 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_
 
-Let's see a few examples.  In these examples the dashes (-), pipes (|) and
-line numbers are not parts of the files.  They're only there for
-illustration purposes.  The main script expects environment variables or
-command line options that specify the locations of the directory that
-contain family files, the directory that contains job files, and the
-directory where the logs will be written.  The directory that contains
-family files should contain only family files.  
+Let's see a few examples.  In these examples the dashes (-), pipes (|)
+and line numbers are not parts of the files.  They're only there for
+illustration purposes.  The main script expects environment variables
+or command line options or configuration file settings that specify
+the locations of the directory that contain family files, the
+directory that contains job files, and the directory where the logs
+will be written.  The directory that contains family files should
+contain only family files.
 
 =head2 EXAMPLE 1 - Family file named F_ADMIN
 
@@ -837,7 +849,7 @@ running successfully or even running at all.  If line 03 were:
 There are a few simple scripts in the bin directory that simplify
 usage.  To run the program you must let it know where it can find
 the necessary files and directories. This can be done by environment
-variables, or via the command line:
+variables, via the command line, or via the configuration file:
 
   export TF_JOB_DIR=/foo/jobs
   export TF_LOG_DIR=/foo/logs
@@ -847,10 +859,14 @@ variables, or via the command line:
 
   OR
 
-  taskforest -run_wrapper=/foo/bin/run \
+  taskforest --run_wrapper=/foo/bin/run \
     --log_dir=/foo/logs \
     --job_dir=/foo/jobs \
     --family_dir=/foo/families
+
+  OR
+
+  taskforest --config_file=/foo/config/taskforest.cfg
 
 All jobs will run as the user who invoked taskforest.
 
@@ -861,7 +877,8 @@ You can rerun jobs or mark jobs as Success or Failure using the
 
 The following command line options are required.  If they are not
 specified on the command line, the environment will be searched for
-corresponding environment variables.
+corresponding environment variables or look for them in the
+configuration file.
 
  --run_wrapper=/a/b/r  [or environment variable TF_RUN_WRAPPER]
 
@@ -1122,7 +1139,7 @@ their usage.
  # log stdout and stderr to files
  log             = 1
 
- # by default, log stdout messages with status >= this vale.
+ # by default, log stdout messages with status >= this value.
  # This only effects stdout
  # The sequence of thresholds (smallest to largest) is:
  # debug, info, warn, error, fatal
@@ -1178,7 +1195,7 @@ The TaskForest package includes a simple, low-footprint web server, called
 taskforestd, written in perl.  The webserver uses the LWP library and its
 sole purpose is to give you an web-based interface to TaskForest.  I chose
 to write a perl-based web server because it is easy for users to download,
-install and deploy.  Also it may be too much to ask users to install and
+install and deploy.  Also, it may be too much to ask users to install and
 mantain Apache, and configure mod_perl, just to get this web-based access.
 
 Taskforestd's behavior is controlled with a configuration file,
@@ -1251,7 +1268,7 @@ difference between the two is that the taskforestd uses HTTP::Daemon,
 and taskforestdssl uses HTTP::Daemon::SSL.  To set up SSL, you will
 need to set up a server key and a server certificate.  The locations
 of these files may be specified in the taskforestd configuration file,
-under server_key_file and server_cert file, respctively.  You can find
+under server_key_file and server_cert_file, respctively.  You can find
 more information in the documentation of HTTP::Daemon::SSL.
 
 If you would like to self-sign a certificate, there are some instructions
@@ -1354,7 +1371,7 @@ Wikipedia: http://en.wikipedia.org/wiki/Representational_State_Transfer
 For the purposes of this document we will denote variable parts of
 URIs using braces.  For example, in the URI
 C</foo/bar.html/{variable_name}> the value of the variable
-C<variable_name> will replace the string C<variable_name>.
+C<variable_name> will replace the string C<{variable_name}>.
 
 =head2 RESTFUL WEB SERVICE VERSION 1.0
 
@@ -2230,7 +2247,7 @@ Or, in the case of the ssl version of the server:
 
 =head2 Stop the web server
 
-To start the web server, run the taskforestd program with the
+To stop the web server, run the taskforestd program with the
 --config_file and --stop options.  For example:
 
  taskforestd --config_file=taskforestd.cfg  --stop

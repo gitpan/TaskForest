@@ -40,12 +40,16 @@ sub POST {
     my $dependents_only = ($h->{options} && ($h->{options} eq 'dependents_only')) ? 1 : undef;
     
     $family_name        =~ /([a-z0-9_]+)/i; $family_name = $1;
-    $job_name           =~ /([a-z0-9_]+)/i; $job_name    = $1;
+    $job_name           =~ /([a-z0-9_\-]+)/i; $job_name    = $1;
     my $quiet = 1;
     my $error = "";
 
-    if ($request eq "Mark") {
+    if ($request =~ /^Mark/) {
         my $status = $h->{status};
+        if (!$status) {
+            $request =~ /Mark (\S+)/;
+            $status = $1;
+        }
         eval { 
             &TaskForest::Mark::mark($family_name, $job_name, $log_dir, $status, $cascade, $dependents_only, $family_dir, $quiet);
         };

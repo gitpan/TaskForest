@@ -4,7 +4,7 @@ NAME
     specify task dependencies.
 
 VERSION
-    This version is 1.17.
+    This version is 1.18.
 
 EXECUTIVE SUMMARY
     With the TaskForest Job Scheduler you can:
@@ -92,10 +92,11 @@ DESCRIPTION
     Let's see a few examples. In these examples the dashes (-), pipes (|)
     and line numbers are not parts of the files. They're only there for
     illustration purposes. The main script expects environment variables or
-    command line options that specify the locations of the directory that
-    contain family files, the directory that contains job files, and the
-    directory where the logs will be written. The directory that contains
-    family files should contain only family files.
+    command line options or configuration file settings that specify the
+    locations of the directory that contain family files, the directory that
+    contains job files, and the directory where the logs will be written.
+    The directory that contains family files should contain only family
+    files.
 
   EXAMPLE 1 - Family file named F_ADMIN
         +---------------------------------------------------------------------
@@ -275,8 +276,8 @@ DESCRIPTION
 USAGE
     There are a few simple scripts in the bin directory that simplify usage.
     To run the program you must let it know where it can find the necessary
-    files and directories. This can be done by environment variables, or via
-    the command line:
+    files and directories. This can be done by environment variables, via
+    the command line, or via the configuration file:
 
       export TF_JOB_DIR=/foo/jobs
       export TF_LOG_DIR=/foo/logs
@@ -286,10 +287,14 @@ USAGE
 
       OR
 
-      taskforest -run_wrapper=/foo/bin/run \
+      taskforest --run_wrapper=/foo/bin/run \
         --log_dir=/foo/logs \
         --job_dir=/foo/jobs \
         --family_dir=/foo/families
+
+      OR
+
+      taskforest --config_file=/foo/config/taskforest.cfg
 
     All jobs will run as the user who invoked taskforest.
 
@@ -299,7 +304,8 @@ USAGE
 OPTIONS
     The following command line options are required. If they are not
     specified on the command line, the environment will be searched for
-    corresponding environment variables.
+    corresponding environment variables or look for them in the
+    configuration file.
 
      --run_wrapper=/a/b/r  [or environment variable TF_RUN_WRAPPER]
 
@@ -555,7 +561,7 @@ READING OPTIONS FROM A CONFIG FILE
      # log stdout and stderr to files
      log             = 1
 
-     # by default, log stdout messages with status >= this vale.
+     # by default, log stdout messages with status >= this value.
      # This only effects stdout
      # The sequence of thresholds (smallest to largest) is:
      # debug, info, warn, error, fatal
@@ -608,7 +614,7 @@ THE TASKFORESTD WEB SERVER
     called taskforestd, written in perl. The webserver uses the LWP library
     and its sole purpose is to give you an web-based interface to
     TaskForest. I chose to write a perl-based web server because it is easy
-    for users to download, install and deploy. Also it may be too much to
+    for users to download, install and deploy. Also, it may be too much to
     ask users to install and mantain Apache, and configure mod_perl, just to
     get this web-based access.
 
@@ -681,7 +687,7 @@ THE TASKFORESTD WEB SERVER
     and taskforestdssl uses HTTP::Daemon::SSL. To set up SSL, you will need
     to set up a server key and a server certificate. The locations of these
     files may be specified in the taskforestd configuration file, under
-    server_key_file and server_cert file, respctively. You can find more
+    server_key_file and server_cert_file, respctively. You can find more
     information in the documentation of HTTP::Daemon::SSL.
 
     If you would like to self-sign a certificate, there are some
@@ -781,7 +787,7 @@ THE TASKFORESTD RESTFUL WEB SERVICE
     For the purposes of this document we will denote variable parts of URIs
     using braces. For example, in the URI "/foo/bar.html/{variable_name}"
     the value of the variable "variable_name" will replace the string
-    "variable_name".
+    "{variable_name}".
 
   RESTFUL WEB SERVICE VERSION 1.0
     All of the service's URIs for version 1.0 are in the /rest/1.0/
@@ -1642,7 +1648,7 @@ HOWTO
      taskforestdssl --config_file=taskforestd.cfg  --start
 
   Stop the web server
-    To start the web server, run the taskforestd program with the
+    To stop the web server, run the taskforestd program with the
     --config_file and --stop options. For example:
 
      taskforestd --config_file=taskforestd.cfg  --stop
