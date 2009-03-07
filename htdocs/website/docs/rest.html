@@ -69,33 +69,35 @@ of the web service will start with the html shown below.</p>
 14 |    &lt;form id=&quot;rerun&quot; class=&quot;request&quot; method=&quot;POST&quot; action=&quot;/rest/1.0/request.html&quot;&gt;
 15 |      &lt;label for=&quot;rerun_family&quot;&gt;Family&lt;/label&gt;&lt;input id=&quot;rerun_family&quot; name=&quot;family&quot; /&gt;&lt;br /&gt;
 16 |      &lt;label for=&quot;rerun_job&quot;&gt;Job&lt;/label&gt;&lt;input id=&quot;rerun_job&quot; name=&quot;job&quot; /&gt;&lt;br /&gt;
-17 |      &lt;label for=&quot;rerun_options&quot;&gt;Options&lt;/label&gt;&lt;select id=&quot;rerun_options&quot; name=&quot;options&quot;&gt;
-18 |        &lt;option value=&quot;&quot;&gt;None&lt;/option&gt;
-19 |        &lt;option value=&quot;cascade&quot;&gt;Cascade&lt;/option&gt;
-20 |        &lt;option value=&quot;dependents_only&quot;&gt;Dependents Only&lt;/option&gt;
-21 |      &lt;/select&gt;
-22 |      &lt;input type=submit name=submit  value=&quot;Rerun&quot;/&gt;
-23 |    &lt;/form&gt;
-24 | 
-25 |    &lt;form id=&quot;mark&quot; class=&quot;request&quot; method=&quot;POST&quot; action=&quot;/rest/1.0/request.html&quot;&gt;
-26 |      &lt;label for=&quot;mark_family&quot;&gt;Family&lt;/label&gt;&lt;input id=&quot;mark_family&quot; name=&quot;family&quot; /&gt;&lt;br /&gt;
-27 |      &lt;label for=&quot;mark_job&quot;&gt;Job&lt;/label&gt;&lt;input id=&quot;mark_job&quot; name=&quot;job&quot; /&gt;&lt;br /&gt;
-28 |      &lt;label for=&quot;mark_options&quot;&gt;Options&lt;/label&gt;&lt;select id=&quot;mark_options&quot; name=&quot;options&quot;&gt;
-29 |        &lt;option value=&quot;&quot;&gt;None&lt;/option&gt;
-30 |        &lt;option value=&quot;cascade&quot;&gt;Cascade&lt;/option&gt;
-31 |        &lt;option value=&quot;dependents_only&quot;&gt;Dependents Only&lt;/option&gt;
-32 |      &lt;/select&gt;
-33 |      &lt;label for=&quot;mark_status&quot;&gt;Status&lt;/label&gt;&lt;select id=&quot;mark_status&quot; name=&quot;status&quot;&gt;
-34 |        &lt;option value=&quot;Success&quot;&gt;Success&lt;/option&gt;
-35 |        &lt;option value=&quot;Failure&quot;&gt;Failure&lt;/option&gt;
-36 |      &lt;/select&gt;
-37 |      &lt;input type=submit name=submit  value=&quot;Mark&quot;/&gt;
-38 |    &lt;/form&gt;
-39 | 
-40 |    &lt;form id=&quot;logs&quot; class=&quot;request&quot; method=&quot;GET&quot; action=&quot;/rest/1.0/logs.html&quot;&gt;
-41 |      &lt;label for=&quot;logs_date&quot;&gt;Date&lt;/label&gt;&lt;input id=&quot;logs_date&quot; name=&quot;date&quot; size=8 maxlength=8/&gt;&lt;br /&gt;
-42 |      &lt;input type=submit name=submit  value=&quot;View Logs&quot;/&gt;
-43 |    &lt;/form&gt;
+17 |      &lt;label for=&quot;rerun_log_date&quot;&gt;Log Date&lt;/label&gt;&lt;input id=&quot;rerun_log_date&quot; name=&quot;log_date&quot; /&gt;&lt;br /&gt;
+18 |      &lt;label for=&quot;rerun_options&quot;&gt;Options&lt;/label&gt;&lt;select id=&quot;rerun_options&quot; name=&quot;options&quot;&gt;
+19 |        &lt;option value=&quot;&quot;&gt;None&lt;/option&gt;
+20 |        &lt;option value=&quot;cascade&quot;&gt;Cascade&lt;/option&gt;
+21 |        &lt;option value=&quot;dependents_only&quot;&gt;Dependents Only&lt;/option&gt;
+22 |      &lt;/select&gt;
+23 |      &lt;input type=submit name=submit  value=&quot;Rerun&quot;/&gt;
+24 |    &lt;/form&gt;
+25 | 
+26 |    &lt;form id=&quot;mark&quot; class=&quot;request&quot; method=&quot;POST&quot; action=&quot;/rest/1.0/request.html&quot;&gt;
+27 |      &lt;label for=&quot;mark_family&quot;&gt;Family&lt;/label&gt;&lt;input id=&quot;mark_family&quot; name=&quot;family&quot; /&gt;&lt;br /&gt;
+28 |      &lt;label for=&quot;mark_job&quot;&gt;Job&lt;/label&gt;&lt;input id=&quot;mark_job&quot; name=&quot;job&quot; /&gt;&lt;br /&gt;
+29 |      &lt;label for=&quot;mark_log_date&quot;&gt;Log Date&lt;/label&gt;&lt;input id=&quot;mark_log_date&quot; name=&quot;log_date&quot; /&gt;&lt;br /&gt;
+30 |      &lt;label for=&quot;mark_options&quot;&gt;Options&lt;/label&gt;&lt;select id=&quot;mark_options&quot; name=&quot;options&quot;&gt;
+31 |        &lt;option value=&quot;&quot;&gt;None&lt;/option&gt;
+32 |        &lt;option value=&quot;cascade&quot;&gt;Cascade&lt;/option&gt;
+33 |        &lt;option value=&quot;dependents_only&quot;&gt;Dependents Only&lt;/option&gt;
+34 |      &lt;/select&gt;
+35 |      &lt;label for=&quot;mark_status&quot;&gt;Status&lt;/label&gt;&lt;select id=&quot;mark_status&quot; name=&quot;status&quot;&gt;
+36 |        &lt;option value=&quot;Success&quot;&gt;Success&lt;/option&gt;
+37 |        &lt;option value=&quot;Failure&quot;&gt;Failure&lt;/option&gt;
+38 |      &lt;/select&gt;
+39 |      &lt;input type=submit name=submit  value=&quot;Mark&quot;/&gt;
+40 |    &lt;/form&gt;
+41 | 
+42 |    &lt;form id=&quot;logs&quot; class=&quot;request&quot; method=&quot;GET&quot; action=&quot;/rest/1.0/logs.html&quot;&gt;
+43 |      &lt;label for=&quot;logs_date&quot;&gt;Date&lt;/label&gt;&lt;input id=&quot;logs_date&quot; name=&quot;date&quot; size=8 maxlength=8/&gt;&lt;br /&gt;
+44 |      &lt;input type=submit name=submit  value=&quot;View Logs&quot;/&gt;
+45 |    &lt;/form&gt;
     </pre></code></div>
 <p>Lines 01-02 describe the file as an XHTML file.  I chose XHTML because
 the output can be viewed by any web browser.  If you would like
@@ -103,9 +105,12 @@ another format, drop me an email.</p>
 <p>Line 04 will display the value of the title for that page.  The <code>&#036;</code>
 sign is an artifact of the web development framework I'm using.</p>
 <p>Lines 08-12 are the main navigation hyperlinks.</p>
-<p>Lines 14-23 and 25-38 are the two forms that show up on every page.
+<p>Lines 14-24 and 26-40 are the two forms that show up on every page.
 These forms allow you to rerun jobs, and mark jobs, respectively.
-They're essentially interfaces to the 'rerun' and 'mark' commands.</p>
+They're essentially interfaces to the 'rerun' and 'mark' commands.  The
+  log_date form variable is a date formatted like YYYYMMDD and is used to
+  determine which day's job should be rerun.  If left blank, the system
+  uses today's date. </p>  
 <p>Every page with an HTTP Status code of 200-207 served by version 1.0
 of the web service will end with the html shown below.</p>
 <div class="code"><code><pre>

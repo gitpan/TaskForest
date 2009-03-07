@@ -229,4 +229,6 @@ htdocs/docs/runningTaskForestd.html
 htdocs/docs/status.html
 htdocs/docs/support.html
 htdocs/docs/webSecurity.html
+htdocs/website/changes.html
+htdocs/website/releaseNotes.html
 META.yml                                 Module meta-data (added by MakeMaker)

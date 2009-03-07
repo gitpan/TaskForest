@@ -318,10 +318,10 @@ dd {
 #inner_nav {
 	/*
 	  background-color: #f0e0e0;
-	  */
 	border-top			: 1px solid #8e2800;
 	border-left			: 1px solid #8e2800;
-	padding				: 8px;
+	  */
+	padding				: 0 8px 8px 8px;
 	width				: 301px;	
 	float				: left;	
 	margin-right		: 10px;

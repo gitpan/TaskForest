@@ -38,6 +38,13 @@ sub POST {
     my $request         = $h->{submit};
     my $cascade         = ($h->{options} && ($h->{options} eq 'cascade'))         ? 1 : undef;
     my $dependents_only = ($h->{options} && ($h->{options} eq 'dependents_only')) ? 1 : undef;
+
+    if ($h->{log_date}) {
+        my $log_date = $h->{log_date};
+        $log_date    =~ /(\d+)/;
+        $log_date    = $1;
+        $log_dir     = $parent_hash->{config}->{log_dir}."/$log_date";
+    }
     
     $family_name        =~ /([a-z0-9_]+)/i; $family_name = $1;
     $job_name           =~ /([a-z0-9_\-]+)/i; $job_name    = $1;

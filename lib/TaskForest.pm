@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 136 2009-03-06 05:21:49Z aijaz $
+# $Id: TaskForest.pm 137 2009-03-07 04:47:48Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.18';
+    $VERSION     = '1.19';
 }
 
 
@@ -448,6 +448,7 @@ sub hist_status {
                $job->{start},
                $job->{actual_start},
                $job->{stop});
+        
     }
 }
     
@@ -526,6 +527,9 @@ sub getUnaccountedForJobs {
         $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 1;
         $job->{tz}               = $tz;
 
+        $job->{is_success} = ($job->{status} eq 'Success') ? 1 : 0;
+        
+
         push (@{$display_hash->{all_jobs}}, $job);
     }
 }
@@ -540,7 +544,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.18.
+This version is 1.19.
 
 =head1 EXECUTIVE SUMMARY
 
@@ -1409,33 +1413,35 @@ of the web service will start with the html shown below.
  14 |    <form id="rerun" class="request" method="POST" action="/rest/1.0/request.html">
  15 |      <label for="rerun_family">Family</label><input id="rerun_family" name="family" /><br />
  16 |      <label for="rerun_job">Job</label><input id="rerun_job" name="job" /><br />
- 17 |      <label for="rerun_options">Options</label><select id="rerun_options" name="options">
- 18 |        <option value="">None</option>
- 19 |        <option value="cascade">Cascade</option>
- 20 |        <option value="dependents_only">Dependents Only</option>
- 21 |      </select>
- 22 |      <input type=submit name=submit  value="Rerun"/>
- 23 |    </form>
- 24 | 
- 25 |    <form id="mark" class="request" method="POST" action="/rest/1.0/request.html">
- 26 |      <label for="mark_family">Family</label><input id="mark_family" name="family" /><br />
- 27 |      <label for="mark_job">Job</label><input id="mark_job" name="job" /><br />
- 28 |      <label for="mark_options">Options</label><select id="mark_options" name="options">
- 29 |        <option value="">None</option>
- 30 |        <option value="cascade">Cascade</option>
- 31 |        <option value="dependents_only">Dependents Only</option>
- 32 |      </select>
- 33 |      <label for="mark_status">Status</label><select id="mark_status" name="status">
- 34 |        <option value="Success">Success</option>
- 35 |        <option value="Failure">Failure</option>
- 36 |      </select>
- 37 |      <input type=submit name=submit  value="Mark"/>
- 38 |    </form>
- 39 | 
- 40 |    <form id="logs" class="request" method="GET" action="/rest/1.0/logs.html">
- 41 |      <label for="logs_date">Date</label><input id="logs_date" name="date" size=8 maxlength=8/><br />
- 42 |      <input type=submit name=submit  value="View Logs"/>
- 43 |    </form>
+ 17 |      <label for="rerun_log_date">Log Date</label><input id="rerun_log_date" name="log_date" /><br />
+ 18 |      <label for="rerun_options">Options</label><select id="rerun_options" name="options">
+ 19 |        <option value="">None</option>
+ 20 |        <option value="cascade">Cascade</option>
+ 21 |        <option value="dependents_only">Dependents Only</option>
+ 22 |      </select>
+ 23 |      <input type=submit name=submit  value="Rerun"/>
+ 24 |    </form>
+ 25 | 
+ 26 |    <form id="mark" class="request" method="POST" action="/rest/1.0/request.html">
+ 27 |      <label for="mark_family">Family</label><input id="mark_family" name="family" /><br />
+ 28 |      <label for="mark_job">Job</label><input id="mark_job" name="job" /><br />
+ 29 |      <label for="mark_log_date">Log Date</label><input id="mark_log_date" name="log_date" /><br />
+ 30 |      <label for="mark_options">Options</label><select id="mark_options" name="options">
+ 31 |        <option value="">None</option>
+ 32 |        <option value="cascade">Cascade</option>
+ 33 |        <option value="dependents_only">Dependents Only</option>
+ 34 |      </select>
+ 35 |      <label for="mark_status">Status</label><select id="mark_status" name="status">
+ 36 |        <option value="Success">Success</option>
+ 37 |        <option value="Failure">Failure</option>
+ 38 |      </select>
+ 39 |      <input type=submit name=submit  value="Mark"/>
+ 40 |    </form>
+ 41 | 
+ 42 |    <form id="logs" class="request" method="GET" action="/rest/1.0/logs.html">
+ 43 |      <label for="logs_date">Date</label><input id="logs_date" name="date" size=8 maxlength=8/><br />
+ 44 |      <input type=submit name=submit  value="View Logs"/>
+ 45 |    </form>
     +----------------------------------------------------------------------------------------------------
 
 Lines 01-02 describe the file as an XHTML file.  I chose XHTML because
@@ -1447,9 +1453,12 @@ sign is an artifact of the web development framework I'm using.
 
 Lines 08-12 are the main navigation hyperlinks.
 
-Lines 14-23 and 25-38 are the two forms that show up on every page.
+Lines 14-24 and 26-40 are the two forms that show up on every page.
 These forms allow you to rerun jobs, and mark jobs, respectively.
-They're essentially interfaces to the 'rerun' and 'mark' commands. 
+They're essentially interfaces to the 'rerun' and 'mark' commands.
+The log_date form variable is a date formatted like YYYYMMDD and is
+used to determine which day's job should be rerun.  If left blank, the
+system uses today's date.
 
 Every page with an HTTP Status code of 200-207 served by version 1.0
 of the web service will end with the html shown below.

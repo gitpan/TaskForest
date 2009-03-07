@@ -24,15 +24,16 @@
     <td class="oe_$oe">
       <ifs c=has_stop>
         <form class="inline" id="rerun" method="POST" action="/request.html">
-          <input type="hidden" name="family" value="$family_name">
-          <input type="hidden" name="job" value="$name">
+          <input type="hidden" name="family"   value="$family_name">
+          <input type="hidden" name="job"      value="$name">
+          <input type="hidden" name="log_date" value="$log_date">
           <select name="options">
             <option value="">&nbsp;</option>
             <option value="cascade">Cascade</option>
             <option value="dependents_only">Dependents Only</option>
           </select>
           <input type=submit name=submit  value="Rerun">
-          <ifis c=is_success><input type=submit name=submit  value="Mark Failure"></ifis><elseis><input type=submit name=submit  value="Mark Success"></elseis>
+          <ifis c=is_success><input type=submit name=submit  value="Mark Failure"></ifis><elseis><input type=submit name=submit value="Mark Success"></elseis>
         </form>
       </ifs><elses></elses>
     </td>
