@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 137 2009-03-07 04:47:48Z aijaz $
+# $Id: Family.pm 148 2009-03-10 00:48:20Z aijaz $
 #
 ################################################################################
 
@@ -177,7 +177,7 @@ use Time::Local;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.19';
+    $VERSION     = '1.20';
 }
 
 # ------------------------------------------------------------------------------
@@ -356,6 +356,7 @@ sub getCurrent {
         my $dependencies = $self->{dependencies}->{$job->{name}};
         my $ready = 1;
 
+        # This is where we could add a check for release flag
         foreach my $dep (@$dependencies) {
             if ($dep->check() == 0) {
                 $ready = 0;

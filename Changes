@@ -1,6 +1,11 @@
   
 Revision history for Perl module TaskForest
 
+1.20 Mon Mar 09 2009
+o Fixed a bug where the end time wasn't being calculated properly.
+o Added some licensing text to comply with yui licensing requirements.
+
+
 1.19 Sat Mar 07 2009
 o In Log page, successful job should show 'mark Failure' not 'mark Success'.  
 o Added log_date to website to make Rerun/Mark of a job from a previous

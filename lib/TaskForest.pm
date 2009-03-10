@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 137 2009-03-07 04:47:48Z aijaz $
+# $Id: TaskForest.pm 147 2009-03-09 00:18:01Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.19';
+    $VERSION     = '1.20';
 }
 
 
@@ -85,8 +85,10 @@ sub runMainLoop {
     $SIG{CHLD} = 'IGNORE';
 
 
-    my $end_time = $self->{options}->{end_time};
-    my $wait_time = $self->{options}->{wait_time};
+    my $end_time            = $self->{options}->{end_time};
+    $end_time               =~ /(\d\d)(\d\d)/;
+    my $end_time_in_seconds = $1 * 3600 + $2 * 60;
+    my $wait_time           = $self->{options}->{wait_time};
 
     my $rerun = 0;
     my $RELOAD = 1;
@@ -97,8 +99,6 @@ sub runMainLoop {
    
     while (1) {
         
-        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-
         # get a fresh list of all family files
         #
         my @families = $self->globFamilyFiles($self->{options}->{family_dir});
@@ -136,13 +136,15 @@ sub runMainLoop {
             last;
         }
         
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
         my $now = sprintf("%02d%02d", $hour, $min);
         print "It is $now, the time to end is $end_time\n" if $self->{options}->{verbose};
-        if (($now + $wait_time) >= $end_time) {
+        my $now_plus_wait = $hour * 3600 + $min * 60 + $wait_time;
+        if ( $now_plus_wait >= $end_time_in_seconds) {
             $log->info("In $wait_time seconds it will be past $end_time.  Exiting loop.");
             last;
         }
-        $log->info("Sleeping $wait_time");
+        $log->info("After $wait_time seconds, $now_plus_wait < $end_time_in_seconds.  Sleeping $wait_time");
         sleep $wait_time;                         # by default: 60s
 
         &TaskForest::Logs::resetLogs();
@@ -544,7 +546,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.19.
+This version is 1.20.
 
 =head1 EXECUTIVE SUMMARY
 
