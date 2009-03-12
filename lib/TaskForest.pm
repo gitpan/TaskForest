@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 147 2009-03-09 00:18:01Z aijaz $
+# $Id: TaskForest.pm 149 2009-03-12 02:49:30Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.20';
+    $VERSION     = '1.21';
 }
 
 
@@ -546,7 +546,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.20.
+This version is 1.21.
 
 =head1 EXECUTIVE SUMMARY
 

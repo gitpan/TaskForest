@@ -21,6 +21,15 @@ div#thin_bar {
    margin: 0px 0 10px 0;
 }
 
+div#alert { 
+   background-color: #dfbfa6;
+   padding: 0.25em;
+   margin-bottom: 1em;
+   text-align: center;
+   font-size: 108%;
+   color: #000000;
+}
+
 
 div.logo { 
    font-size: 197%;

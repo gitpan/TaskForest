@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 148 2009-03-10 00:48:20Z aijaz $
+# $Id: Family.pm 149 2009-03-12 02:49:30Z aijaz $
 #
 ################################################################################
 
@@ -177,7 +177,7 @@ use Time::Local;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.20';
+    $VERSION     = '1.21';
 }
 
 # ------------------------------------------------------------------------------
@@ -1247,9 +1247,11 @@ sub findDependentJobs {
     # now get the dependent jobs
     my $deps = $self->{dependents}->{$job_name};
 
+    my $seen = {};
 
     while (my $j = shift(@$deps)) {
-        push (@result, $j);
+        push (@result, $j) unless $seen->{$j};
+        $seen->{$j} = 1;
         unshift(@$deps, @{$self->{dependents}->{$j}}) if $self->{dependents}->{$j};
     }
 

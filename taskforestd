@@ -36,7 +36,7 @@ $|++;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.20';
+    $VERSION     = '1.21';
 }
 
 
@@ -525,9 +525,6 @@ sub authenticate {
     }
     return undef unless (defined $login && defined $password);
     
-    #if ($login eq $admin_user and $password eq 'aijaz') {
-    #    return 1;
-    #}
     my $correct_password = $config->{valid_users}->{$login};
     if ($correct_password && crypt($password, $correct_password) eq $correct_password) {
         return $login;

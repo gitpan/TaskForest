@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 # 
-use Test::More tests => 7;
+use Test::More tests => 8;
 use strict;
 use warnings;
 use Data::Dumper;
@@ -42,6 +42,10 @@ is($sf->{tz},  'America/Chicago',   '  tz');
 my $deps = $sf->findDependentJobs('J2');
 my $str = join(" ", sort(@$deps));
 is($str, "J4 J5 J7 J8 J9");
+
+$deps = $sf->findDependentJobs('J1');
+$str = join(" ", sort(@$deps));
+is($str, "J2 J3 J4 J5 J7 J8 J9");
 
 
 
