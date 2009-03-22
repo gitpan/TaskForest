@@ -1,11 +1,25 @@
   
 Revision history for Perl module TaskForest
 
+1.22 Mon Mar 23 2009
+o Added the ability to release all dependencies from a job.  This makes
+  the job available to run immediately, regardless of how many jobs it is
+  supposed to wait for, or what time dependency it has.  Releasing a job
+  effectively changes its status from 'Waiting' to 'Ready.'  This option
+  is only available to jobs that are currently in the 'Waiting' state.
+o Fixed a minor bug where status on the website was sometimes showing a
+  previous day's status if the website had been up for more than a day.
+o Added a line break between the words in the headers in the status and
+  log pages on the website, so that the table doesn't take up too much
+  horizontal space.
+o Eliminated a debug message saying that the ignore_regex option changed
+  every time the system cycled. 
+
 1.21 Thu Mar 12 2009
 o Fixed a bug that was causing the rerun and mark commands run with the
   --cascade or --dependents_only flag to print an error message when
   there was, in fact, no error, and possibly exit before rerunning or
-  marking all requested jobs..
+  marking all requested jobs.
 
 1.20 Mon Mar 09 2009
 o Fixed a bug where the end time wasn't being calculated properly.

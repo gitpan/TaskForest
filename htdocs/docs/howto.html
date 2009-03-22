@@ -11,6 +11,7 @@
     <li><a href="#start">Start the web server</a></li>
     <li><a href="#stop">Stop the web server</a></li>
     <li><a href="#cert">Create a self-signed certificate with openssl</a></li>
+    <li><a href="#release">Force a job to run NOW</a></li>
   </ul>
 
   <div class="new_section_header"><a name="cron">Run taskforest all day with cron</a></div>
@@ -131,10 +132,64 @@ sign.sh server.csr
    own copy.  Make sure you specify the locations
    of the files in the taskforestd configuration
    file.
-    </code></pre></div>
+</code></pre></div>
+
+
+
+  <div class="new_section_header"><a name="release">Force a Job to run NOW</a></div>
+
+  <p>
+    Let's say you have a job J4 that depends on 3 other jobs - J1, J2 and
+    J3.  Normally, that setup is fine, but today you really want the job
+    to run now.  You don't care whether J1, J2 and J3 run successfully or
+    not, as far as J4 is concerned.  What you need to do is release all
+    the dependencies off J4.  You also don't want to make a permanent
+    change to the family file.
+  </p>
+  <p>
+    This means that regardless of what job dependencies or time
+    dependencies J4 has, when you release all its dependencies, it will
+    run the very next time TaskForest checks to see if there are any jobs
+    that need to be run (determined
+    by <a href="/docs/configuring/options.html#wait_time"><code>wait_time</code></a>).
+    It's as if those dependencies never existed.
+  </p>
+  <p>
+    A release 'request' is only valid once - once J4 runs, the system has
+    no 'memory' of the fact that J4's dependencies were released.  It will
+    not change the behavior of the rest of the family.  If J5 depends on
+    J4, then J5 will be ready to run, even if J1, J2 and J3 haven't run
+    yet. To release all dependencies from a job, run the following
+    command:
+  </p>
+
+  <div class="code"><pre><code>release --log_dir=l_d --job=Ff::Jj --family_dir=f_d</code></pre></div>
+
+  <p>
+    where <code>l_d</code> is the log directory and <code>Ff</code> is the
+    family name and <code>Jj</code> is the job name and <code>f_d</code>
+    is the family_directory.  Dependencies on a job will only be released
+    if the job is in the 'Waiting' state.
+  </p>
+
+  <p>
+    You can also use the "Release" button on the 'Status' or 'View Logs'
+    page on the web site to release all dependencies off a job.
+  </p>
+
+  <p>
+    Remember: no changes are made to the Family file.  So next time this
+    family runs, J4 will still depend on J1, J2 and J3, just like it
+    always did.
+  </p>
 
 </div>
+
+
+
+
 <div class="clear_both"></div>
+
 
 
 <include TaskForest::REST::PassThrough /foot.html />

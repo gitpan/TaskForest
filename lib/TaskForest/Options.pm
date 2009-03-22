@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 149 2009-03-12 02:49:30Z aijaz $
+# $Id: Options.pm 161 2009-03-21 01:29:35Z aijaz $
 #
 ################################################################################
 
@@ -48,7 +48,7 @@ use Log::Log4perl qw(:levels);
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.21';
+    $VERSION     = '1.22';
 }
 
 # This is the main data structure that stores the options
@@ -271,7 +271,7 @@ sub getOptions {
         # if options have changed, let the user know
         my %all_keys = map { $_ => 1 } (keys (%$options), keys (%$new_options));
         foreach (keys %all_keys) {
-            if ($new_options->{$_} ne $options->{$_}) {
+            if (($new_options->{$_} ne $options->{$_}) and (!ref($new_options->{$_})))  {
                 print "Option $_ has changed from $options->{$_} to $new_options->{$_}\n";
             }
         }

@@ -23,6 +23,7 @@ lib/TaskForest/REST/PassThrough.pm
 lib/TaskForest/REST/Request.pm
 lib/TaskForest/REST/Status.pm
 lib/TaskForest/REST.pm
+lib/TaskForest/Release.pm
 lib/TaskForest/Rerun.pm
 lib/TaskForest/Template.pm
 lib/TaskForest/Test.pm
@@ -33,6 +34,7 @@ run
 run_with_log
 rerun
 mark
+release
 gen_passwd
 taskforest
 taskforestd
@@ -63,6 +65,7 @@ t/017_IgnoreRegex.t
 t/018TaskForestDaemon.t
 t/019_FamilyRemoval.t
 t/020_Run_With_Log.t
+t/021_Release.t
 t/logs/empty_file
 t/jobs/J1
 t/jobs/J2
@@ -83,6 +86,7 @@ t/family_archive/REPEAT
 t/family_archive/LONG_RUNNING
 t/family_archive/NOT_ENOUGH_TIME
 t/family_archive/CASCADE
+t/family_archive/GMTC
 t/family_archive/COLLAPSE
 t/family_archive/SMALL_CASCADE
 t/family_archive/SYNTAX_1
@@ -231,4 +235,6 @@ htdocs/docs/support.html
 htdocs/docs/webSecurity.html
 htdocs/website/changes.html
 htdocs/website/releaseNotes.html
+htdocs/docs/release.html
+htdocs/website/docs/release.html
 META.yml                                 Module meta-data (added by MakeMaker)

@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 149 2009-03-12 02:49:30Z aijaz $
+# $Id: Family.pm 161 2009-03-21 01:29:35Z aijaz $
 #
 ################################################################################
 
@@ -177,7 +177,7 @@ use Time::Local;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.21';
+    $VERSION     = '1.22';
 }
 
 # ------------------------------------------------------------------------------
@@ -363,6 +363,13 @@ sub getCurrent {
                 last;
             }
         }
+        my $release_file = "$log_dir/$self->{name}.$job->{name}.release";
+        if (-e $release_file) {
+            $ready = 1;
+
+            # We cannot rely on the run wrapper to delete the release
+            # file.  That's not its job. runReadyJobs has to do it.
+        }
 
         if ($ready) {
             # set the status of the job to be ready
@@ -545,7 +552,20 @@ sub runReadyJobs {
             print "Forked child process $job->{name} $pid\n";
             $job->{status} = 'Running';
             $self->writeSemaphoreFile("$log_dir/$self->{name}.$job->{name}.started", sprintf("%02d:%02d\n", $self->{hour}, $self->{min}));
-        } else {
+
+            # you only get to release a job's dependencies once per
+            # cycle.  If the job had run because its dependencies were
+            # released, remove the release-dependency directive
+            #
+            my $release_file = "$log_dir/$self->{name}.$job->{name}.release";
+            if (-e $release_file) {
+                my $ok = unlink $release_file;
+                if (!$ok) {
+                    die ("Couldn't unlink the release_file directive - $release_file");
+                }
+            }
+        }
+        else {
             #child - this code comes from perldoc perlsec
             croak "cannot fork: $!" unless defined $pid;
 

@@ -7,11 +7,11 @@
     <th>Family</th>
     <th>Job</th>
     <th>Status</th>
-    <th>Return Code</th>
-    <th>Time Zone</th>
-    <th>Scheduled Start</th>
-    <th>Actual Start Time</th>
-    <th>Stop Time</th>
+    <th>Return<br>Code</th>
+    <th>Time<br>Zone</th>
+    <th>Sched<br>Start</th>
+    <th>Actual<br>Start</th>
+    <th>Stop<br> Time</th>
     <th>Rerun/Mark</th>
   </tr><aohj a=status>
   <tr>
@@ -35,6 +35,13 @@
           </select>
           <input type=submit name=submit  value="Rerun">
           <ifis c=is_success><input type=submit name=submit  value="Mark Failure"></ifis><elseis><input type=submit name=submit  value="Mark Success"></elseis>
+        </form>
+      </ifs><elses></elses>
+      <ifs c=is_waiting>
+        <form class="inline" id="rerun" method="POST" action="/request.html">
+          <input type="hidden" name="family" value="$family_name">
+          <input type="hidden" name="job" value="$name">
+          <input type=submit name=submit  value="Release">
         </form>
       </ifs><elses></elses>
     </td>

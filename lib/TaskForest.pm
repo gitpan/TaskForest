@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 149 2009-03-12 02:49:30Z aijaz $
+# $Id: TaskForest.pm 161 2009-03-21 01:29:35Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -20,7 +20,7 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.21';
+    $VERSION     = '1.22';
 }
 
 
@@ -226,7 +226,7 @@ sub status {
     my ($self, $data_only) = @_;
 
 
-    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});
+    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, 'reload');
     
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $mon++; $year += 1900;
     my $log_date = sprintf("%4d%02d%02d", $year, $mon, $mday);
@@ -324,6 +324,7 @@ sub status {
                 $_->{log_date} = $log_date;
             }
         }
+        $_->{is_waiting} = ($_->{status} eq 'Waiting') ? 1 : 0;
     }
 
     
@@ -412,6 +413,7 @@ sub hist_status {
             $_->{has_output_file} = 1;
             $_->{log_date} = $date;
         }
+        $_->{is_waiting} = ($_->{status} eq 'Waiting') ? 1 : 0;
     }
 
     $display_hash->{all_jobs} = \@sorted;
@@ -546,7 +548,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.21.
+This version is 1.22.
 
 =head1 EXECUTIVE SUMMARY
 
@@ -1104,6 +1106,20 @@ If you run the command like this:
 
 then only those jobs that are directly or indirectly dependent on job Jj
 in family Ff will be marked.  Job Jj will be unaffected.
+
+=head1 RELEASE ALL DEPENDENCIES FROM A JOB
+
+When you release all dependencies from a job, you put that job in the
+'Ready' state.  This causes TaskForest to run the job immediately,
+regardless of what other jobs it is waiting on, or what its time
+dependencies are.  To release all dependencies from a job, run the
+following command:
+
+ release --log_dir=l_d --job=Ff::Jj --family_dir=f_d
+
+where l_d is the log directory and Ff is the family name and Jj is the
+job name and f_d is the family_directory.  Dependencies on a job will
+only be released if the job is in the 'Waiting' state.
 
 =head1 READING OPTIONS FROM A CONFIG FILE
 
@@ -2306,23 +2322,63 @@ http://www.modssl.org/docs/2.8/ssl_faq.html#ToC25 ).
     you'll have to use your own copy.  Make sure you specify the
     locations of the files in the taskforestd configuration file.
 
+=head2 Force a Job to run NOW
+
+Let's say you have a job J4 that depends on 3 other jobs - J1, J2 and
+J3.  Normally, that setup is fine, but today you really want the job
+to run now.  You don't care whether J1, J2 and J3 run successfully or
+not, as far as J4 is concerned.  What you need to do is release all
+the dependencies off J4.  You also don't want to make a permanent
+change to the family file.
+
+This means that regardless of what job dependencies or time
+dependencies J4 has, when you release all its dependencies, it will
+run the very next time TaskForest checks to see if there are any jobs
+that need to be run (determined by wait_time).  It's as if those
+dependencies never existed.
+
+A release 'request' is only valid once - once J4 runs, the system has
+no 'memory' of the fact that J4's dependencies were released.  It will
+not change the behavior of the rest of the family.  If J5 depends on
+J4, then J5 will be ready to run, even if J1, J2 and J3 haven't run
+yet. To release all dependencies from a job, run the following
+command:
+
+ release --log_dir=l_d --job=Ff::Jj --family_dir=f_d
+
+where C<l_d> is the log directory and C<Ff> is the
+family name and C<Jj> is the job name and C<f_d>
+is the family_directory.  Dependencies on a job will only be released
+if the job is in the 'Waiting' state.
+
+You can also use the "Release" button on the 'Status' or 'View Logs'
+page on the web site to release all dependencies off a job.
+
+Remember: no changes are made to the Family file.  So next time this
+family runs, J4 will still depend on J1, J2 and J3, just like it
+always did.
+
 =head1 BUGS
 
 For an up-to-date bug listing and to submit a bug report, please
-visit our website at http://sourceforge.net/projects/taskforest/
+send an email to the TaskForest Discussion Mailing List at
+"taskforest-discuss at lists dot sourceforge dot net"
 
 =head1 SUPPORT
 
-For support, please visit our website at
-http://sourceforge.net/projects/taskforest/
+For support, please visit our website at http://www.taskforest.com/ or
+send an email to the TaskForest Discussion Mailing List at
+"taskforest-discuss at lists dot sourceforge dot net"
 
 =head1 AUTHOR
 
 Aijaz A. Ansari
-http://sourceforge.net/projects/taskforest/
+http://www.taskforest.com/
 
 If you're using this program, I would love to hear from you.  Please
-visit our project website and let me know what you think of it.
+send an email to the TaskForest Discussion Mailing List at
+"taskforest-discuss at lists dot sourceforge dot net" and let me know
+what you think of it.
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -2343,6 +2399,9 @@ Rosco Rouse
 I would also like to thank Randal L. Schwartz for teaching the readers of
 the Feb 1999 issue of Web Techniques how to write a pre-forking web
 server, the code upon which the TaskForest Web server is built.
+
+I would also like to thank the fine developers at Yahoo! for providing
+yui to the open source community.
 
 =head1 COPYRIGHT
 

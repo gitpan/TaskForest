@@ -1,6 +1,6 @@
 # -*- perl -*-
 
-use Test::More tests => 306;
+use Test::More tests => 362;
 
 use strict;
 use warnings;
@@ -18,7 +18,7 @@ my $has_ssl_client = 0;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.21';
+    $VERSION     = '1.22';
 
 #     if (eval("require FOO")) {
 #         $has_ssl_client = 1;
@@ -91,7 +91,7 @@ my $skip = 0;
 
 SKIP : {
 
-skip "taskforestd web server not running", 306 if $skip;
+skip "taskforestd web server not running", 362 if $skip;
 my $user_agent = LWP::UserAgent->new;
 $user_agent->agent("MyApp/0.1 ");
 my $uri_base = "http://127.0.0.1:1111/rest/1.0";
@@ -589,9 +589,36 @@ $response = $user_agent->request($request);
 ok($response->code == RC_BAD_REQUEST, "Bad Request for Request handled.");
 
 
+
+# now test release
+&TaskForest::Test::cleanup_files($dest_dir);
+&TaskForest::Test::cleanup_files($log_dir);
+copy("$src_dir/SMALL_CASCADE", $dest_dir);
+
+$request = POST  "$uri_base/request.html", [ 
+    family => 'SMALL_CASCADE',
+    job => 'J7',
+    submit => 'Release',
+    ]; ; $request->authorization_basic('test', 'test'); 
+$response = $user_agent->request($request);
+ok($response->code == RC_OK, "Release request sent");
+
+# now check status
+$request = HTTP::Request->new; ; $request->authorization_basic('test', 'test'); 
+$request->method("GET");
+$request->uri("$uri_base/status.html");
+$response = $user_agent->request($request);
+ok($response->code == RC_OK, "Status Invoked 4");
+&TaskForest::Test::checkStatus($response->content, [
+                ["SMALL_CASCADE", "J2", "Ready", "-", "America/Chicago", "00:00", "--:--", "--:--"],
+                ["SMALL_CASCADE", "J7", "Ready", "-", "America/Chicago", "00:00", "--:--", "--:--"],
+                ["SMALL_CASCADE", "J8", "Waiting", "-", "America/Chicago", "00:00", "--:--", "--:--"],
+            ]);
+
+
+
+
 }
-
-
 
 
 #killTaskforestd();

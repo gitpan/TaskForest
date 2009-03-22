@@ -6,8 +6,37 @@
 
 <div class="width6 last">
 
+<div class="section_header"><a name="1.22"></a>1.22 Mon Mar 23 2009</div>
+<p>
+  Feature Addition and minor bug fix
+</p>
+<ul class="bullet">
+  <li>
+    Added the ability to release all dependencies from a job.  This makes
+    the job available to run immediately, regardless of how many jobs it
+    is supposed to wait for, or what time dependency it has.  Releasing a
+    job effectively changes its status from 'Waiting' to 'Ready.'  This
+    option is only available to jobs that are currently in the 'Waiting'
+    state.
+  </li>
+  <li>
+    Fixed a minor bug where status on the website was sometimes showing a
+    previous day's status if the website had been up for more than a day.
+  </li>
+  <li>
+    Added a line break between the words in the headers in the status and
+    log pages on the website, so that the table doesn't take up too much
+    horizontal space.
+  </li>
+  <li>
+    Eliminated a debug message saying that the ignore_regex option changed
+    every time the system cycled.
+  </li>
+</ul>
+  
 
-<div class="section_header"><a name="1.20"></a>1.21 Thu Mar 12 2009</div>
+<div class="new_section_header"><a name="1.21"></a>1.21 Thu Mar 12
+2009</div>
 <p>
   Bug fix
 </p>

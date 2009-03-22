@@ -55,7 +55,7 @@ if ($help
 
 
 if ($family_job_name !~ /^([a-z0-9_]+)::([a-z0-9_\-]+)$/i) {
-    print "Usage: rerun --job=Ff:Jj --log_dir=log_directory --status=[Success | Failure]\n\n";
+    print "Usage: mark --job=Ff:Jj --log_dir=log_directory --status=[Success | Failure]\n\n";
     confess("\nThe --job command line argument must be of the form: Ff::Jj where\n",
             "Ff is the family name and Jj is the job name\n\n");
 }
