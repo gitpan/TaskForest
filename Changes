@@ -1,6 +1,13 @@
   
 Revision history for Perl module TaskForest
 
+1.23 Tue Mar 24 2009
+o This release fixes a nasty bug where Family files were not being parsed
+  properly if the files were in DOS format (with CRLF endings, instead of
+  just LF).  Unfortunately, most web browsers save textarea text with
+  CRLF, so a Family file that was originally in Unix format (LF) could
+  wind up being in DOS (CRLF) format if you edited it via the website.
+
 1.22 Mon Mar 23 2009
 o Added the ability to release all dependencies from a job.  This makes
   the job available to run immediately, regardless of how many jobs it is

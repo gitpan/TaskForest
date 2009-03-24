@@ -4,7 +4,7 @@ NAME
     specify task dependencies.
 
 VERSION
-    This version is 1.22.
+    This version is 1.23.
 
 EXECUTIVE SUMMARY
     With the TaskForest Job Scheduler you can:
@@ -1773,6 +1773,9 @@ ACKNOWLEDGEMENTS
     I would also like to thank Randal L. Schwartz for teaching the readers
     of the Feb 1999 issue of Web Techniques how to write a pre-forking web
     server, the code upon which the TaskForest Web server is built.
+
+    I would also like to thank the fine developers at Yahoo! for providing
+    yui to the open source community.
 
 COPYRIGHT
     This program is free software; you can redistribute it and/or modify it

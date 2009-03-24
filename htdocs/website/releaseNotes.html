@@ -5,12 +5,31 @@
 <div class="width10 last">
 
 
-  <div class="section_header"><a name="1.22"></a>1.22 Mon Mar 23 2009</div>
+  
+  <div class="section_header"><a name="1.23"></a>1.23 Thu Mar 24 2009</div>
 
   <div class="width4">
-    <div class="section_header">New Features in Versions 1.22</div>
     <p class="front_news">
-      New in this verion is the ability to release all dependencies from
+      This release fixes a nasty bug where Family files were not being
+      parsed properly if the files were in DOS format (with CRLF endings,
+      instead of just LF).  Unfortunately, most web browsers save textarea
+      text with CRLF, so a Family file that was originally in Unix format
+      (LF) could wind up being in DOS (CRLF) format if you edited it via
+      the website.
+    </p>
+  </div>
+  <div class="width6 last">
+  </div>
+  <div class="clear_both"></div>
+
+
+  <!-- -------------------------------------------------------------------------------- -->
+  <div class="new_section_header"><a name="1.22"></a>1.22 Mon Mar 23 2009</div>
+
+  <div class="width4">
+    <div class="section_header">New Features in Version 1.22</div>
+    <p class="front_news">
+      New in this version is the ability to release all dependencies from
       a job.  This makes the job available to run immediately, regardless
       of how many jobs it is supposed to wait for, or what time dependency
       it has.  Releasing a job effectively changes its status from

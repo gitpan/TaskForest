@@ -237,4 +237,6 @@ htdocs/website/changes.html
 htdocs/website/releaseNotes.html
 htdocs/docs/release.html
 htdocs/website/docs/release.html
+t/022_Debug.t
+t/family_archive/DEBUG
 META.yml                                 Module meta-data (added by MakeMaker)

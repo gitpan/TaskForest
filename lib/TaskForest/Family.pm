@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 161 2009-03-21 01:29:35Z aijaz $
+# $Id: Family.pm 164 2009-03-24 02:04:15Z aijaz $
 #
 ################################################################################
 
@@ -177,7 +177,7 @@ use Time::Local;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.22';
+    $VERSION     = '1.23';
 }
 
 # ------------------------------------------------------------------------------
@@ -713,7 +713,7 @@ sub readFromFile {
 
     my @bad_lines = ();
     foreach my $section (@$sections) {
-        my @lines = split(/[\r\n]/, $section);    # lines in the section
+        my @lines = split(/\n/, $section);    # lines in the section
         
         # Create a one-element array of dependencies.  This is the
         # default dependency list for all jobs as they're first
@@ -833,11 +833,13 @@ sub _getSections {
     my $fh = $self->{file_handle};   
    
     # PARSE THE FILE HERE
-    my @sections = split(/^ *-+ *[\r\n]+/m,             # split on a line of dashes
-                         (join '',                      # convert back to a string
-                          grep(/\S/,                    # get rid of blank lines
-                               (map {s/\#.*//; $_; }    # get rid of comments
-                                $fh->getlines()))));             # all lines as a list
+    my @sections = split(/^ *-+ *\n/m,             # split on a line of dashes
+                         (join '',                 # convert back to a string
+                          grep(/\S/,               # get rid of blank lines
+                               (map {s/\#.*//;     # get rid of comments
+                                     s/\r//g;      #  and line-feeds
+                                     $_; }         
+                                $fh->getlines())))); # all lines as a list
     
     $fh->close();
 

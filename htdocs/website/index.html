@@ -3,9 +3,19 @@
 <div class="width10">
   <div class="demarcated">
     <div class="width4">
-      <div class="home_page_headline">New Features in Versions 1.22</div>
+      <div class="home_page_headline">Bug Fix in Version 1.23</div>
       <p class="front_news">
-        New in this verion is the ability to release all dependencies from
+        This release fixes a nasty bug where Family files were not being
+        parsed properly if the files were in DOS format (with CRLF
+        endings, instead of just LF).  Unfortunately, most web browsers
+        save textarea text with CRLF, so a Family file that was originally
+        in Unix format (LF) could wind up being in DOS (CRLF) format if
+        you edited it via the website.
+      </p>
+
+      <div class="home_page_headline">New Features in Version 1.22</div>
+      <p class="front_news">
+        New in this version is the ability to release all dependencies from
         a job.  This makes the job available to run immediately,
         regardless of how many jobs it is supposed to wait for, or what
         time dependency it has.  Releasing a job effectively changes its
@@ -34,12 +44,13 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/changes.html">Change Log</a></div>
+    <a href="/changes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <a href="/changes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/changes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
     <a href="/changes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
     <a href="/changes.html#1.19"><b>1.19</b></a> 2009-03-07<br>
-    <a href="/changes.html#1.18"><b>1.18</b></a> 2009-03-06<br>
     <!--
+    <a href="/changes.html#1.18"><b>1.18</b></a> 2009-03-06<br>
     <a href="/changes.html#1.17"><b>1.17</b></a> 2009-02-21<br>
     <a href="/changes.html#1.16"><b>1.16</b></a> 2009-02-18<br>
     <a href="/changes.html#1.15"><b>1.15</b></a> 2009-02-15<br>
@@ -49,12 +60,13 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/releaseNotes.html">Release Notes</a></div>
+    <a href="/releaseNotes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <a href="/releaseNotes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/releaseNotes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
     <a href="/releaseNotes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
     <a href="/releaseNotes.html#1.19"><b>1.19</b></a> 2009-03-07<br>
-    <a href="/releaseNotes.html#1.18"><b>1.18</b></a> 2009-03-06<br>
     <!--
+    <a href="/releaseNotes.html#1.18"><b>1.18</b></a> 2009-03-06<br>
     <a href="/releaseNotes.html#1.17"><b>1.17</b></a> 2009-02-21<br>
     -->
   </div>
