@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 164 2009-03-24 02:04:15Z aijaz $
+# $Id: Family.pm 175 2009-04-27 02:47:47Z aijaz $
 #
 ################################################################################
 
@@ -174,10 +174,12 @@ use English '-no_match_vars';
 use FileHandle;
 use Carp;
 use Time::Local;
+use Fcntl qw(:DEFAULT :flock);
+use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.23';
+    $VERSION     = '1.24';
 }
 
 # ------------------------------------------------------------------------------
@@ -298,7 +300,7 @@ sub display {
 # ------------------------------------------------------------------------------
 sub getCurrent {
     my $self = shift;
-    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});
+    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $self->{tz});
     
     if ($self->{current}) {
         # nothing to do, really
@@ -326,8 +328,10 @@ sub getCurrent {
     # all dependencies have been met
     #
     $self->{ready_jobs} = {};
+    $self->{token_jobs} = {};
     foreach my $job (values %$waiting_jobs) {
         my $started_semaphore = "$log_dir/$self->{name}.$job->{name}.started";
+        #print "Looking for $started_semaphore\n";
         if (-e $started_semaphore) { # already running
             #open (F, $started_semaphore) || croak "Can't open file $started_semaphore";
             #$_ = <F>;
@@ -341,11 +345,15 @@ sub getCurrent {
             my $pid_file = "$log_dir/$self->{name}.$job->{name}.pid";
             open (F, $pid_file) || croak "Can't open file $pid_file";
             while(<F>) {
+                #print "  Looking at: $_";
                 if (/^pid: (\d+)/) {
                     $job->{pid} ="$1";
                 }
                 elsif (/^actual_start: (\d+)/) {
                     $job->{actual_start} = $1;
+                }
+                elsif (/^unique_id: (\S+)/) {
+                    $job->{unique_id} = $1;
                 }
             }
             close F;
@@ -373,8 +381,15 @@ sub getCurrent {
 
         if ($ready) {
             # set the status of the job to be ready
-            $self->{ready_jobs}->{$job->{name}} = $job;
-            $job->{status} = 'Ready';
+            if ($job->{tokens}  && @{$job->{tokens}}) {
+                # token_jobs is a list of all jobs that have one more tokens
+                $self->{token_jobs}->{$job->{name}} = $job;
+                $job->{status} = 'TokenWait';
+            }
+            else {
+                $self->{ready_jobs}->{$job->{name}} = $job;
+                $job->{status} = 'Ready';
+            }
         }
     }
 
@@ -412,7 +427,6 @@ sub cycle {
 }
 
 
-
 # ------------------------------------------------------------------------------
 =pod
 
@@ -436,7 +450,7 @@ sub cycle {
 sub updateJobStatuses {
     my $self = shift;
 
-    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});
+    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $self->{tz});
 
     # keep in mind that semaphore files are in the form F.J.[01] where
     # F is the family name, J is a job name and 0 means success, and 1
@@ -447,9 +461,10 @@ sub updateJobStatuses {
     my @files = glob($glob_string);
     my %valid_fields = (
         actual_start => 1,
-        pid => 1,
-        stop => 1,
-        rc => 1,
+        pid          => 1,
+        stop         => 1,
+        rc           => 1,
+        unique_id    => 1,
         );
     
 
@@ -543,8 +558,12 @@ sub runReadyJobs {
     my $self = shift;
     $self->{current} = 0; # no longer current.  A reread of log dirs is necessary
     my $wrapper = $self->{options}->{run_wrapper};
-    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});
-    
+    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $self->{tz});
+
+    #print Dumper($self);
+    $self->convertTokenWaitToReady();  # $self has just been made current
+    #print Dumper($self);
+
     foreach my $job (values %{$self->{ready_jobs}}) { 
         my $pid;
         if ($pid = fork) {
@@ -591,8 +610,11 @@ sub runReadyJobs {
             
             my $job_file_name = $job->{name};
             $job_file_name =~ s/--Repeat.*//;
-
             
+            # generate unique run_id
+            #
+            my $time = time();
+            my $run_id = "$$.$time";
             
             exec("$wrapper",
                  "$self->{name}",
@@ -603,6 +625,7 @@ sub runReadyJobs {
                  "$log_dir/$self->{name}.$job->{name}.pid",
                  "$log_dir/$self->{name}.$job->{name}.0",
                  "$log_dir/$self->{name}.$job->{name}.1",
+                 "$job->{unique_id}",
                 ) or croak "Can't exec: $!\n";
         }
     }
@@ -760,7 +783,7 @@ sub readFromFile {
 sub okToRunToday {
     my ($self, $wday) = @_;
 
-    my @days = qw (Sun Mon Tue Wed Thu Fri Sat);
+    my @days = qw (Sun Mon Tue Wed Thu Fri Sat Sun);
     my $today = $days[$wday];
 
     if ($self->{days}->{$today}) {
@@ -802,7 +825,7 @@ sub _initializeDataStructures {
     $self->{current} = 0;
 
     # get current time
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $year += 1900; $mon ++;
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::lt();
     ($self->{wday}, $self->{hour}, $self->{min}) = ($wday, $hour, $min);
 
     
@@ -894,7 +917,7 @@ sub _parseHeaderLine {
     if (/(days=>['"][a-zA-Z0-9,]+['"])/) { $args .= "$1,"; } else { croak "No run days specified for Family $file"; }
     if (/(tz=>['"][a-zA-Z0-9\/\_]+['"])/)  { $args .= "$1,"; } else { croak "No time zone specified for Family $file"; }
              
-    my %args = eval($args); 
+    my %args = eval($args);
 
     $self->{start} = $args{start};          # set the start time
     my @days = split(/,/, $args{days});
@@ -907,6 +930,11 @@ sub _parseHeaderLine {
         $self->{days}->{$day} = 1;          # valid to run on these days
     }
 
+    if (1) { # TODO: 1.24 use option for this?
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::ft($args{tz});
+        ($self->{wday}, $self->{hour}, $self->{min}) = ($wday, $hour, $min);
+    }
+    
     
     if ($self->okToRunToday($self->{wday}) == 0) {  # nothing to do
         $fh->close();
@@ -1059,6 +1087,20 @@ sub _parseJob {
         if ($args{every} and $args{every} !~ /\D/) {
             $self->_createRecurringJobs($job_name, \%args, $job_object);
         }
+
+        $job_object->{tokens} = [];
+        if ($args{token}) {
+            my @tokens = split(",", $args{token});
+            foreach my $token (@tokens) {
+                if ($token =~ /^([a-z0-9_])+$/i) { 
+                    push (@{$job_object->{tokens}}, $token);
+                }
+                else {
+                    return (0, "Bad token name: $token.  A token name can only contain the characters [a-zA-Z0-9.-_]");
+                }
+            }
+        }
+        
     }
     
     # push this job into the dependency array for the jobs in the next line
@@ -1097,7 +1139,8 @@ sub _verifyJobHash {
         "tz"      => 1,
         "every"   => 1,
         "until"   => 1,
-        "chained" => 1
+        "chained" => 1,
+        "token"   => 1,
     };
 
     my @errors = ();
@@ -1280,6 +1323,200 @@ sub findDependentJobs {
     return \@result;
             
 }
+
+
+
+# ------------------------------------------------------------------------------
+=pod
+
+=over 4
+
+=item convertTokenWaitToReady()
+
+ Usage     : $got_necessary_tokens = $self->acquireAllTokens($job)
+ Purpose   : Attempt to consume all tokens required by the specified job
+             indirectly
+ Returns   : 1 if the job is ready to run, 0 otherwise
+ Argument  : The name of the job
+ Throws    : Nothing
+
+=back
+
+=cut
+
+# ------------------------------------------------------------------------------
+sub convertTokenWaitToReady {
+    my ($self) = @_;
+    my $ok                = 1;
+    my $log_dir           = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $self->{tz});
+    my $lock_file         = "$log_dir/tokens.lock";
+
+    # we need to acquire a lock before we can do anything
+    #
+    sysopen(FH, $lock_file, O_RDWR|O_CREAT);
+    flock(FH, LOCK_EX);
+        
+    # first check to see if the token file has been created.  TODO: should we have just one global tokens.txt file?
+    #
+    my $token_file = "$log_dir/tokens.txt";
+
+    # create token file if necessary
+    if (! -e $token_file) {
+        $self->createTokenFile($token_file);
+    }
+
+    # read token file
+    #
+    my $token_hash = $self->readTokenFile($token_file);
+
+    # release any tokens if possible, essentially making $token_hash 'current'
+    #
+    $self->releaseTokens($token_hash);
+
+    # attempt to acquire tokens
+    #
+    $self->acquireAllTokens($token_hash);
+
+    # write token file
+    #
+    $self->createTokenFile($token_file, $token_hash);
+    
+
+    # release the lock
+    #
+    flock(FH, LOCK_UN);
+    close FH;
+    
+    return $ok;
+}
+
+sub acquireTokens {
+    my ($self, $token_hash, $job_name) = @_;
+
+    my $job = $self->{jobs}->{$job_name};
+
+    my @temp_list;
+    my $ok = 1;
+    
+    foreach my $token_name (@{$job->{tokens}}) {
+        my $max_token_count = $token_hash->{$token_name}->{number};
+        my $cur_token_count = 0;
+        if ($token_hash->{$token_name}->{consumers}) { 
+            $cur_token_count = scalar(@{$token_hash->{$token_name}->{consumers}});
+        }
+        if ($cur_token_count < $max_token_count) {
+            push(@temp_list, $token_name);
+        }
+        else {
+            $ok = 0;
+        }
+    }
+    if ($ok) {
+        # mark tokens as acquired - all or nothing
+        foreach my $token_name (@temp_list) {
+            push (@{$token_hash->{$token_name}->{consumers}}, $job->{unique_id});
+        }
+        return 1;
+        #$job->{status} = 'Ready';
+    }
+    return 0;
+                
+    # for each token in the jobs list of tokens
+    #   figure out how many tokens can be there (max), from options
+    #   if length of consumers < that, acquire token - add it to a temp list
+    #
+    # if temp list is full list of job tokens, then add temp list to consumers and return 1
+    # else return 0
+}
+
+
+
+sub acquireAllTokens {
+    my ($self, $token_hash) = @_;
+
+    foreach my $job_name (sort (keys %{$self->{token_jobs}})) {
+        my $job = $self->{token_jobs}->{$job_name};
+        if ($self->acquireTokens($token_hash, $job_name)) { 
+            # move to ready state and ready 'queue'
+            $job->{status} = 'Ready';
+            $self->{ready_jobs}->{$job_name} = $job;
+        }
+    }
+    
+}
+
+
+# What happens in the following case:
+# 01 Job J using token T runs
+# 02 Job J Completes
+# 03 Job J is rerun
+# 04 TskForest Cycles
+#
+# You can't rely on the existence of the file (alone)
+# You have to look at the pid
+# You could do a status!
+
+sub releaseTokens {
+    my ($self, $token_hash) = @_;
+
+    my $completed_jobs_by_unique_id = {};
+    foreach my $job_name (keys(%{$self->{jobs}})) {
+        if ($self->{jobs}->{$job_name}->{status} eq 'Success' ||
+            $self->{jobs}->{$job_name}->{status} eq 'Failure') {
+            $completed_jobs_by_unique_id->{$self->{jobs}->{$job_name}->{unique_id}} = $self->{jobs}->{$job_name}; 
+        }
+    }
+
+    foreach my $token_name (keys(%$token_hash)) {
+        my $new_consumers = [];
+
+        # consumers is a list of unique_ids
+        # remove from the consumers list anything that we know has completed
+        #
+        my @new_consumers = grep { !($completed_jobs_by_unique_id->{$_}) }
+                                 @{$token_hash->{$token_name}->{consumers}};
+        $token_hash->{$token_name}->{consumers} = \@new_consumers;
+
+        # now we know who the consumers are, we know how many users there are.
+        # this step removes names from the token_hash->{$token_name}->{consumers};
+    }
+}
+
+sub readTokenFile { 
+    my ($self, $token_file) = @_;
+
+    if (open(F, $token_file)) {
+        my $data = join("", <F>);
+        close F;
+        $data =~ /(.*)/s;
+        $data = $1;
+        my $hash = eval($data);
+        return $hash;
+    }
+    else {
+        confess("Cannot read token file $token_file");
+    }
+}
+
+sub createTokenFile {
+    my ($self,
+        $token_file,
+        $token_hash) = @_;
+    
+    $token_hash      = $self->{options}->{token} unless $token_hash;
+    
+    if (open (F, ">$token_file")) {
+        print F "my ", Dumper($token_hash);
+        close F;
+    }
+    else {
+        confess("Can't write to token_file $token_file");
+    }
+}
+
+
+
+
 
 
 1;

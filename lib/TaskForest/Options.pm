@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 164 2009-03-24 02:04:15Z aijaz $
+# $Id: Options.pm 174 2009-04-26 06:04:21Z aijaz $
 #
 ################################################################################
 
@@ -48,7 +48,7 @@ use Log::Log4perl qw(:levels);
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.23';
+    $VERSION     = '1.24';
 }
 
 # This is the main data structure that stores the options
@@ -112,7 +112,7 @@ my $command_line_options = undef;
 # ------------------------------------------------------------------------------
 sub getConfig {
     my $config_file = shift;
-    my %config = ParseConfig(-ConfigFile => $config_file);
+    my %config = ParseConfig(-ConfigFile => $config_file, -LowerCaseNames => 1);
     return \%config;
 }
 
@@ -177,6 +177,8 @@ sub getOptions {
         $config = getConfig($config_file);
     }
     foreach my $option (keys %all_options) { $tainted_options->{$option} = $config->{$option} unless defined $tainted_options->{$option} }
+    $tainted_options->{token} = $config->{token} unless defined $tainted_options->{token};
+    
 
     # Finally, pick a default value if necessary
     $tainted_options->{wait_time}         = 60                unless defined $tainted_options->{wait_time};
@@ -193,6 +195,7 @@ sub getOptions {
     $tainted_options->{ignore_regex}      = []                unless defined $tainted_options->{ignore_regex};
     $tainted_options->{default_time_zone} = 'America/Chicago' unless defined $tainted_options->{default_time_zone};
     $tainted_options->{date}              = ''                unless defined $tainted_options->{date};
+    $tainted_options->{token}             = {}                unless defined $tainted_options->{token};
 
     # show help
     if ($tainted_options->{help}) {
@@ -265,6 +268,20 @@ sub getOptions {
     if ($tainted_options->{date}) {
         if ($tainted_options->{date} =~ m!^(\d{8})$!i) { $new_options->{date} = $1; } else { croak "Bad date"; }
     }
+    if ($tainted_options->{token}) {
+        foreach my $r (keys %{$tainted_options->{token}}) {
+            if ($r =~ /^([a-z0-9_\.\-]+)/i) {
+                my $token_name = $1;
+                $new_options->{token}->{$token_name} = {};
+                my $num_tokens = $tainted_options->{token}->{$token_name}->{number} * 1;
+                $new_options->{token}->{$token_name}->{number} = $num_tokens;
+            }
+            else {
+                croak ("Bad token name: $r.  A token name can only contain the characters [a-zA-Z0-9_]");
+            }
+        }
+    }
+    #$new_options->{tokens} = $new_options->{token};
 
 
     if (%$options) {

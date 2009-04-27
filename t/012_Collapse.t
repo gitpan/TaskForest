@@ -30,7 +30,9 @@ $ENV{TF_LOG_DIR} = "$cwd/t/logs";
 $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
 
-my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
+my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR}); 
+&TaskForest::Test::cleanup_files($log_dir);
+$log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR}, "GMT"); 
 &TaskForest::Test::cleanup_files($log_dir);
 
 my $sf = TaskForest::Family->new(name=>'COLLAPSE');

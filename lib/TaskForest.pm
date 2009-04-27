@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 164 2009-03-24 02:04:15Z aijaz $
+# $Id: TaskForest.pm 174 2009-04-26 06:04:21Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -17,10 +17,11 @@ use TaskForest::Options;
 use TaskForest::Logs qw /$log/;
 use File::Basename;
 use Carp;
+use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.23';
+    $VERSION     = '1.24';
 }
 
 
@@ -94,7 +95,7 @@ sub runMainLoop {
     my $RELOAD = 1;
 
     $self->{options} = &TaskForest::Options::getOptions($rerun);  $rerun = 1;
-    &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $RELOAD);
+    # TODO: Confirm that this ok &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $RELOAD);
     &TaskForest::Logs::init("New Loop");
    
     while (1) {
@@ -127,6 +128,7 @@ sub runMainLoop {
             # The cycle method gets the current status and runs any
             # jobs that are ready to be run.
             #
+            $log->info("Calling cycle from runMainLoop");
             $family->cycle();
         }
 
@@ -136,7 +138,7 @@ sub runMainLoop {
             last;
         }
         
-        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::lt();
         my $now = sprintf("%02d%02d", $hour, $min);
         print "It is $now, the time to end is $end_time\n" if $self->{options}->{verbose};
         my $now_plus_wait = $hour * 3600 + $min * 60 + $wait_time;
@@ -149,7 +151,7 @@ sub runMainLoop {
 
         &TaskForest::Logs::resetLogs();
         $self->{options} = &TaskForest::Options::getOptions($rerun); 
-        &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $RELOAD);
+        # &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $RELOAD);
         &TaskForest::Logs::init("New Loop");
         
     }
@@ -226,9 +228,9 @@ sub status {
     my ($self, $data_only) = @_;
 
 
-    my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, 'reload');
+    #my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, 'reload');
     
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); $mon++; $year += 1900;
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::lt();
     my $log_date = sprintf("%4d%02d%02d", $year, $mon, $mday);
     
     # get a fresh list of all family files
@@ -237,11 +239,15 @@ sub status {
 
     my $display_hash = { all_jobs => [], Success  => [], Failure  => [], Ready  => [], Waiting  => [],  Running => []};
 
+    my $tz_for_family = {};
+
     foreach my $family_name (sort @families) {
         # create a new Family object
         #
         my ($name) = $family_name =~ /$self->{options}->{family_dir}\/(.*)/;
         my $family = TaskForest::Family->new(name => $name);
+
+        $tz_for_family->{$name} = $family->{tz};  # TODO: change getLOgdir
         
         next unless $family->{jobs}; # no jobs to run today
 
@@ -314,21 +320,25 @@ sub status {
     } @{$display_hash->{all_jobs}};
 
     my $oe = 'odd';
-    foreach (@sorted) {
-        $_->{oe} = $oe = (($oe eq 'odd') ? 'even' : 'odd');
-        $_->{has_output_file} = 0;
-        if ($_->{has_actual_start}) {
-            $_->{output_file} = "$_->{family_name}.$_->{name}.$_->{pid}.$_->{actual_start_epoch}.stdout";
-            if (-e "$log_dir/$_->{output_file}") {
-                $_->{has_output_file} = 1;
-                $_->{log_date} = $log_date;
+    my $log_dir;
+    foreach my $job (@sorted) {
+        $job->{oe} = $oe = (($oe eq 'odd') ? 'even' : 'odd');
+        $job->{has_output_file} = 0;
+        if ($job->{has_actual_start}) {
+            $job->{output_file} = "$job->{family_name}.$job->{name}.$job->{pid}.$job->{actual_start_epoch}.stdout";
+            $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $tz_for_family->{$job->{family_name}});
+            if (-e "$log_dir/$job->{output_file}") {
+                $job->{has_output_file} = 1;
+                my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::ft( $tz_for_family->{$job->{family_name}} );
+                $job->{log_date}        = sprintf("%d%02d%02d", $year, $mon, $mday);
             }
         }
-        $_->{is_waiting} = ($_->{status} eq 'Waiting') ? 1 : 0;
+        $job->{is_waiting} = ($job->{status} eq 'Waiting') ? 1 : 0;
     }
 
     
     $display_hash->{all_jobs} = \@sorted;
+
 
     return $display_hash if $data_only;
 
@@ -405,15 +415,16 @@ sub hist_status {
     } @{$display_hash->{all_jobs}};
     
     my $oe = 'odd';
-    foreach (@sorted) {
-        $_->{oe} = $oe = (($oe eq 'odd') ? 'even' : 'odd');
-        $_->{has_output_file} = 0;
-        $_->{output_file} = "$_->{family_name}.$_->{name}.$_->{pid}.$_->{actual_start_epoch}.stdout";
-        if (-e "$log_dir/$_->{output_file}") {
-            $_->{has_output_file} = 1;
-            $_->{log_date} = $date;
+    foreach my $job (@sorted) {
+        $job->{oe} = $oe = (($oe eq 'odd') ? 'even' : 'odd');
+        $job->{has_output_file} = 0;
+        $job->{output_file} = "$job->{family_name}.$job->{name}.$job->{pid}.$job->{actual_start_epoch}.stdout";
+        if (-e "$log_dir/$job->{output_file}") {
+            $job->{has_output_file} = 1;
+            $job->{log_date} = $date;
+            $job->{log_dir} = $log_dir;
         }
-        $_->{is_waiting} = ($_->{status} eq 'Waiting') ? 1 : 0;
+        $job->{is_waiting} = ($job->{status} eq 'Waiting') ? 1 : 0;
     }
 
     $display_hash->{all_jobs} = \@sorted;
@@ -475,12 +486,18 @@ sub hist_status {
 sub getUnaccountedForJobs {
     my ($self, $display_hash, $date) = @_;
     my $log_dir;
-    if ($date) {
-        $log_dir = $self->{options}->{log_dir}."/$date";
+    #if ($date) {
+    #    $log_dir = $self->{options}->{log_dir}."/$date";
+    #}
+    #else {
+    #    $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});  # TODO: should we RELOAD?
+    #}
+    unless ($date) {
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::lt();
+        $date = sprintf("%4d%02d%02d", $year, $mon, $mday);
     }
-    else {
-        $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir});  # TODO: should we RELOAD?
-    }
+    $log_dir = $self->{options}->{log_dir}."/$date";
+    return unless -d $log_dir;
     
     my $seen  = {};
     foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}) {
@@ -548,7 +565,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.23.
+This version is 1.24.
 
 =head1 EXECUTIVE SUMMARY
 

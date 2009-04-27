@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Job.pm 164 2009-03-24 02:04:15Z aijaz $
+# $Id: Job.pm 173 2009-04-25 03:42:05Z aijaz $
 #
 ################################################################################
 
@@ -116,9 +116,10 @@ use Carp;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.23';
+    $VERSION     = '1.24';
 }
 
+my $n = 0;
 
 # ------------------------------------------------------------------------------
 =pod
@@ -144,12 +145,15 @@ BEGIN {
 sub new {
     my $arg = shift;
     my $class = (ref $arg) || $arg;
+    my $pid = $$;
+    $n++;
+    my $unique_id = join("_", time, $pid, $n);
 
     my $self = {
         name  => '',
         rc  => '',                       # exit code
         status => 'Waiting',
-        
+        unique_id => $unique_id,
     };
 
     my %args = @_;

@@ -239,4 +239,21 @@ htdocs/docs/release.html
 htdocs/website/docs/release.html
 t/022_Debug.t
 t/family_archive/DEBUG
+t/023_Tokens.t
+t/family_archive/TOKENS
+lib/TaskForest/LocalTime.pm
+t/024_Midnight.t
+t/025_Midnight_Ready.t
+t/family_archive/MIDNIGHT
+t/jobs/J_005
+t/026_Tomorrows_Logs.t
+t/family_archive/TOKYO
+htdocs/docs/configuring/tokens.html
+htdocs/website/docs/configuring/tokens.html
+htdocs/docs/tokens.html
+htdocs/website/docs/tokens.html
+t/027_MultiTokens.t
+t/028_TokenDemo.t
+t/family_archive/MULTITOKENS
+t/family_archive/TOKENDEMO
 META.yml                                 Module meta-data (added by MakeMaker)

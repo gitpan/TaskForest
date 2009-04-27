@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TimeDependency.pm 164 2009-03-24 02:04:15Z aijaz $
+# $Id: TimeDependency.pm 173 2009-04-25 03:42:05Z aijaz $
 #
 ################################################################################
 
@@ -58,10 +58,11 @@ use warnings;
 use Data::Dumper;
 use DateTime;
 use Carp;
+use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.23';
+    $VERSION     = '1.24';
 }
 
 
@@ -124,7 +125,8 @@ sub new {
 
         # create a DateTime object
         #
-        $dt = DateTime->now(time_zone => $self->{tz});
+        $dt = DateTime->from_epoch(epoch => &TaskForest::LocalTime::epoch());
+        $dt->set_time_zone($self->{tz});
         my ($hour, $min) = split(/:/, $self->{start});
         $dt->set(hour => $hour);
         $dt->set(minute => $min);
@@ -159,7 +161,7 @@ sub new {
 # ------------------------------------------------------------------------------
 sub check {
     my $self = shift;
-    my $now = time;
+    my $now = &TaskForest::LocalTime::epoch();
 
     # If it's already marked as having been met, we just return 1;
     #

@@ -22,6 +22,10 @@ sub checkStatusText {
 
         $line = shift(@received_lines); $regex = "${family}::$job +$status +$rc +$tz +$start +$astart +$stop"; like($line, qr/$regex/);
     }
+    if (@$expected_lines) {
+        diag("ERROR: expected a few more lines than we got");
+        die;
+    }
 }
 
 

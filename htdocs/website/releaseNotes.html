@@ -6,7 +6,44 @@
 
 
   
-  <div class="section_header"><a name="1.23"></a>1.23 Thu Mar 24 2009</div>
+  <div class="section_header"><a name="1.24"></a>1.24 Sun Apr 26 2009</div>
+
+  <div class="width4">
+    <p class="front_news">
+      This release introduces the concept of tokens.  A token is a new
+      kind of dependency.  If a job depends on a token, it must acquire
+      a free token before it can run, or wait for another job to release
+      a token after completion.  Since there is a finite set of tokens,
+      you can use tokens to prevent too many jobs from running at the
+      same time.
+    </p>
+    <p>
+      For example, if there are 20 jobs that rely on token T, but only 5
+      instances of the token, only a maximum of 5 of those jobs may run
+      at the same time.
+    </p>
+    <p>
+      This release also formalizes the way Families with foreign time
+      zones are handled.  This allows you to 'time shift' your family,
+      essentially allowing your family to run for 24 hours in a later
+      timezone.  This shifts the end of day towads the end of the
+      family's running time.
+    </p>
+  </div>
+  <div class="width6 last">
+    <object type="application/x-shockwave-flash" data="/movies/TaskForest_New_1_24.swf" width="480" height="246" id="movie2">
+      
+      <param name="movie" value="/movies/TaskForest_New_1_24.swf">
+      <p>You need the Flash plugin.</p>
+      <p><a href="http://www.macromedia.com/go/getflashplayer/">Download Macromedia Flash Player</a></p>
+    </object>
+  </div>
+  <div class="clear_both"></div>
+
+  <!-- -------------------------------------------------------------------------------- -->
+
+
+  <div class="new_section_header"><a name="1.23"></a>1.23 Thu Mar 24 2009</div>
 
   <div class="width4">
     <p class="front_news">

@@ -24,6 +24,7 @@ my $script_dir    = shift;
 my $pid_file      = shift;
 my $success_file  = shift;
 my $failure_file  = shift;
+my $unique_id     = shift;
 
 
 my $start_time    = time;
@@ -33,6 +34,7 @@ print "Running job $family_name $job_name with pid $$\n";
 open (PID,  ">$pid_file") || die "Can't open PID file $pid_file";
 print PID "pid: $pid\n";
 print PID "actual_start: $start_time\n";
+print PID "unique_id: $unique_id\n";
 close PID;
 
 my $script = "$script_dir/$job_file_name";

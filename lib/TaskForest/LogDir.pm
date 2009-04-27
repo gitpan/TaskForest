@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: LogDir.pm 164 2009-03-24 02:04:15Z aijaz $
+# $Id: LogDir.pm 173 2009-04-25 03:42:05Z aijaz $
 # 
 ################################################################################
 
@@ -40,10 +40,11 @@ package TaskForest::LogDir;
 use strict;
 use warnings;
 use Carp;
+use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.23';
+    $VERSION     = '1.24';
 }
 
 my $log_dir_cached;
@@ -60,6 +61,7 @@ my $log_dir_cached;
              parameter, if that directory doesn't already exist.  
  Returns   : The dated directory
  Argument  : $root -   the parent directory of the dated directory
+             $tz -     the timezone of the family, that determines the date
              $reload - If this is true, and we have a cached value,
                        return the cached value
  Throws    : "mkdir $log_dir failed" if the log directory cannot be
@@ -71,15 +73,20 @@ my $log_dir_cached;
 
 # ------------------------------------------------------------------------------
 sub getLogDir {
-    my ($log_dir_root, $reload) = @_;
+    my ($log_dir_root, $tz, $reload) = @_;
     
-    if ($log_dir_cached and !$reload) {
-        return $log_dir_cached;
+    #if ($log_dir_cached and !$reload) {
+    #    return $log_dir_cached;
+    #}
+
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst);
+    if ($tz) { 
+        ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::ft($tz);
     }
-    
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-    $mon++;
-    $year += 1900;
+    else {
+        ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::lt();
+    }
+        
     my $log_dir = sprintf("$log_dir_root/%4d%02d%02d", $year, $mon, $mday);
     unless (-d $log_dir) {
         if (mkdir $log_dir) {
@@ -89,7 +96,7 @@ sub getLogDir {
             croak "mkdir $log_dir failed in LogDir::getLogDir!\n";
         }
     }
-    $log_dir_cached = $log_dir;
+    #$log_dir_cached = $log_dir;
     return $log_dir;
 }
 

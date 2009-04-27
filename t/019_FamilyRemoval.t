@@ -8,6 +8,7 @@ use Data::Dumper;
 use Cwd;
 use File::Copy;
 use TaskForest::Test;
+use TaskForest::LocalTime;
 
 BEGIN {
     use_ok( 'TaskForest',             "Can use TaskForest" );
@@ -30,7 +31,21 @@ $ENV{TF_LOG_DIR} = "$cwd/t/logs";
 $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
 
-my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
+&TaskForest::LocalTime::setTime( { year  => 2009,
+                                   month => 04,
+                                   day   => 12,
+                                   hour  => 10,
+                                   min   => 01,
+                                   sec   => 01,
+                                   tz    => 'America/Chicago',
+                                 });
+                                       
+
+
+
+my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR}); 
+&TaskForest::Test::cleanup_files($log_dir);
+$log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR}, "GMT");
 &TaskForest::Test::cleanup_files($log_dir);
 
 my $sf = TaskForest::Family->new(name=>'COLLAPSE');
@@ -44,6 +59,7 @@ my $task_forest = TaskForest->new();
 $task_forest->{options}->{collapse} = 1;
 $task_forest->status();
 my $stdout = $sh->stop();
+print "$stdout";
 &TaskForest::Test::checkStatusText($stdout, [
                                        ["COLLAPSE", "J10",              'Waiting', "-", "GMT", "00:00", "--:--", "--:--"],
                                        ["COLLAPSE", "J9",               'Ready',   "-", "GMT", "00:00", "--:--", "--:--"],
@@ -55,6 +71,7 @@ my $stdout = $sh->stop();
 $sh = TaskForest::StringHandle->start(*STDOUT);
 $task_forest->status();
 $stdout = $sh->stop();
+print "$stdout";
 &TaskForest::Test::checkStatusText($stdout, [
                                        ["COLLAPSE", "J10",              'Waiting', "-", "GMT", "00:00", "--:--", "--:--"],
                                        ["COLLAPSE", "J9",               'Ready',   "-", "GMT", "00:00", "--:--", "--:--"],
@@ -69,6 +86,7 @@ $stdout = $sh->stop();
 $sh = TaskForest::StringHandle->start(*STDOUT);
 $task_forest->status();
 $stdout = $sh->stop();
+print "$stdout";
 &TaskForest::Test::checkStatusText($stdout, [
                                        ["COLLAPSE", "J10",              'Waiting', "-", "GMT", "00:00", "--:--", "--:--"],
                                        ["COLLAPSE",  "J2",              'Success',   "0", "America/Chicago", "--:--", "23:20", "23:20"],

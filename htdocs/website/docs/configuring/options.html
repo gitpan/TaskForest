@@ -200,6 +200,36 @@
    option.  The default value for this option is "America/Chicago".
   </p>
   
+  <div class="option_def"><a name="token">token</a></div>
+
+  <p>
+    This is a configuration option that can only be set in the
+    configuration file.  A token is a dependency.  It is something that a
+    job must 'possess' before it can run, if that job needs that token.
+    You can create different types of tokens, giving each type a common
+    name.  You can also specify how many instances of tokens of each type
+    are to exist.  The syntax for specifying the different types of tokens
+    and the number of instances each type can have is as follows:
+  </p>
+
+  <div class="code"><pre><code>
+   +-------------------------------------------------------
+01 | ...   
+02 | &lt;token T&gt;
+03 |   number = 1
+04 | &lt;/token&gt;
+05 | &lt;token U&gt;
+06 |   number = 2
+07 | &lt;/token&gt;
+08 | ...
+   +-------------------------------------------------------
+</code></pre></div>
+
+  <p>
+    For more details on tokens, please see
+    the <a href="/docs/tokens.html">tokens page</a>.
+  </p>
+  
 <div class="clear_both"></div>
 
 <include TaskForest::REST::PassThrough /foot.html />
