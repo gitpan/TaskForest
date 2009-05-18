@@ -36,7 +36,7 @@ $|++;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.24';
+    $VERSION     = '1.25';
 }
 
 
@@ -543,6 +543,7 @@ sub getConfig {
     $tainted_config{log_dir}            = "t/logs"                        unless $tainted_config{log_dir};
     $tainted_config{family_dir}         = "t/families"                    unless $tainted_config{family_dir};
     $tainted_config{job_dir}            = "t/jobs"                        unless $tainted_config{job_dir};
+    $tainted_config{calendar_dir}       = "t/calendars"                   unless $tainted_config{calendar_dir};
     $tainted_config{lock_file}          = "lock_file"                     unless $tainted_config{lock_file};
     $tainted_config{document_root}      = "htdocs"                        unless $tainted_config{document_root};
     $tainted_config{host}               = "127.0.0.1"                     unless $tainted_config{host};
@@ -562,7 +563,7 @@ sub getConfig {
     }
 
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time); 
-    foreach (qw (log_dir family_dir job_dir lock_file document_root host log_file err_file pid_file server_key_file server_cert_file) ) {
+    foreach (qw (log_dir family_dir job_dir calendar_dir lock_file document_root host log_file err_file pid_file server_key_file server_cert_file) ) {
         $tainted_config{$_} =~ /([a-z0-9\.\_\/\%\-]+)/i;
         $config{$_} = $1;
         $config{$_} = POSIX::strftime($config{$_}, $sec,$min,$hour,$mday,$mon,$year);

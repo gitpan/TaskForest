@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: LocalTime.pm 173 2009-04-25 03:42:05Z aijaz $
+# $Id: LocalTime.pm 184 2009-05-04 03:40:24Z aijaz $
 # 
 ################################################################################
 
@@ -60,7 +60,7 @@ use DateTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.24';
+    $VERSION     = '1.25';
 }
 
 my $time_offset = 0;
@@ -169,7 +169,7 @@ sub ft {
             $dt->day,
             $dt->month,
             $dt->year,
-            $dt->day_of_week,
+            $dt->day_of_week % 7,
             undef,
             undef);
 }

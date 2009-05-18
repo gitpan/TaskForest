@@ -42,7 +42,7 @@ $tf->{options}->{once_only} = 1;
 
 my $options = &TaskForest::Options::getOptions();
 
-print Dumper($options);
+#print Dumper($options);
 #exit 0;
 
 print "Looking for $log_dir/TOKENDEMO.J1.0\n";

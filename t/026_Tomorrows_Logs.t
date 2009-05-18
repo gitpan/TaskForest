@@ -45,6 +45,7 @@ $ENV{TF_RUN_WRAPPER} = "$cwd/blib/script/run_with_log";
 $ENV{TF_LOG_DIR} = "$cwd/t/logs";
 $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
+$ENV{TF_CONFIG_FILE} = "$cwd/taskforest.test.cfg";
 
 my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR}); 
 &TaskForest::Test::cleanup_files($log_dir);

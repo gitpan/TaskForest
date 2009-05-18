@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 175 2009-04-27 02:47:47Z aijaz $
+# $Id: Family.pm 193 2009-05-16 02:13:05Z aijaz $
 #
 ################################################################################
 
@@ -176,10 +176,11 @@ use Carp;
 use Time::Local;
 use Fcntl qw(:DEFAULT :flock);
 use TaskForest::LocalTime;
+use TaskForest::Calendar;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.24';
+    $VERSION     = '1.25';
 }
 
 # ------------------------------------------------------------------------------
@@ -913,32 +914,63 @@ sub _parseHeaderLine {
     # using this parsing means that extra junk in the header line is ignored - makes the parsing more
     # resistant to errors
     #
-    if (/(start=>['"]\d+:\d+['"])/)      { $args .= "$1,"; } else { croak "No start time specified for Family $file"; }
-    if (/(days=>['"][a-zA-Z0-9,]+['"])/) { $args .= "$1,"; } else { croak "No run days specified for Family $file"; }
-    if (/(tz=>['"][a-zA-Z0-9\/\_]+['"])/)  { $args .= "$1,"; } else { croak "No time zone specified for Family $file"; }
+    if (/(start=>['"]\d+:\d+['"])/)                    { $args .= "$1,"; } else { croak "No start time specified for Family $file"; }
+    if (/(days=>['"][a-zA-Z0-9,]+['"])/)               { $args .= "$1,"; } 
+    if (/(tz=>['"][a-zA-Z0-9\/\_]+['"])/)              { $args .= "$1,"; } else { croak "No time zone specified for Family $file"; }
+    if (/cal[ae]nd[ae]r=>(['"][a-zA-Z0-9_]+['"])/)     { $args .= "calendar=>$1,"; } 
              
     my %args = eval($args);
 
     $self->{start} = $args{start};          # set the start time
-    my @days = split(/,/, $args{days});
 
-    my %valid_days = (Mon=>1, Tue=>1, Wed=>1, Thu=>1, Fri=>1, Sat=>1, Sun=>1);
-    foreach my $day (@days) {
-        if (!($valid_days{$day})) {
-            croak "Day $day is not a valid day.  Valid days are: Mon, Tue, Wed, Thu, Fri, Sat and Sun";
+    if ($args{days}) {
+        my @days = split(/,/, $args{days});
+        
+        my %valid_days = (Mon=>1, Tue=>1, Wed=>1, Thu=>1, Fri=>1, Sat=>1, Sun=>1);
+        foreach my $day (@days) {
+            if (!($valid_days{$day})) {
+                croak "Day $day is not a valid day.  Valid days are: Mon, Tue, Wed, Thu, Fri, Sat and Sun";
+            }
+            $self->{days}->{$day} = 1;          # valid to run on these days
         }
-        $self->{days}->{$day} = 1;          # valid to run on these days
-    }
 
-    if (1) { # TODO: 1.24 use option for this?
         my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::ft($args{tz});
         ($self->{wday}, $self->{hour}, $self->{min}) = ($wday, $hour, $min);
+        
+        if ($self->okToRunToday($self->{wday}) == 0) {  # nothing to do
+            $fh->close();
+            return 0;
+        }
     }
-    
-    
-    if ($self->okToRunToday($self->{wday}) == 0) {  # nothing to do
-        $fh->close();
-        return 0;
+    elsif($args{calendar}) {
+        # make sure calendar exists
+        my $calendar_name = $args{calendar};
+        my $calendar_file = "$self->{options}->{calendar_dir}/$calendar_name";
+        unless (-e $calendar_file) {  
+            print "Calendar $calendar_file does not exist\n";
+            return 0;
+        }
+
+
+        my @rules;
+        if (open (C, $calendar_file)) {
+            @rules = <C>;
+            close C;
+        }
+        else {
+            croak "Calendar $calendar_file cannot be opened";
+        }
+        
+        #print "Calendar $calendar_name exists with tz= $args{tz}\n";
+        #print Dumper($self->{options}->{calendar}->{$calendar_name}->{rules});
+        # calendar exists - use it.
+        if (&TaskForest::Calendar::canRunToday({ rules => \@rules, tz => $args{tz}}) ne '+') {
+            $fh->close();
+            return 0;
+        }
+    }
+    else {
+        croak "Neither 'days' nor 'calendar' is specified";
     }
 
     # create main dependency - every job has at least one dependency:
@@ -1198,7 +1230,9 @@ sub _createRecurringJobs {
     # get an epoch value for the the until time
     #
     # Set the until_time to be based on the job or family timezone
-    my $until_dt = DateTime->now(time_zone => $args->{tz});
+    #my $until_dt = DateTime->now(time_zone => $args->{tz});
+    my $until_dt = DateTime->from_epoch(epoch => &TaskForest::LocalTime::epoch());
+    $until_dt->set_time_zone($args->{tz});
     $until_dt->set(hour   => $until_hh);
     $until_dt->set(minute => $until_mm);
     my $until_epoch = $until_dt->epoch();
@@ -1210,7 +1244,9 @@ sub _createRecurringJobs {
     my ($start_dt, $start_hh, $start_mm);
     $args->{start} = $self->{start} unless $args->{start};       # default start is famil start
     ($start_hh, $start_mm) = $args->{start} =~ /(\d\d):(\d\d)/;
-    $start_dt = DateTime->now(time_zone => $args->{tz});
+    #$start_dt = DateTime->now(time_zone => $args->{tz});
+    $start_dt = DateTime->from_epoch(epoch => &TaskForest::LocalTime::epoch());
+    $start_dt->set_time_zone($args->{tz});
     $start_dt->set(hour   => $start_hh);
     $start_dt->set(minute => $start_mm);
     

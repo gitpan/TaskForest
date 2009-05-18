@@ -274,6 +274,16 @@ div.new_section_header {
 	padding-top: 0.5em;
 }
 
+div.example_name { 
+	font-weight: bold;
+	margin-bottom: 6px;
+	margin-top: 2em;
+	border-top: 1px dashed #a0a0a0;
+	padding-top: 0.5em;
+}
+
+
+
 div.option_def { 
 	font-weight: bold;
 	margin-bottom: 6px;
@@ -494,4 +504,9 @@ div.yahoo_license h3 {
 div.yahoo_license li { 
 	list-style-type: disc;
 	margin-bottom: 0.5em;
+}
+
+
+em { 
+	font-weight: bold;
 }

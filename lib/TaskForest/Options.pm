@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 174 2009-04-26 06:04:21Z aijaz $
+# $Id: Options.pm 191 2009-05-12 02:12:07Z aijaz $
 #
 ################################################################################
 
@@ -48,7 +48,7 @@ use Log::Log4perl qw(:levels);
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.24';
+    $VERSION     = '1.25';
 }
 
 # This is the main data structure that stores the options
@@ -80,6 +80,7 @@ my %all_options = (end_time          => 's',
                    ignore_regex      => 's@',
                    default_time_zone => 's',
                    date              => 's',
+                   calendar_dir      => 's',
     );
 
 # These are the required options. The absence of any one of these will
@@ -112,7 +113,7 @@ my $command_line_options = undef;
 # ------------------------------------------------------------------------------
 sub getConfig {
     my $config_file = shift;
-    my %config = ParseConfig(-ConfigFile => $config_file, -LowerCaseNames => 1);
+    my %config = ParseConfig(-ConfigFile => $config_file, -LowerCaseNames => 1, -CComments => 0);
     return \%config;
 }
 
@@ -178,6 +179,7 @@ sub getOptions {
     }
     foreach my $option (keys %all_options) { $tainted_options->{$option} = $config->{$option} unless defined $tainted_options->{$option} }
     $tainted_options->{token} = $config->{token} unless defined $tainted_options->{token};
+    $tainted_options->{calendar} = $config->{calendar} unless defined $tainted_options->{calendar};
     
 
     # Finally, pick a default value if necessary
@@ -196,6 +198,7 @@ sub getOptions {
     $tainted_options->{default_time_zone} = 'America/Chicago' unless defined $tainted_options->{default_time_zone};
     $tainted_options->{date}              = ''                unless defined $tainted_options->{date};
     $tainted_options->{token}             = {}                unless defined $tainted_options->{token};
+    $tainted_options->{calendar}          = {}                unless defined $tainted_options->{calendar};
 
     # show help
     if ($tainted_options->{help}) {
@@ -211,7 +214,6 @@ sub getOptions {
         }
     }
     if (@missing) {
-        # TODO: check for required parameters
         croak "The following required options are missing: ", join(", ", @missing);
     }
     
@@ -281,7 +283,29 @@ sub getOptions {
             }
         }
     }
-    #$new_options->{tokens} = $new_options->{token};
+    if ($tainted_options->{calendar}) {
+        foreach my $r (keys %{$tainted_options->{calendar}}) {
+            if ($r =~ /^([a-z0-9_\.\-]+)/i) {
+                my $calendar_name = $1;
+                $new_options->{calendar}->{$calendar_name} = { rules => [] };
+                #print Dumper($tainted_options->{calendar});
+                if (ref($tainted_options->{calendar}->{$calendar_name}->{rule})) {
+                    foreach my $rule (@{$tainted_options->{calendar}->{$calendar_name}->{rule}}) {
+                        push (@{$new_options->{calendar}->{$calendar_name}->{rules}}, $rule);
+                    }
+                }
+                else {
+                    push (@{$new_options->{calendar}->{$calendar_name}->{rules}}, $tainted_options->{calendar}->{$calendar_name}->{rule});
+                }
+            }
+            else {
+                croak ("Bad calendar name: $r.  A calendar name can only contain the characters [a-zA-Z0-9_]");
+            }
+        }
+    }
+    if (defined ($tainted_options->{calendar_dir})) {
+        if ($tainted_options->{calendar_dir} =~ m!^([a-z0-9/_:\\\.\-]+)!i) { $new_options->{calendar_dir} = $1; } else { croak "Bad calendar_dir"; }
+    }
 
 
     if (%$options) {

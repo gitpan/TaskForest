@@ -58,8 +58,9 @@
   <p>
     Jobs can be grouped together into ``Families.'' A family has a start
     time associated with it before which none of its jobs may run. A
-    family also has a list of days-of-the-week associated with it. Jobs
-    within a family may only run on these days of the week.
+    family also has a either (a) a list of days-of-the-week or (b) a
+    calendar associated with it. Jobs within a family may only run on the
+    days specified by the days-of-the-week or the calendar.
   </p>
 
   <p>
@@ -73,7 +74,7 @@
 
   <p>
     Family names and job names should contain only the characters shown
-    below: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_
+    below:<br>ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_
   </p>
 
   <p>
@@ -100,7 +101,8 @@
   <p>
     The first line in any family file always contains 3 bits of
     information about the family: the start time, the time zone, and the
-    days on which this jobs in this family are run.
+    days on which this jobs in this family are run, or the calendar that
+    specifies on which dates jobs in this family are run.  
   </p>
   <p>
     In this case, this family starts at 2:00 a.m. Chicago time.  The time
@@ -145,7 +147,7 @@
   </p>
   <div class="code"><pre><code>
    +-------------------------------------------------------
-01 |start => '02:00', tz => 'GMT', days => 'Mon,Wed,Fri'
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
 02 |
 03 |               J_ROTATE_LOGS()
 04 |
@@ -173,13 +175,21 @@
       Job and family names do not have to start with J_ or be in upper
       case.
     </li>
+    <li>
+      Instead of specifying days of the week on which this Family may run,
+      this Family specifies a calendar to which it adheres.  The calendar
+      used in this case is called 'Weekdays.'  For a detailed description
+      of calendars, please see
+      the <a href="/docs/configuring/calendars.html">Calendars
+      documentation page</a>.
+    </li>
   </ul>
 
 
 
   <div class="new_section_header">EXAMPLE 3 - Time Dependencies</div>
   <p>
-    Let's say tha twe don't want J_RESOLVE_DNS to start before 9:00
+    Let's say that we don't want J_RESOLVE_DNS to start before 9:00
     a.m. because it's very IO-intensive and we want to wait until the
     relatively quiet time of 9:00 a.m.  In that case, we can put a time
     dependency of the job. This adds a restriction to the job, saying that
@@ -187,7 +197,7 @@
   </p>
   <div class="code"><pre><code>
    +-------------------------------------------------------
-01 |start => '02:00', tz => 'GMT', days => 'Mon,Wed,Fri'
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
 02 |
 03 |               J_ROTATE_LOGS()
 04 |
@@ -232,7 +242,7 @@
 
   <div class="code"><pre><code>
    +-------------------------------------------------------
-01 |start => '02:00', tz => 'GMT', days => 'Mon,Wed,Fri'
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
 02 |
 03 |               J_ROTATE_LOGS()
 04 |
@@ -269,7 +279,7 @@
 
   <div class="code"><pre><code>
    +-------------------------------------------------------
-01 |start => '02:00', tz => 'GMT', days => 'Mon,Wed,Fri'
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
 02 |
 03 | J_CHECK_DISK_USAGE(every=>'30', until=>'23:00')
 04 |
@@ -296,6 +306,9 @@
 
   <div class="new_section_header">EXAMPLE 5 - Tokens</div>
   <include TaskForest::REST::PassThrough /docs/configuring/tokens.html />  
+  
+  <div class="new_section_header">EXAMPLE 6 - Calendars</div>
+  <include TaskForest::REST::PassThrough /docs/configuring/calendars_text.html />  
   
   
 

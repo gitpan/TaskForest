@@ -1,4 +1,4 @@
-start => '00:00', tz => 'GMT', days => 'Mon'
+start => '00:00', tz => 'GMT', days => 'Mon,Tue,Wed,Thu,Fri,Sat,Sun'
 
 J1(token => 'T' ) J2(token => 'T')   J3()
 

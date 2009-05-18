@@ -3,36 +3,40 @@
 <div class="width10">
   <div class="demarcated">
     <div class="width4">
-      <div class="home_page_headline">Version 1.24 released on April 26, 2009</div>
+      <div class="home_page_headline">Version 1.25 released on May 18, 2009<br>Now Featuring <a href="/docs/configuring/calendars.html">Calendars</a></div>
       <p class="front_news">
-        This release introduces the concept of tokens.  A token is a new
-        kind of dependency.  If a job depends on a token, it must acquire
-        a free token before it can run, or wait for another job to release
-        a token after completion.  Since there is a finite set of tokens,
-        you can use tokens to prevent too many jobs from running at the
-        same time.
-      </p>
-      <p>
-        For example, if there are 20 jobs that rely on token T, but only 5
-        instances of the token, only a maximum of 5 of those jobs may run
-        at the same time.
-      </p>
-      <p>
-        This release also formalizes the way Families with foreign time
-        zones are handled.  This allows you to 'time shift' your family,
-        essentially allowing your family to run for 24 hours in a later
-        timezone.  This shifts the end of day towads the end of the
-        family's running time.
+        TaskForest now
+        supports <a href="/docs/configuring/calendars.html">calendars</a>.
+        A calendar is a set of rules that defines on what days a job may
+        run.  Each rule can may or may not conclusively determine whether
+        or not a Family should run today.  The rules are evaluated in the
+        order in which they are specified.  The last rule that
+        conclusively determines whether of not a Family should run wins,
+        in the case of conflicting rules.  If none of the rules is
+        conclusive, then the Family will not run today.  You can set rules
+        to specify certain dates or ranges of dates, or specific days,
+        like "third friday of every month."
       </p>
 
+      <p>
+        For more information, check out
+        the <a href="/docs/configuring/calendars.html">calendars
+        documentation</a>.
+      </p>
+
+      <p>
+        We've also added a new <a href="/docs/faq.html">FAQ page</a>.
+      </p>
+      
     </div>
     <div class="width6 last">
-    <object type="application/x-shockwave-flash" data="/movies/TaskForest_New_1_24.swf" width="480" height="246" id="movie2">
+      <object type="application/x-shockwave-flash" data="/movies/TaskForest_New_1_25.swf" width="480" height="342" id="movie2">
       
-      <param name="movie" value="/movies/TaskForest_New_1_24.swf">
+      <param name="movie" value="/movies/TaskForest_New_1_25.swf">
       <p>You need the Flash plugin.</p>
       <p><a href="http://www.macromedia.com/go/getflashplayer/">Download Macromedia Flash Player</a></p>
     </object>
+
     </div>
     <div class="clear_both"></div>
   </div>
@@ -41,18 +45,36 @@
 <div class="width2 last">
   <div class="width2 last demarcated">
     <div class="section_header">Quick Links</div>
+    <a href="/docs/configuring/calendars.html">Calendars</a><br >
+    <a href="/docs/faq.html">FAQ</a><br >
+    <a href="/docs/tokens.html">Tokens</a><br >
     <a href="/docs/webSecurity.html">Security</a><br >
     <a href="/docs/bugs.html">Report a bug</a><br >
     <a href="/docs/howto.html">HOWTO</a><br >
   </div>
   <div class="width2 last demarcated">
+    <div class="section_header"><a href="/releaseNotes.html">Release Notes</a></div>
+    <a href="/releaseNotes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
+    <a href="/releaseNotes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
+    <a href="/releaseNotes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
+    <a href="/releaseNotes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
+    <a href="/releaseNotes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
+    <!--
+    <a href="/releaseNotes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
+    <a href="/releaseNotes.html#1.19"><b>1.19</b></a> 2009-03-07<br>
+    <a href="/releaseNotes.html#1.18"><b>1.18</b></a> 2009-03-06<br>
+    <a href="/releaseNotes.html#1.17"><b>1.17</b></a> 2009-02-21<br>
+    -->
+  </div>
+  <div class="width2 last demarcated">
     <div class="section_header"><a href="/changes.html">Change Log</a></div>
+    <a href="/changes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
     <a href="/changes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
     <a href="/changes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <a href="/changes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/changes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
-    <a href="/changes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
     <!--
+    <a href="/changes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
     <a href="/changes.html#1.19"><b>1.19</b></a> 2009-03-07<br>
     <a href="/changes.html#1.18"><b>1.18</b></a> 2009-03-06<br>
     <a href="/changes.html#1.17"><b>1.17</b></a> 2009-02-21<br>
@@ -62,28 +84,29 @@
     <a href="/changes.html#1.13"><b>1.13</b></a> 2008-06-02<br>
     -->
   </div>
-  <div class="width2 last demarcated">
-    <div class="section_header"><a href="/releaseNotes.html">Release Notes</a></div>
-    <a href="/releaseNotes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
-    <a href="/releaseNotes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
-    <a href="/releaseNotes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
-    <a href="/releaseNotes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
-    <a href="/releaseNotes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
-    <!--
-    <a href="/releaseNotes.html#1.19"><b>1.19</b></a> 2009-03-07<br>
-    <a href="/releaseNotes.html#1.18"><b>1.18</b></a> 2009-03-06<br>
-    <a href="/releaseNotes.html#1.17"><b>1.17</b></a> 2009-02-21<br>
-    -->
-  </div>
 </div>
 <div class="clear_both"></div>
 
 <div class="width4 demarcated">
   <div class="home_page_headline">Features Coming Soon</div>
   <dl>
-    <dt>Calendars</dt>
-    <dd>Define arbitrary run-day calendars to give you more flexibility on
-        when certain jobs may run.
+    <dt>Dependencies on other Families</dt>
+    <dd>
+      Have a job in one Family depend on the completion of a job in
+      another Family.  This allows you to have one Family depend on
+      another.
+    </dd>
+    <dt>Enhancements to the included web site</dt>
+    <dd>
+      We plan on adding contextual menus so that you can right-click on a
+      job from the status screen and select one or more actions.
+    </dd>
+    <dt>Simulator</dt>
+    <dd>
+      The simulator would show you how your jobs would run on dates that
+      you specify, so that you can see what will happen rather than wait
+      for the jobs to be run.  You will also be able to change the exit
+      codes of jobs, to see what would happen if a certain job failed.
     </dd>
     <dt>Multiple Hosts</dt>
     <dd>Specify which host on a network a job should run on, and what

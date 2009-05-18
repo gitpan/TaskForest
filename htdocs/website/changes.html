@@ -7,7 +7,36 @@
 <div class="width6 last">
 
 
-<div class="section_header"><a name="1.24"></a>1.24 Sun Apr 26 2009</div>
+<div class="section_header"><a name="1.25"></a>1.25 Mon May 18 2009</div>
+<p>
+Enhancements
+</p>
+<ul class="bullet">
+  <li>
+    TaskForest now
+    supports <a href="/docs/configuring/calendars.html">calendars</a>.  A
+    calendar is a set of rules that defines on what days a job may run.
+    Each rule can may or may not conclusively determine whether or not a
+    Family should run today.  The rules are evaluated in the order in
+    which they are specified.  The last rule that conclusively determines
+    whether of not a Family should run wins, in the case of conflicting
+    rules.  If none of the rules is conclusive, then the Family will not
+    run today.  You can set rules to specify certain dates or ranges of
+    dates, or specific days, like "third friday of every month."
+  </li>
+  <li>
+    Added an FAQ section to the website.
+  </li>
+  <li>
+    Fixed small bug in REST website where logs were not being displayed for
+    jobs that ran earlier today (but yesterday by its family's timezone)
+  </li>
+
+
+</ul>
+
+
+<div class="new_section_header"><a name="1.24"></a>1.24 Sun Apr 26 2009</div>
 <p>
 Enhancements
 </p>

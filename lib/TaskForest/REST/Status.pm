@@ -40,10 +40,11 @@ sub POST    { &TaskForest::REST::methodNotAllowed($_[1], 'GET'); }
 sub GET {
     my ($q, $parent_hash, $h, $hash) = @_;
 
-    $ENV{TF_RUN_WRAPPER} = "UNNECESSARY";
-    $ENV{TF_LOG_DIR}     = $parent_hash->{config}->{log_dir};
-    $ENV{TF_JOB_DIR}     = $parent_hash->{config}->{job_dir};
-    $ENV{TF_FAMILY_DIR}  = $parent_hash->{config}->{family_dir};
+    $ENV{TF_RUN_WRAPPER}   = "UNNECESSARY";
+    $ENV{TF_LOG_DIR}       = $parent_hash->{config}->{log_dir};
+    $ENV{TF_JOB_DIR}       = $parent_hash->{config}->{job_dir};
+    $ENV{TF_FAMILY_DIR}    = $parent_hash->{config}->{family_dir};
+    $ENV{TF_CALENDAR_DIR}  = $parent_hash->{config}->{calendar_dir};
 
     
     my $task_forest  = TaskForest->new();
