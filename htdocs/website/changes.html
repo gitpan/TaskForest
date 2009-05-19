@@ -6,8 +6,20 @@
 
 <div class="width6 last">
 
+<div class="section_header"><a name="1.26"></a>1.26 Tue May 19 2009</div>
+<p>
+Minor bug fix
+</p>
+<ul class="bullet">
+  <li>
+    There was an unnecessary call to 'use Date::Calc' in Calendar.pm.  I
+    didn't notice it, because I have it installed. It is not being used. It
+    may cause tests to fail.  I have removed the line.
+  </li>
+</ul>
+  
 
-<div class="section_header"><a name="1.25"></a>1.25 Mon May 18 2009</div>
+<div class="new_section_header"><a name="1.25"></a>1.25 Mon May 18 2009</div>
 <p>
 Enhancements
 </p>

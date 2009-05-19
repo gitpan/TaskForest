@@ -18,7 +18,7 @@ my $has_ssl_client = 0;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.25';
+    $VERSION     = '1.26';
 
 #     if (eval("require FOO")) {
 #         $has_ssl_client = 1;

@@ -21,7 +21,7 @@ use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.25';
+    $VERSION     = '1.26';
 }
 
 
@@ -565,7 +565,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.25.
+This version is 1.26.
 
 =head1 EXECUTIVE SUMMARY
 

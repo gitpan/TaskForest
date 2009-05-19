@@ -58,11 +58,10 @@ use Carp;
 use DateTime;
 use Time::Local;
 use Data::Dumper;
-use Date::Calc;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.25';
+    $VERSION     = '1.26';
 }
 
 my $time_offset = 0;

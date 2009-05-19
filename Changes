@@ -1,7 +1,12 @@
   
 Revision history for Perl module TaskForest
 
-1.25 Fri May 15 2009
+1.26 Tue May 19 2009
+o There was an unnecessary call to 'use Date::Calc' in Calendar.pm.  I
+  didn't notice it, because I have it installed. It is not being used. It
+  may cause tests to fail.  I have removed the line. 
+
+1.25 Mon May 18 2009
 o TaskForest now supports calendars.  A calendar is a set of rules that
   defines on what days a job may run.  Each rule can may or may not
   conclusively determine whether or not a Family should run today.  The
