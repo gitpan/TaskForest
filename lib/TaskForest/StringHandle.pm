@@ -1,6 +1,6 @@
 # ##############################################################################
 #
-# $Id: StringHandle.pm 201 2009-05-24 03:37:26Z aijaz $
+# $Id: StringHandle.pm 208 2009-05-25 05:35:44Z aijaz $
 #
 # ##############################################################################
 
@@ -38,6 +38,10 @@ use warnings;
 use TaskForest::StringHandleTier;
 use Carp;
   
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.28';
+}
 
 
 # this is a constructor

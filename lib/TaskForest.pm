@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 206 2009-05-25 04:03:12Z aijaz $
+# $Id: TaskForest.pm 208 2009-05-25 05:35:44Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -19,6 +19,10 @@ use File::Basename;
 use Carp;
 use TaskForest::LocalTime;
 
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.28';
+}
 
 
 ################################################################################
@@ -559,7 +563,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This is version 1.27.
+This is version 1.28.
 
 =head1 EXECUTIVE SUMMARY
 

@@ -5,6 +5,11 @@ use warnings;
 use HTTP::Status;
 use Data::Dumper;
 
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.28';
+}
+
 sub methodNotAllowed {
     my ($hash, $allow) = @_;
 

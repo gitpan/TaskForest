@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: StringHandleTier.pm 201 2009-05-24 03:37:26Z aijaz $
+# $Id: StringHandleTier.pm 208 2009-05-25 05:35:44Z aijaz $
 #
 ################################################################################
 
@@ -30,6 +30,11 @@ examples in Chapter 14 of the Camel book.
 package TaskForest::StringHandleTier;
 use strict;
 use warnings;
+
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.28';
+}
 
 
 sub TIEHANDLE {

@@ -5,6 +5,11 @@ use Data::Dumper;
 use strict;
 use warnings;
 
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.28';
+}
+
 our $doc_root;
 
 

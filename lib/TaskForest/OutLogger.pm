@@ -2,7 +2,7 @@
 
 ################################################################################
 #
-# $Id: OutLogger.pm 201 2009-05-24 03:37:26Z aijaz $
+# $Id: OutLogger.pm 208 2009-05-25 05:35:44Z aijaz $
 #
 ################################################################################
 
@@ -26,6 +26,10 @@ use warnings;
 use TaskForest::Logs;
 use Log::Log4perl;
 
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.28';
+}
 
 sub TIEHANDLE {
     my $class = shift;

@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 201 2009-05-24 03:37:26Z aijaz $
+# $Id: Options.pm 208 2009-05-25 05:35:44Z aijaz $
 #
 ################################################################################
 
@@ -45,6 +45,11 @@ use Data::Dumper;
 use Carp;
 use Config::General qw(ParseConfig);
 use Log::Log4perl qw(:levels);
+
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.28';
+}
 
 
 # This is the main data structure that stores the options
