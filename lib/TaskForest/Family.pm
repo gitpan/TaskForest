@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 193 2009-05-16 02:13:05Z aijaz $
+# $Id: Family.pm 206 2009-05-25 04:03:12Z aijaz $
 #
 ################################################################################
 
@@ -178,10 +178,6 @@ use Fcntl qw(:DEFAULT :flock);
 use TaskForest::LocalTime;
 use TaskForest::Calendar;
 
-BEGIN {
-    use vars qw($VERSION);
-    $VERSION     = '1.26';
-}
 
 # ------------------------------------------------------------------------------
 =pod
@@ -302,11 +298,15 @@ sub display {
 sub getCurrent {
     my $self = shift;
     my $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $self->{tz});
-    
+
+
     if ($self->{current}) {
         # nothing to do, really
         return;
     }
+
+    # now get the status of all the jobs from external families
+    $self->getForeignStatus($log_dir);
 
     # Get the status of all jobs, depending on the presence of job
     # semaphore files
@@ -367,7 +367,7 @@ sub getCurrent {
 
         # This is where we could add a check for release flag
         foreach my $dep (@$dependencies) {
-            if ($dep->check() == 0) {
+            if ($dep->check($self->{foreign_status}) == 0) {
                 $ready = 0;
                 last;
             }
@@ -398,6 +398,21 @@ sub getCurrent {
     print "ready: ", Dumper($self->{ready_jobs}) if $self->{options}->{verbose};
 }
 
+
+sub getForeignStatus {
+    my ($self, $log_dir) = @_;
+    $self->{foreign_status} = {};
+    foreach my $family_name (sort keys %{$self->{families}}) {
+        my $glob_string = "$log_dir/$family_name.*.0";  # TODO: Want this to stay $self->{name}, so create a new type of dep.
+        my @files = glob($glob_string);
+        foreach my $file (@files) {
+            my @components = split(/\./, $file);
+            $self->{foreign_status}->{$components[-2]} = 1;
+        }
+    }
+}
+
+        
 
 # ------------------------------------------------------------------------------
 =pod
@@ -457,7 +472,11 @@ sub updateJobStatuses {
     # F is the family name, J is a job name and 0 means success, and 1
     # failure
     #
-    my $glob_string = "$log_dir/$self->{name}.*.[01]";
+
+    # TODO: get a list of all famaily names in jobs, and append results of glob to files
+    
+    my $glob_string = "$log_dir/$self->{name}.*.[01]";  # TODO: Want this to stay $self->{name}, so create a new type of dep.
+                                                        # object - an external dep object
 
     my @files = glob($glob_string);
     my %valid_fields = (
@@ -472,7 +491,6 @@ sub updateJobStatuses {
     foreach my $file (sort @files) { # the sort ensures that 1 overrides 0
         my ($job_name, $status) = $file =~ /$log_dir\/$self->{name}\.([^\.]+)\.([01])/;
         my ($orig, $actual_name);
-
         
         if ($job_name =~ /(^[^\-]+)--Orig/) {
             $orig = 1;
@@ -483,8 +501,6 @@ sub updateJobStatuses {
         else {
             next unless defined $self->{jobs}->{$job_name};  # not defined if job is no longer in family, but ran ealier.
         }
-            
-            
 
         # when a job is rerun the the job name in the job file has --Orig_n-- appended to it
         
@@ -523,8 +539,6 @@ sub updateJobStatuses {
             $self->{jobs}->{$job_name}->{tz}    = $self->{jobs}->{$actual_name}->{tz};
         }
     }
-
-
 }
         
         
@@ -747,11 +761,13 @@ sub readFromFile {
 
         # list of lines that failed to parse
         my ($parsed_ok, $parse_error);
+        my $first_line = 1;
         foreach my $line (@lines) {
-            ($parsed_ok, $parse_error) = $self->_parseLine($line);
+            ($parsed_ok, $parse_error) = $self->_parseLine($line, $first_line);
             if (! $parsed_ok) {
                 push(@bad_lines, "$line --- $parse_error");
             }
+            $first_line = 0;
         }
     }
     
@@ -1011,21 +1027,38 @@ sub _parseHeaderLine {
 
 # ------------------------------------------------------------------------------
 sub _parseLine {
-    my ($self, $line) = @_;
+    my ($self, $line, $first_line) = @_;
 
     $self->{current_dependency} = [];
     $line =~ s/\s//g;                    # get rid of spaces
 
+    my @jobs;
+
     # make sure that the line looks like this:
     # ([a-z0-9_]+\([^\)]*\) *)*
-    if ($line =~ /^([a-z0-9_]+\([^\)]*\))*$/i) {
+    if ($first_line) { 
+        if ($line =~ /^(([a-z0-9_]+::)?[a-z0-9_]+\([^\)]*\))*$/i) {
+        }
+        else {
+            return (0, "This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'");
+        }
+        @jobs = $line =~ /((?:[a-z0-9_]+::)?[a-z0-9_]+\([^\)]*\))/ig;  # parens may be empty
     }
     else {
-        return (0, "This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'");
+        # check for external dependencies
+        if ($line =~ /[a-z0-9_]+::[a-z0-9_]+\([^\)]*\)/i) {
+            return (0, "Only the first line of a section may have foreign dependencies");
+        }
+        if ($line =~ /^([a-z0-9_]+\([^\)]*\))*$/i) {
+        }
+        else {
+            return (0, "This line does not appear to contain a list of jobs that looks like (for example) 'J1() J2()'");
+        }
+        @jobs = $line =~ /([a-z0-9_]+\([^\)]*\))/ig;  # parens may be empty
     }
+        
 
     
-    my @jobs = $line =~ /([a-z0-9_]+\([^\)]*\))/ig;  # parens may be empty
 
     my @errors = ();
     my ($retval, $error);
@@ -1076,25 +1109,43 @@ sub _parseLine {
 sub _parseJob {
     my ($self, $job) = @_;
     
-    my ($job_name, $args) = $job =~ /([a-z0-9_]+)(\([^\)]*\))/i;   
+    my ($family_name_with_colons, $family_name, $job_name, $args) = $job =~ /(([a-z0-9_]+)::)?([a-z0-9_]+)(\([^\)]*\))/i;
+    my $local_job = 0;
+
+    unless ($family_name) {
+        $family_name = $self->{name};
+        $local_job   = 1;
+    }
+    #$self->{families}->{$family_name} = 1;
+    #$job_name = $family."::$job_name";
 
     my $job_object;
-    if ($self->{jobs}->{$job_name}) {
-        $job_object = $self->{jobs}->{$job_name};   # job already exists in this family
+    if ($local_job) {
+        if ($self->{jobs}->{$job_name}) { 
+            $job_object = $self->{jobs}->{$job_name};   # job already exists in this family
+        }
+        else {
+            # if jobname has ::, get family name
+            # else family_name is this family's name
+            # job_object = new (job_name, family_name)
+            $job_object = TaskForest::Job->new(name => $job_name);  # create new job
+            $self->{jobs}->{$job_name} = $job_object; 
+        }
+
+        # Set dependencies.  A dependency can be a time dependency or another job
+        #
+        $self->{dependencies}->{$job_name} = [] unless $self->{dependencies}->{$job_name};
+        foreach my $dep (@{$self->{last_dependency}}) {
+            push (@{$self->{dependencies}->{$job_name}}, $dep); 
+        }
     }
     else {
-        $job_object = TaskForest::Job->new(name => $job_name);  # create new job
-        $self->{jobs}->{$job_name} = $job_object;
+        # external dependency
+        $job_object = TaskForest::Job->new(name => $job_name, family => $family_name);  # create new job
+        $self->{families}->{$family_name} = 1;
     }
 
-    # Set dependencies.  A dependency can be a time dependency or another job
-    #
-    $self->{dependencies}->{$job_name} = [] unless $self->{dependencies}->{$job_name};
-    foreach my $dep (@{$self->{last_dependency}}) {
-        push (@{$self->{dependencies}->{$job_name}}, $dep);
-    }
-    
-    if ($args =~ /^\(\S/) {  # We have additional dependencies
+    if ($local_job && $args =~ /^\(\S/) {  # We have additional dependencies if this is a local job
         my %args = eval ($args); 
         return (0, $@) if $@;
         
@@ -1132,7 +1183,6 @@ sub _parseJob {
                 }
             }
         }
-        
     }
     
     # push this job into the dependency array for the jobs in the next line
@@ -1392,7 +1442,7 @@ sub convertTokenWaitToReady {
     sysopen(FH, $lock_file, O_RDWR|O_CREAT);
     flock(FH, LOCK_EX);
         
-    # first check to see if the token file has been created.  TODO: should we have just one global tokens.txt file?
+    # first check to see if the token file has been created.  
     #
     my $token_file = "$log_dir/tokens.txt";
 

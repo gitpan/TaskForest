@@ -3,40 +3,32 @@
 <div class="width10">
   <div class="demarcated">
     <div class="width4">
-      <div class="home_page_headline">Version 1.26 released on May 19, 2009<br>Now Featuring <a href="/docs/configuring/calendars.html">Calendars</a></div>
+      <div class="home_page_headline">Version 1.27 released on May 29, 2009</div>
       <p class="front_news">
-        TaskForest now
-        supports <a href="/docs/configuring/calendars.html">calendars</a>.
-        A calendar is a set of rules that defines on what days a job may
-        run.  Each rule can may or may not conclusively determine whether
-        or not a Family should run today.  The rules are evaluated in the
-        order in which they are specified.  The last rule that
-        conclusively determines whether of not a Family should run wins,
-        in the case of conflicting rules.  If none of the rules is
-        conclusive, then the Family will not run today.  You can set rules
-        to specify certain dates or ranges of dates, or specific days,
-        like "third friday of every month."
+        You can now have a job in one Family depend on the completion of a job in
+        another Family.  This allows you to have one Family depend on
+        another.
+      </p>
+      <p>
+        For example, job
+        J2 in Family F2 can wait on Job J1 in Family F1 by specifying the
+        dependency like this:
       </p>
 
+  <div class="code"><pre><code><span class=comments># This is in the F2 Family file</span>
+ J1::F1()
+
+   J2()
+ </code></pre></div>
       <p>
         For more information, check out
-        the <a href="/docs/configuring/calendars.html">calendars
-        documentation</a>.
-      </p>
-
-      <p>
-        We've also added a new <a href="/docs/faq.html">FAQ page</a>.
+        the <a href="/docs/configuring/families.html">jobs and families
+        configuration documentation</a>.
       </p>
       
     </div>
     <div class="width6 last">
-      <object type="application/x-shockwave-flash" data="/movies/TaskForest_New_1_25.swf" width="480" height="342" id="movie2">
-      
-      <param name="movie" value="/movies/TaskForest_New_1_25.swf">
-      <p>You need the Flash plugin.</p>
-      <p><a href="http://www.macromedia.com/go/getflashplayer/">Download Macromedia Flash Player</a></p>
-    </object>
-
+      <include TaskForest::REST::PassThrough /summary.html />
     </div>
     <div class="clear_both"></div>
   </div>
@@ -54,12 +46,13 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/releaseNotes.html">Release Notes</a></div>
+    <a href="/releaseNotes.html#1.27"><b>1.27</b></a> 2009-05-29<br>
     <a href="/releaseNotes.html#1.26"><b>1.26</b></a> 2009-05-19<br>
     <a href="/releaseNotes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
     <a href="/releaseNotes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
     <a href="/releaseNotes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
-    <a href="/releaseNotes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <!--
+    <a href="/releaseNotes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/releaseNotes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
     <a href="/releaseNotes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
     <a href="/releaseNotes.html#1.19"><b>1.19</b></a> 2009-03-07<br>
@@ -69,12 +62,13 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/changes.html">Change Log</a></div>
+    <a href="/changes.html#1.27"><b>1.27</b></a> 2009-05-29<br>
     <a href="/changes.html#1.26"><b>1.26</b></a> 2009-05-19<br>
     <a href="/changes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
     <a href="/changes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
     <a href="/changes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
-    <a href="/changes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <!--
+    <a href="/changes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/changes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
     <a href="/changes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
     <a href="/changes.html#1.19"><b>1.19</b></a> 2009-03-07<br>
@@ -92,12 +86,6 @@
 <div class="width4 demarcated">
   <div class="home_page_headline">Features Coming Soon</div>
   <dl>
-    <dt>Dependencies on other Families</dt>
-    <dd>
-      Have a job in one Family depend on the completion of a job in
-      another Family.  This allows you to have one Family depend on
-      another.
-    </dd>
     <dt>Enhancements to the included web site</dt>
     <dd>
       We plan on adding contextual menus so that you can right-click on a

@@ -4,7 +4,7 @@ NAME
     specify task dependencies.
 
 VERSION
-    This version is 1.25.
+    This is version 1.27.
 
 EXECUTIVE SUMMARY
     With the TaskForest Job Scheduler you can:
@@ -27,10 +27,10 @@ EXECUTIVE SUMMARY
         format (a big advantage if you like using 'grep')
 
 SYNOPSIS
-    TaskForest has migrated from a collection of simple perl modules to a
-    full-fledged system. I have found that putting the documentation in a
-    single POD is getting much more difficult. You can now find the latest
-    documetation on the TaskForest website located at
+    Over the years TaskForest has migrated from a collection of simple perl
+    modules to a full-fledged system. I have found that putting the
+    documentation in a single POD is getting much more difficult. You can
+    now find the latest documetation on the TaskForest website located at
 
      http://www.taskforest.com
 
@@ -62,7 +62,7 @@ ACKNOWLEDGEMENTS
 
     *   Rosco Rouse
 
-        Svetlana Lemeshov
+    *   Svetlana Lemeshov
 
     I would also like to thank Randal L. Schwartz for teaching the readers
     of the Feb 1999 issue of Web Techniques how to write a pre-forking web

@@ -1,6 +1,14 @@
   
 Revision history for Perl module TaskForest
 
+1.26 Fri May 19 2009
+o Added support for external dependencies (jobs depending on jobs that are
+  in other families.
+o Removed the VERSION string from all the .pm files, and moved it to 
+  Makefile.PL.  Thils will mean less diffs between versions.
+o Got rid of unused code.
+o Improved some test cases, to reduce the risk of false test failures.  
+
 1.26 Tue May 19 2009
 o There was an unnecessary call to 'use Date::Calc' in Calendar.pm.  I
   didn't notice it, because I have it installed. It is not being used. It

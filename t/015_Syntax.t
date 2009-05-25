@@ -91,3 +91,4 @@ eval {
 is($@, qq^Family 'SYNTAX_6' has unparseable lines:
   J2(start => '00:12', foo=>1)  J3() --- 'foo' is not a recognized attribute\n^, "Bad param");
 
+&TaskForest::Test::cleanup_files($log_dir);

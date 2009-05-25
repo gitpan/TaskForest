@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 my $SLEEP_TIME = 2;
-use Test::More tests => 9;
+use Test::More tests => 5;
 
 use strict;
 use warnings;
@@ -49,21 +49,24 @@ print "Looking for $log_dir/TOKENDEMO.J1.0\n";
 print "Running ready jobs - first cycle\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (3);
-ok(-e "$log_dir/TOKENDEMO.J1.0", "  After first cycle, J1 ran successfully");
-ok(-e "$log_dir/TOKENDEMO.J3.0", "  After first cycle, J3 ran successfully");
-ok(-e "$log_dir/TOKENDEMO.J4.0", "  After first cycle, J4 ran successfully");
-ok(-e "$log_dir/TOKENDEMO.J5.0", "  After first cycle, J5 ran successfully");
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/TOKENDEMO.J1.0",
+                                       "$log_dir/TOKENDEMO.J3.0",
+                                       "$log_dir/TOKENDEMO.J4.0",
+                                       "$log_dir/TOKENDEMO.J5.0",                                       
+                                   ]), "After first cycle, J1, J3, J4, J5 ran successfully" );
 
 print "\n\nRunning ready jobs - second cycle\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (3);
-ok(-e "$log_dir/TOKENDEMO.J2.0", "  After second cycle, J2 ran successfully");
-ok(-e "$log_dir/TOKENDEMO.J6.0", "  After second cycle, J6 ran successfully");
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/TOKENDEMO.J2.0",
+                                       "$log_dir/TOKENDEMO.J6.0",
+                                   ]), " After second cycle, J2 and J6 ran successfully");
 
 print "\n\nRunning ready jobs - third cycle\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (3);
-ok(-e "$log_dir/TOKENDEMO.J8.0", "  After third cycle, J8 ran successfully");
+ok(&TaskForest::Test::waitForFiles(file_list => ["$log_dir/TOKENDEMO.J8.0"]), "After third cycle, J8 ran successfully");
+
+&TaskForest::Test::cleanup_files($log_dir);

@@ -71,3 +71,4 @@ ok(-e "$log_dir/SIMPLE.J9.0", "  After first cycle, J9 ran successfully") || dia
 
 
 
+&TaskForest::Test::cleanup_files($log_dir);

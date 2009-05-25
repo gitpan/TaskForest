@@ -56,3 +56,4 @@ my $stdout = $sh->stop();
 
 
 
+&TaskForest::Test::cleanup_files($log_dir);

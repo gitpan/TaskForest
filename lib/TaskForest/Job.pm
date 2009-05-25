@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Job.pm 184 2009-05-04 03:40:24Z aijaz $
+# $Id: Job.pm 201 2009-05-24 03:37:26Z aijaz $
 #
 ################################################################################
 
@@ -114,10 +114,6 @@ use warnings;
 use Data::Dumper;
 use Carp;
 
-BEGIN {
-    use vars qw($VERSION);
-    $VERSION     = '1.26';
-}
 
 my $n = 0;
 
@@ -191,6 +187,28 @@ sub new {
 # ------------------------------------------------------------------------------
 sub check {
     my $self = shift;
+
+    if ($self->{family}) {
+        
+        # this is an external dependency
+        
+        # TODO: What time zone should we look at? The time zone of the
+        # family that owns this job?  Or the time zone of the family
+        # in which this job is present?
+        
+        # To make matters simpler, I think it should be the time zone
+        # of the family that includes this external dependency.  It's
+        # more obvious. Just look for the file in today's log
+        # dir. Period.
+
+        my $foreign_status = shift;
+        if ($foreign_status->{$self->{name}}) {
+            return 1;
+        }
+
+        return 0;
+    }
+
 
     if ($self->{status} eq 'Success') {
         return 1;

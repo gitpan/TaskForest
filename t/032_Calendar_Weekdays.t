@@ -74,3 +74,4 @@ ok($a == 0, "Nothing ran");
 
 
 
+&TaskForest::Test::cleanup_files($log_dir);

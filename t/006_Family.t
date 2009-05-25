@@ -146,6 +146,7 @@ foreach my $j (@success2) {
 #print Dumper($sf);
 
 
+&TaskForest::Test::cleanup_files($log_dir);
 
 
 sub touch_job {

@@ -70,3 +70,4 @@ foreach my $n (1..10) {
 }
 
 
+&TaskForest::Test::cleanup_files($log_dir);

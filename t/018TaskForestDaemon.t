@@ -16,22 +16,6 @@ use TaskForest::Test;
 my $pid;
 my $has_ssl_client = 0;
 
-BEGIN {
-    use vars qw($VERSION);
-    $VERSION     = '1.26';
-
-#     if (eval("require FOO")) {
-#         $has_ssl_client = 1;
-#     }
-#     else {
-#         $has_ssl_client = 0;
-#         diag("The SSL client socket doesn't appear to be installed.");
-#         diag("I won't try connecting to an SSL server, but will try");
-#         diag("to connect to a non-SSL server instead");
-#     }
-}
-
-#END { killTaskforestd(); }
 
 setup_signals();
 
@@ -622,6 +606,7 @@ ok($response->code == RC_OK, "Status Invoked 4");
 
 
 #killTaskforestd();
+&TaskForest::Test::cleanup_files($log_dir);
 
 
 sub killTaskforestd {

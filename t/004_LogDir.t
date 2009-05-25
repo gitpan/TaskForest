@@ -28,6 +28,8 @@ my $log_dir = &TaskForest::LogDir::getLogDir($root);
 ok(-d $log_dir, 'Log dir is a directory');
 is($log_dir, $todays_log_dir,  '  and is correct');
 
+cleanup($todays_log_dir);
+
 
 sub cleanup {
     my $dir = shift;

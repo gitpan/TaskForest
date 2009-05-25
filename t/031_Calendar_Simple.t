@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 my $SLEEP_TIME = 2;
-use Test::More tests => 7;
+use Test::More tests => 3;
 
 use strict;
 use warnings;
@@ -56,30 +56,17 @@ $tf->runMainLoop();
 
 $tf->{options}->{once_only} = 1;
 
-print "Waiting $SLEEP_TIME seconds for job to finish\n";
+print "Waiting  for job to finish\n";
 
-my $num_tries = 10;
-for (my $n = 1; $n <= $num_tries; $n++) { 
-    sleep $SLEEP_TIME;
-    last if (-e "$log_dir/SIMPLE_C.J2.0" and
-             -e "$log_dir/SIMPLE_C.J3.0" and
-             -e "$log_dir/SIMPLE_C.J6.0" and
-             -e "$log_dir/SIMPLE_C.J7.0" and
-             -e "$log_dir/SIMPLE_C.J9.0" );
-    diag("Haven't found job log files $log_dir/SIMPLE_C.J[23679].0 on try $n of $num_tries.  Sleeping another $SLEEP_TIME seconds");  # It's possible that the fork failed, or that we don't have write permission to the log dir. OR IT'S NOT TIME YET.
-}
-
-    
-    
-
-my $diag = "Try to increase the value of \$SLEEP_TIME in t/007_TaskForest.t";
-
-ok(-e "$log_dir/SIMPLE_C.J2.0", "  After first cycle, J2 ran successfully") || diag ($diag) ;
-ok(-e "$log_dir/SIMPLE_C.J3.0", "  After first cycle, J3 ran successfully") || diag ($diag) ;
-ok(-e "$log_dir/SIMPLE_C.J6.0", "  After first cycle, J6 ran successfully") || diag ($diag) ;
-ok(-e "$log_dir/SIMPLE_C.J7.0", "  After first cycle, J7 ran successfully") || diag ($diag) ;
-ok(-e "$log_dir/SIMPLE_C.J9.0", "  After first cycle, J9 ran successfully") || diag ($diag) ;
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/SIMPLE_C.J2.0",
+                                       "$log_dir/SIMPLE_C.J3.0",
+                                       "$log_dir/SIMPLE_C.J6.0",
+                                       "$log_dir/SIMPLE_C.J7.0",
+                                       "$log_dir/SIMPLE_C.J9.0",
+                                   ]), "After first cycle, jobs J2, J3, J6, J7 and J9 ran successfully");
 
 
 
 
+&TaskForest::Test::cleanup_files($log_dir);

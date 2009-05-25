@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                TaskForest
-version:             1.26
+version:             1.27
 abstract:            Simple, powerful task scheduler
 license:             ~
 author:              

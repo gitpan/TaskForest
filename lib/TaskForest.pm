@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 195 2009-05-18 01:01:30Z aijaz $
+# $Id: TaskForest.pm 206 2009-05-25 04:03:12Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -18,11 +18,6 @@ use TaskForest::Logs qw /$log/;
 use File::Basename;
 use Carp;
 use TaskForest::LocalTime;
-
-BEGIN {
-    use vars qw($VERSION);
-    $VERSION     = '1.26';
-}
 
 
 
@@ -95,7 +90,6 @@ sub runMainLoop {
     my $RELOAD = 1;
 
     $self->{options} = &TaskForest::Options::getOptions($rerun);  $rerun = 1;
-    # TODO: Confirm that this ok &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $RELOAD);
     &TaskForest::Logs::init("New Loop");
    
     while (1) {
@@ -261,7 +255,7 @@ sub status {
         $family->display($display_hash);
     }
 
-    foreach my $job (@{$display_hash->{Ready}}, @{$display_hash->{Waiting}}) {
+    foreach my $job (@{$display_hash->{Ready}}, @{$display_hash->{Waiting}}, @{$display_hash->{TokenWait}}) {
         $job->{actual_start} = $job->{stop} = "--:--";
         $job->{rc} = '-';
         $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 0;
@@ -565,7 +559,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This version is 1.26.
+This is version 1.27.
 
 =head1 EXECUTIVE SUMMARY
 
@@ -609,10 +603,10 @@ express the relationships between jobs using a simple text-based format (a big a
 
 =head1 SYNOPSIS
 
-TaskForest has migrated from a collection of simple perl modules to a
-full-fledged system.  I have found that putting the documentation in a
-single POD is getting much more difficult.  You can now find the
-latest documetation on the TaskForest website located at
+Over the years TaskForest has migrated from a collection of simple
+perl modules to a full-fledged system.  I have found that putting the
+documentation in a single POD is getting much more difficult.  You can
+now find the latest documetation on the TaskForest website located at
 
  http://www.taskforest.com
 
@@ -654,6 +648,8 @@ SourceForge
 =item *
 
 Rosco Rouse
+
+=item *
 
 Svetlana Lemeshov
 

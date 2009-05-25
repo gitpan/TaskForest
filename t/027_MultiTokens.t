@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 my $SLEEP_TIME = 2;
-use Test::More tests => 7;
+use Test::More tests => 4;
 
 use strict;
 use warnings;
@@ -48,14 +48,20 @@ print Dumper($options);
 print "Running ready jobs\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (2);
-ok(-e "$log_dir/MULTITOKENS.J1.0", "  After first cycle, J1 ran successfully");
-ok(-e "$log_dir/MULTITOKENS.J2.0", "  After first cycle, J2 ran successfully");
-ok(-e "$log_dir/MULTITOKENS.J4.0", "  After first cycle, J4 ran successfully");
-ok(-e "$log_dir/MULTITOKENS.J5.0", "  After first cycle, J5 ran successfully");
+
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/MULTITOKENS.J1.0",
+                                       "$log_dir/MULTITOKENS.J2.0",
+                                       "$log_dir/MULTITOKENS.J4.0",
+                                       "$log_dir/MULTITOKENS.J5.0",
+                                   ]), "After first cycle, jobs J1, J2, J4, J5 ran successfully");
+
 
 print "Running ready jobs\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (2);
-ok(-e "$log_dir/MULTITOKENS.J3.0", "  After first cycle, J3 ran successfully");
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/MULTITOKENS.J3.0"
+                                   ]), "After second cycle, J3 ran successfully");
+
+&TaskForest::Test::cleanup_files($log_dir);

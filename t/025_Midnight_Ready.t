@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 # 
-use Test::More tests => 17;
+use Test::More tests => 19;
 use strict;
 use warnings;
 use Data::Dumper;
@@ -66,7 +66,7 @@ my $sh = TaskForest::StringHandle->start(*STDOUT);
 my $task_forest = TaskForest->new();
 $task_forest->status();
 my $stdout = $sh->stop();
-print $stdout;
+
 &TaskForest::Test::checkStatusText($stdout, [
                                        ["MIDNIGHT", "J1",              'Waiting', "-", "GMT", "00:00", "--:--", "--:--"],
                                        ["MIDNIGHT", "J_005",           'Ready',  "-", "GMT", "04:59", "--:--", "--:--"],
@@ -83,35 +83,38 @@ $task_forest->runMainLoop();
 # get 'current' time to fake out r.pid file
 my $ep = &TaskForest::LocalTime::epoch();
 
+ok(&TaskForest::Test::waitForFiles(file_list => ["$log_dir/MIDNIGHT.J_005.pid"]), "Found expected files");
 my $num_tries = 10;
-for (my $n = 1; $n <= $num_tries; $n++) { 
-    sleep 2;
-    last if (-e "$log_dir/MIDNIGHT.J_005.pid" );
-    diag("Haven't found job pid files on try $n of $num_tries.  Sleeping another 2 seconds");  # It's possible that the fork failed, or that we don't have write permission to the log dir. OR IT'S NOT TIME YET.
-}
 
 $task_forest->{options}->{once_only} = 1;
-sleep (5);
+
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/MIDNIGHT.J_005.pid"
+                                       ]
+   ), "Found pid file");
+
+
+sleep 2;
 
 # fake out pid file
-ok(open (F, "$log_dir/MIDNIGHT.J_005.pid"), "opened pid file for reading");
+ok( (open (F, "$log_dir/MIDNIGHT.J_005.pid")), "opened pid file for reading");
 my @lines = <F>;
-ok(close F, "closed file");
+ok( (close F), "closed file");
 
-ok(open (F, "> $log_dir/MIDNIGHT.J_005.pid"), "opened pid file for writing");
+ok((open (F, "> $log_dir/MIDNIGHT.J_005.pid")), "opened pid file for writing");
 foreach (@lines) {
     if (/^actual_start:/) { print  F "actual_start: $ep\n"; }
     elsif (/^stop:/)      { printf F "stop: %d\n", $ep + 5; }
     else                  { print  F $_;                    }
 }
-ok(close F, "closed file");
+ok((close F), "closed file");
     
 
 
 $sh = TaskForest::StringHandle->start(*STDOUT);
 $task_forest->status();
 $stdout = $sh->stop();
- &TaskForest::Test::checkStatusText($stdout, [
+&TaskForest::Test::checkStatusText($stdout, [
                                         ["MIDNIGHT", "J1",              'Ready', "-", "GMT", "00:00", "--:--", "--:--"],
                                         ["MIDNIGHT", "J_005",           'Success',  "0", "GMT", "04:59", "..:..", "..:.."],
                                         ]
@@ -120,3 +123,4 @@ $stdout = $sh->stop();
 
 
 #print Dumper($sf);
+&TaskForest::Test::cleanup_files($log_dir);

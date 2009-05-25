@@ -95,3 +95,4 @@ print "$stdout";
                                        ]
     );
 
+&TaskForest::Test::cleanup_files($log_dir);

@@ -216,29 +216,8 @@ foreach my $d ([3,8], [3,29], [11,1], [10,25]) {
 
 
 
+&TaskForest::Test::cleanup_files($log_dir);
 
 
 
 exit;
-my $num_tries = 10;
-
-foreach my $i (1..24) {
-    print "\n\n********************************************************************************\n\n";
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = &TaskForest::LocalTime::ft("America/Chicago");
-    print "It is now:  $mon/$mday/$year $hour:$min:$sec\n";
-    $tf->status();
-    $tf->{options}->{once_only} = 1;
-    print "Running ready jobs\n";
-    $tf->runMainLoop();
-    $tf->{options}->{once_only} = 1;
-    print "Waiting $SLEEP_TIME seconds for job to finish\n";
-    for (my $n = 1; $n <= $num_tries; $n++) { 
-        sleep $SLEEP_TIME;
-        last if (-e "$log_dir/DST_START_US.J2.pid");
-        diag("Haven't found job log files on try $n of $num_tries.  Sleeping another $SLEEP_TIME seconds");  # It's possible that the fork failed, or that we don't have write permission to the log dir. OR IT'S NOT TIME YET.
-    }
-    ok(-e "$log_dir/DST_START_US.J2.pid", "Found pid file $i");
-    $dt->add(hours => 1, minutes => 1);
-    &TaskForest::LocalTime::setTime( { year => $dt->year, month => $dt->month, day => $dt->day, hour => $dt->hour, min => $dt->minute, sec => $dt->second, tz => 'America/Chicago', });
-    
-}

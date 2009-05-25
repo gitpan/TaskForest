@@ -20,7 +20,7 @@ sub checkStatusText {
         my ($family, $job, $status, $rc, $tz, $start, $astart, $stop) = @$expected_line;
         my ($jb) = $job =~ /([^\-]+)/;
 
-        $line = shift(@received_lines); $regex = "${family}::$job +$status +$rc +$tz +$start +$astart +$stop"; like($line, qr/$regex/);
+        $line = shift(@received_lines); $regex = "${family}::$job +$status +$rc +$tz +$start +$astart +$stop"; like($line, qr/$regex/, "Got Line $line");
     }
     if (@$expected_lines) {
         diag("ERROR: expected a few more lines than we got");
@@ -97,6 +97,34 @@ sub fakeRun {
     
     
 }
+
+
+sub waitForFiles {
+    my %args = @_;
+
+    my $sleep_time = $args{sleep_time} || 3;
+    my $num_tries  = $args{num_tries}  || 10;
+    my $file_list  = $args{file_list};
+
+    next unless @$file_list;
+    my $num_files = scalar(@$file_list);
+
+    for (my $n = 1; $n <= $num_tries; $n++) {
+        sleep $sleep_time;
+        my $found = 1;
+        my @missing = ();
+        foreach my $file (@$file_list) {
+            if (! -e $file) {
+                $found = 0;
+                push (@missing, $file);
+            }
+        }
+        return 1 if $found;
+        diag("Loop # $n: missing the following files:\n  ", join("\n  ", @missing), "\n") unless $n %5;
+    }
+    return 0;
+}
+    
 
 
 

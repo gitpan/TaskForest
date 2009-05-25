@@ -118,6 +118,7 @@ unlike ($files, qr/J5/, "J5 was not in contention");
 
 
 
+&TaskForest::Test::cleanup_files($log_dir);
 
 
 

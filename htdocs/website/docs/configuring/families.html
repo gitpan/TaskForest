@@ -185,7 +185,97 @@
     </li>
   </ul>
 
+  <p>
+    It is possible to have a dependency on a job that's in another family.
+    If, for example, J_ROTATE_LOGS was in the Family named LOGS, then the
+    family above would look like this:
+  </p>
 
+  <div class="code"><pre><code>
+   +-------------------------------------------------------
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
+02 |
+03 |            LOGS::J_ROTATE_LOGS()
+04 |
+05 | J_RESOLVE_DNS()       Delete_Old_Logs()
+06 |
+07 |               J_WEB_REPORTS()      
+08 |
+09 |    J_EMAIL_WEB_RPT_DONE()  # send me a notification
+10 |
+   +-------------------------------------------------------
+  </code></pre></div>
+
+  <p>
+    An external job dependency is different from 'normal' job
+    dependencies, because unlike 'normal' dependencies, it specifies only
+    the dependency, and not when the external job should run.  This means
+    that looking at the above family file, we cannot say when
+    J_ROTATE_LOGS will run.  More accurately, we cannot say when
+    LOGS::J_ROTATE_LOGS will run.  All we know is that after it runs,
+    J_RESOLVE_DNS and Delete_Old_Logs can run (after 2:00 GMT).
+  </p>
+  
+  <p>
+    This also means that external job dependencies may only be specified
+    on the first line of a Family, or the first line of a group of jobs
+    (see example 4).  Therefore the following is not allowed:
+  </p>
+
+  <div class="code"><pre><code>
+   +-------------------------------------------------------
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
+02 |
+03 |            LOGS::J_ROTATE_LOGS()
+04 |
+05 | J_RESOLVE_DNS()       Delete_Old_Logs()
+06 |
+07 |            REPORTS::J_WEB_REPORTS()  # BAD!
+08 |
+09 |    J_EMAIL_WEB_RPT_DONE()  # send me a notification
+10 |
+   +-------------------------------------------------------
+  </code></pre></div>
+  
+  <p>
+    To see how this should be written, we need to know about Job Forests.
+    Since that's described in example 4, we'll defer the solution until then.
+  </p>
+
+  <p>
+    One last thing about external job dependencies: just because we're
+    waiting on a job in another family, that doesn't mean that the same
+    job cannot be run in this family.  For example, the following is
+    permitted:
+  </p>
+  
+  <div class="code"><pre><code>
+   +-------------------------------------------------------
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
+02 |
+03 |            LOGS::J_ROTATE_LOGS()
+04 |
+05 | J_RESOLVE_DNS()       Delete_Old_Logs()
+06 |
+07 |               J_WEB_REPORTS()
+08 |
+09 |    J_EMAIL_WEB_RPT_DONE()  # send me a notification
+10 |
+11 |                J_ROTATE_LOGS()   # This is a different
+12 |                                  # job!
+13 |
+   +-------------------------------------------------------
+  </code></pre></div>
+
+  <p>
+    The family will not start until J_ROTATE_LOGS has run from the LOGS
+    family.  The last job run by this family will be J_ROTATE_LOGS.  It
+    has nothing to do with the instance of the job that ran in the LOGS
+    family.  Line 11 will actually run the job, while line 3 only checks
+    whether the job has run (by another family).  That's what I mean when
+    I say that external dependencies only specify the dependencies, while
+    normal dependencies also specify when the job should run.
+  </p>
 
   <div class="new_section_header">EXAMPLE 3 - Time Dependencies</div>
   <p>
@@ -230,7 +320,7 @@
   <div class="new_section_header">EXAMPLE 4 - Job Forests</div>
   <p>
     You can see in the example above that line 03 is the start of a group
-    of dependent job.  No job on any other line can start unless the job
+    of dependent jobs.  No job on any other line can start unless the job
     on line 03 succeeds.  What if you wanted two or more groups of jobs in
     the same family that start at the same time (barring any time
     dependencies) and proceed independently of each other?
@@ -303,7 +393,56 @@
 
   </p>
 
+  <p>
+    Now, let's get back to our discussion of external dependencies from
+    example 3.  I said that an external dependency may only be specified
+    on the first line of the file or the first line of a group of jobs.
+    This way of specifying a family is not allowed by TaskForest:
+  </p>
 
+  <div class="code"><pre><code>
+   +-------------------------------------------------------
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
+02 |
+03 |            LOGS::J_ROTATE_LOGS()
+04 |
+05 | J_RESOLVE_DNS()       Delete_Old_Logs()
+06 |
+07 |            REPORTS::J_WEB_REPORTS()  # BAD!
+08 |
+09 |    J_EMAIL_WEB_RPT_DONE()  # send me a notification
+10 |
+   +-------------------------------------------------------
+  </code></pre></div>
+
+  <p>
+    With a few minor modifications, the family can be specified correctly:
+  </p>
+
+  <div class="code"><pre><code>
+   +-------------------------------------------------------
+01 |start => '02:00', tz => 'GMT', calendar => 'Weekdays'
+02 |
+03 |            LOGS::J_ROTATE_LOGS()
+04 |
+05 | J_RESOLVE_DNS()       Delete_Old_Logs()
+06 |
+07 |--------------------------------------------
+08 |
+09 | J_RESOLVE_DNS() Delete_Old_Logs() REPORTS::J_WEB_REPORTS()
+10 |  
+11 |   J_EMAIL_WEB_RPT_DONE()  # send me a notification
+12 |
+   +-------------------------------------------------------
+  </code></pre></div>
+
+  <p>
+    We've moved the external dependency to the first line of it's own
+    section.  Now J_EMAIL_WEB_RPT_DONE relies on all 3 jobs, 2 that run in
+    this Family, and one from the REPORTS family.
+  </p>
+
+  
   <div class="new_section_header">EXAMPLE 5 - Tokens</div>
   <include TaskForest::REST::PassThrough /docs/configuring/tokens.html />  
   

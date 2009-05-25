@@ -107,3 +107,4 @@ my $stdout2 = $sh2->stop();
                                        ]
     );
 
+&TaskForest::Test::cleanup_files($log_dir);

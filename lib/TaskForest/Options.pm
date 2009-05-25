@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Options.pm 191 2009-05-12 02:12:07Z aijaz $
+# $Id: Options.pm 201 2009-05-24 03:37:26Z aijaz $
 #
 ################################################################################
 
@@ -46,10 +46,6 @@ use Carp;
 use Config::General qw(ParseConfig);
 use Log::Log4perl qw(:levels);
 
-BEGIN {
-    use vars qw($VERSION);
-    $VERSION     = '1.26';
-}
 
 # This is the main data structure that stores the options
 our $options = {};
@@ -179,7 +175,6 @@ sub getOptions {
     }
     foreach my $option (keys %all_options) { $tainted_options->{$option} = $config->{$option} unless defined $tainted_options->{$option} }
     $tainted_options->{token} = $config->{token} unless defined $tainted_options->{token};
-    $tainted_options->{calendar} = $config->{calendar} unless defined $tainted_options->{calendar};
     
 
     # Finally, pick a default value if necessary
@@ -198,7 +193,6 @@ sub getOptions {
     $tainted_options->{default_time_zone} = 'America/Chicago' unless defined $tainted_options->{default_time_zone};
     $tainted_options->{date}              = ''                unless defined $tainted_options->{date};
     $tainted_options->{token}             = {}                unless defined $tainted_options->{token};
-    $tainted_options->{calendar}          = {}                unless defined $tainted_options->{calendar};
 
     # show help
     if ($tainted_options->{help}) {
@@ -280,26 +274,6 @@ sub getOptions {
             }
             else {
                 croak ("Bad token name: $r.  A token name can only contain the characters [a-zA-Z0-9_]");
-            }
-        }
-    }
-    if ($tainted_options->{calendar}) {
-        foreach my $r (keys %{$tainted_options->{calendar}}) {
-            if ($r =~ /^([a-z0-9_\.\-]+)/i) {
-                my $calendar_name = $1;
-                $new_options->{calendar}->{$calendar_name} = { rules => [] };
-                #print Dumper($tainted_options->{calendar});
-                if (ref($tainted_options->{calendar}->{$calendar_name}->{rule})) {
-                    foreach my $rule (@{$tainted_options->{calendar}->{$calendar_name}->{rule}}) {
-                        push (@{$new_options->{calendar}->{$calendar_name}->{rules}}, $rule);
-                    }
-                }
-                else {
-                    push (@{$new_options->{calendar}->{$calendar_name}->{rules}}, $tainted_options->{calendar}->{$calendar_name}->{rule});
-                }
-            }
-            else {
-                croak ("Bad calendar name: $r.  A calendar name can only contain the characters [a-zA-Z0-9_]");
             }
         }
     }

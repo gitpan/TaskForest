@@ -63,3 +63,4 @@ my $stdout = $sh->stop();
                                        ["REPEAT", "J11",              '\S+', "-", "GMT", "00:00", "--:--", "--:--"],
                                        ["REPEAT", "J9",               '\S+',   "-", "GMT", "00:00", "--:--", "--:--"],
                                    ]);
+&TaskForest::Test::cleanup_files($log_dir);

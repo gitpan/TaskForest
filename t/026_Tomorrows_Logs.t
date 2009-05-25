@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 # 
-use Test::More tests => 15;
+use Test::More tests => 16;
 use strict;
 use warnings;
 use Data::Dumper;
@@ -83,16 +83,13 @@ $task_forest->runMainLoop();
 # get 'current' time to fake out r.pid file
 my $ep = &TaskForest::LocalTime::epoch();
 
-my $num_tries = 10;
-for (my $n = 1; $n <= $num_tries; $n++) { 
-    sleep 2;
-    last if (-e "$log_dir/TOKYO.J3.pid" );
-    diag("Haven't found job pid files on try $n of $num_tries.  Sleeping another 2 seconds");  # It's possible that the fork failed, or that we don't have write permission to the log dir. OR IT'S NOT TIME YET.
-}
-
-$task_forest->{options}->{once_only} = 1;
-print "Sleeping for 5 seconds\n";
-sleep(5);
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/TOKYO.J3.pid"
+                                       ]),
+                                   "Found the TOKYO::J3.pid file");
+   
+print "Sleeping for 2 seconds\n";
+sleep 2;
 
 # fake out pid file
 ok(open (F, "$log_dir/TOKYO.J3.pid"), "opened pid file for reading");
@@ -123,3 +120,4 @@ print $stdout;
 
 
 #print Dumper($sf);
+&TaskForest::Test::cleanup_files($log_dir);

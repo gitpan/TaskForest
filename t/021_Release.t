@@ -106,3 +106,5 @@ print $stdout;
                                        ["GMTC", "J9",              'Waiting', "-", "GMT", "00:00", "--:--", "--:--"],
                                        ]
     );
+
+&TaskForest::Test::cleanup_files($log_dir);

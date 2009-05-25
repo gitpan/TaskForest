@@ -1,12 +1,12 @@
 ################################################################################
 #
-# $Id: TimeDependency.pm 184 2009-05-04 03:40:24Z aijaz $
+# $Id: TimeDependency.pm 206 2009-05-25 04:03:12Z aijaz $
 #
 ################################################################################
 
 =head1 NAME
 
-TaskForest::TimeDependency - A time costraint on a job
+TaskForest::TimeDependency - A time constraint on a job
 
 =head1 SYNOPSIS
 
@@ -60,10 +60,6 @@ use DateTime;
 use Carp;
 use TaskForest::LocalTime;
 
-BEGIN {
-    use vars qw($VERSION);
-    $VERSION     = '1.26';
-}
 
 
 # ------------------------------------------------------------------------------

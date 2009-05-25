@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 my $SLEEP_TIME = 2;
-use Test::More tests => 13;
+use Test::More tests => 5;
 
 use strict;
 use warnings;
@@ -48,30 +48,34 @@ print Dumper($options);
 print "Running ready jobs\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (2);
-ok(-e "$log_dir/TOKENS.J1.0", "  After first cycle, J1 ran successfully");
-ok(-e "$log_dir/TOKENS.J3.0", "  After first cycle, J3 ran successfully");
-ok(-e "$log_dir/TOKENS.J4.0", "  After first cycle, J4 ran successfully");
-ok(-e "$log_dir/TOKENS.J7.0", "  After first cycle, J7 ran successfully");
-ok(-e "$log_dir/TOKENS.J8.0", "  After first cycle, J8 ran successfully");
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/TOKENS.J1.0",
+                                       "$log_dir/TOKENS.J3.0",
+                                       "$log_dir/TOKENS.J4.0",
+                                       "$log_dir/TOKENS.J7.0",
+                                       "$log_dir/TOKENS.J8.0",
+                                   ]), "After first cycle, jobs J1, J3, J4, J7, J8 ran successfully");
 
 print "Running ready jobs\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (2);
-ok(-e "$log_dir/TOKENS.J2.0", "  After first cycle, J2 ran successfully");
-ok(-e "$log_dir/TOKENS.J5.0", "  After first cycle, J5 ran successfully");
-ok(-e "$log_dir/TOKENS.J9.0", "  After first cycle, J9 ran successfully");
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/TOKENS.J2.0",
+                                       "$log_dir/TOKENS.J5.0",
+                                       "$log_dir/TOKENS.J9.0",
+                                   ]), "After second cycle, jobs J2, J5 and J9 ran successfully");
 
 print "Running ready jobs\n";
 $tf->runMainLoop();
 $tf->{options}->{once_only} = 1;
-sleep (2);
-ok(-e "$log_dir/TOKENS.J6.0", "  After first cycle, J6 ran successfully");
-ok(-e "$log_dir/TOKENS.J10.0", "  After first cycle, J10 ran successfully");
-ok(-e "$log_dir/TOKENS.J11.0", "  After first cycle, J11 ran successfully");
+ok(&TaskForest::Test::waitForFiles(file_list => [
+                                       "$log_dir/TOKENS.J6.0",
+                                       "$log_dir/TOKENS.J10.0",
+                                       "$log_dir/TOKENS.J11.0",
+                                   ]), "After third cycle, jobs J6, J10 and J11 ran successully");
 
 
 
 
 
+&TaskForest::Test::cleanup_files($log_dir);

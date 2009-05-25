@@ -67,6 +67,7 @@ foreach my $n (1..14) {
     is(scalar(@{$d->{"J10--Repeat_$n--"}}), 1, ' and is the only dep it has');
 }
 
+&TaskForest::Test::cleanup_files($log_dir);
 
 sub cleanup {
     my $dir = shift;

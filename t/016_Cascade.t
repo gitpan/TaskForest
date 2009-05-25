@@ -48,6 +48,7 @@ $str = join(" ", sort(@$deps));
 is($str, "J2 J3 J4 J5 J7 J8 J9");
 
 
+&TaskForest::Test::cleanup_files($log_dir);
 
 
 sub touch_job {

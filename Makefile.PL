@@ -6,7 +6,8 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME         => 'TaskForest',
-    VERSION_FROM => 'lib/TaskForest.pm', # finds \$VERSION
+    #VERSION_FROM => 'lib/TaskForest.pm', # finds \$VERSION
+    VERSION => 1.27,
     AUTHOR       => 'Aijaz A. Ansari (v-cpan@enoor.com)',
     ABSTRACT     => 'Simple, powerful task scheduler',
     PREREQ_PM    => {
@@ -25,7 +26,6 @@ WriteMakefile(
     INSTALLBIN => "bin",
     EXE_FILES => ["run", "run_with_log", "taskforest", "status", "rerun", "mark", "taskforestd", "gen_passwd", "taskforestdssl"],
 );
-
 
 #FULL_PERL!
 #my $path_to_perl = prompt("Please enter the path to your perl: ", "/usr/local/bin/perl");
