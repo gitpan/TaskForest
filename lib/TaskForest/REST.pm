@@ -7,7 +7,7 @@ use Data::Dumper;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.28';
+    $VERSION     = '1.29';
 }
 
 sub methodNotAllowed {
