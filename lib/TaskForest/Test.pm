@@ -4,6 +4,11 @@ package TaskForest::Test;
 use strict;
 use warnings;
 
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.30';
+}
+
 use Test::More;
 
 sub checkStatusText {

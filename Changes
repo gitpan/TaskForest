@@ -1,7 +1,7 @@
   
 Revision history for Perl module TaskForest
 
-1.29 Fri May 29 2009
+1.30 Fri May 29 2009
 o Added support for external dependencies (jobs depending on jobs that are
   in other families.
 o Removed the VERSION string from all the .pm files, and moved it to 
