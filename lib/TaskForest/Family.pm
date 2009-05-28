@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 211 2009-05-25 06:05:50Z aijaz $
+# $Id: Family.pm 212 2009-05-28 04:08:26Z aijaz $
 #
 ################################################################################
 
@@ -181,7 +181,7 @@ use TaskForest::Calendar;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.30';
+    $VERSION     = '1.32';
 }
 
 
@@ -1289,8 +1289,10 @@ sub _createRecurringJobs {
     #my $until_dt = DateTime->now(time_zone => $args->{tz});
     my $until_dt = DateTime->from_epoch(epoch => &TaskForest::LocalTime::epoch());
     $until_dt->set_time_zone($args->{tz});
-    $until_dt->set(hour   => $until_hh);
-    $until_dt->set(minute => $until_mm);
+    $until_dt->set(hour       => $until_hh);
+    $until_dt->set(minute     => $until_mm);
+    $until_dt->set(second     => 0);
+    $until_dt->set(nanosecond => 0);
     my $until_epoch = $until_dt->epoch();
    
     
@@ -1303,8 +1305,10 @@ sub _createRecurringJobs {
     #$start_dt = DateTime->now(time_zone => $args->{tz});
     $start_dt = DateTime->from_epoch(epoch => &TaskForest::LocalTime::epoch());
     $start_dt->set_time_zone($args->{tz});
-    $start_dt->set(hour   => $start_hh);
-    $start_dt->set(minute => $start_mm);
+    $start_dt->set(hour       => $start_hh);
+    $start_dt->set(minute     => $start_mm);
+    $start_dt->set(second     => 0);
+    $start_dt->set(nanosecond => 0);
     
 
     # create a duration value that's added in every loop

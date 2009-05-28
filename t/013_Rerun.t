@@ -17,8 +17,19 @@ BEGIN {
     use_ok( 'TaskForest::Rerun',        "Can use Rerun" );
 }
 
+&TaskForest::LocalTime::setTime( { year  => 2009,
+                                   month => 05,
+                                   day   => 26,
+                                   hour  => 0,
+                                   min   => 1,
+                                   sec   => 0,
+                                   tz    => 'GMT',
+                                 });
+                                       
+
 my $cwd = getcwd();
 &TaskForest::Test::cleanup_files("$cwd/t/families");
+
 
 my $src_dir = "$cwd/t/family_archive";
 my $dest_dir = "$cwd/t/families";
