@@ -11,6 +11,7 @@
     <li><a href="#long">Does TaskForest support jobs that run for longer than 24 hours?</a></li>
     <li><a href="#tz">What time zones are available?</a></li>
     <li><a href="#tokens">Can I prevent too many jobs from running simultaneously?</a></li>
+    <li><a href="#missing_logs">On the web page, why can't I click on the status of a job to see the logs?</a></li>
   </ul>
 
   <div class="new_section_header"><a name="dst">How does Taskforest deal with Daylight Saving Time?</a></div>
@@ -343,6 +344,14 @@ Wed 00:00           05:00      J1 Ends     |
   </p>
 
 
+  <div class="new_section_header"><a name="missing_logs">On the web page, why can't I click on the status of a job to see the logs?</a></div>
+
+  <p>
+    You're probably using 'run' as
+    the <a href="/docs/configuring/options.html#run_wrapper"><code>run_wrapper</code></a>
+    instead of 'run_with_log'.  The former will not generate log files,
+    and therefore will not generate the links.  The latter will.
+  </p>
 
 
 <div class="clear_both"></div>

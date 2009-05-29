@@ -106,7 +106,13 @@ ok(&TaskForest::Test::waitForFiles(file_list => ["$log_dir/EXTERNAL_1.J1.0"]), "
 $sf->{current} = 0;
 $sf->getCurrent();
 
-is($sf->{jobs}->{J2}->{status}, "Ready", "Now, J2 is ready because external dependency has been met");
+my $ok = 0;
+if ($sf->{jobs}->{J2}->{status} eq 'Ready' || $sf->{jobs}->{J2}->{status} eq 'Success') {
+    $ok = 1;
+}
+
+is($ok, 1, "Now, J2's external dependency has been met");
+#is($sf->{jobs}->{J2}->{status}, "Ready", "Now, J2 is ready because external dependency has been met");
 
 $tf->runMainLoop();
 

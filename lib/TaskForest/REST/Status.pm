@@ -45,6 +45,7 @@ sub GET {
     $ENV{TF_JOB_DIR}       = $parent_hash->{config}->{job_dir};
     $ENV{TF_FAMILY_DIR}    = $parent_hash->{config}->{family_dir};
     $ENV{TF_CALENDAR_DIR}  = $parent_hash->{config}->{calendar_dir};
+    $ENV{TF_CHAINED}       = $parent_hash->{config}->{chained};
 
     
     my $task_forest  = TaskForest->new();

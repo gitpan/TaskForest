@@ -1,7 +1,7 @@
   
 Revision history for Perl module TaskForest
 
-1.31 Fri May 29 2009
+1.33 Mon Jun 1 2009
 o Added support for external dependencies (jobs depending on jobs that are
   in other families.
 o Removed the VERSION string from all the .pm files, and moved it to 
@@ -9,7 +9,9 @@ o Removed the VERSION string from all the .pm files, and moved it to
 o Got rid of unused code.
 o Improved some test cases, to reduce the risk of false test failures.  
 o Fixed a bug where the last entry of a recurring job was sometimes not
-  run. 
+  run.
+o Modified taskforestd and taskforestdssl to accept the 'chained' option
+  in the config file.   
 
 1.26 Tue May 19 2009
 o There was an unnecessary call to 'use Date::Calc' in Calendar.pm.  I

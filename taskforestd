@@ -557,6 +557,7 @@ sub getConfig {
     $tainted_config{run_as_daemon}      = 1                               unless defined $tainted_config{run_as_daemon};
     $tainted_config{server_key_file}    = "certs/server-key.pem"          unless $tainted_config{server_key_file};
     $tainted_config{server_cert_file}   = "certs/server-cert.pem"         unless $tainted_config{server_cert_file};
+    $tainted_config{chained}            = 0                               unless $tainted_config{chained};
 
     foreach (qw (log_threshold) ) {
         $tainted_config{$_} =~ /([a-z]+)/i; $config{$_} = $1;
@@ -569,7 +570,7 @@ sub getConfig {
         $config{$_} = POSIX::strftime($config{$_}, $sec,$min,$hour,$mday,$mon,$year);
     }
     
-    foreach (qw (port child_count requests_per_child respawn_wait run_as_daemon) ) {
+    foreach (qw (port child_count requests_per_child respawn_wait run_as_daemon chained) ) {
         $tainted_config{$_} =~ /([0-9]+)/i; $config{$_} = $1;
     }
 

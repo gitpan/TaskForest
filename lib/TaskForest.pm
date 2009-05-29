@@ -21,7 +21,7 @@ use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.31';
+    $VERSION     = '1.33';
 }
 
 
@@ -341,7 +341,6 @@ sub status {
     
     $display_hash->{all_jobs} = \@sorted;
 
-
     return $display_hash if $data_only;
 
     ## ########################################
@@ -656,6 +655,10 @@ Rosco Rouse
 =item *
 
 Svetlana Lemeshov
+
+=item *
+
+Teresia Arthur
 
 =back
 
