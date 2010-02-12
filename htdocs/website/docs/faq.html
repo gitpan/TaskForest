@@ -12,6 +12,7 @@
     <li><a href="#tz">What time zones are available?</a></li>
     <li><a href="#tokens">Can I prevent too many jobs from running simultaneously?</a></li>
     <li><a href="#missing_logs">On the web page, why can't I click on the status of a job to see the logs?</a></li>
+    <li><a href="#release">What is the difference between releasing a hold and releasing all dependencies?</a></li>
   </ul>
 
   <div class="new_section_header"><a name="dst">How does Taskforest deal with Daylight Saving Time?</a></div>
@@ -351,6 +352,21 @@ Wed 00:00           05:00      J1 Ends     |
     the <a href="/docs/configuring/options.html#run_wrapper"><code>run_wrapper</code></a>
     instead of 'run_with_log'.  The former will not generate log files,
     and therefore will not generate the links.  The latter will.
+  </p>
+
+
+  <div class="new_section_header"><a name="release">What is the difference between releasing a hold and releasing all dependencies?</a></div>
+
+  <p>
+    When a job is on hold, it will never run during the current day.  Once
+    you release a hold on a job, then the job is 'back to normal' and it
+    will run once its dependencies are met.  When you release all
+    dependencies on a job, it will run right away, even if all its
+    dependencies have not been met.  What's important to realize is that
+    if a job is on Hold, that takes priority over whether or not you can
+    release all dependencies.  The website does not allow you to release
+    all dependencies on a job that's on hold.  First you must release the
+    hold, and only then can you release all dependencies.
   </p>
 
 

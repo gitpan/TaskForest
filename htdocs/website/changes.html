@@ -7,7 +7,45 @@
 <div class="width6 last">
 
 
-<div class="section_header"><a name="1.33"></a>1.33 Mon Jun 1 2009</div>
+<div class="section_header"><a name="1.35"></a>1.35 Thu February 11 2010</div>
+<p>
+  Enhancements and Minor Bug Fixes
+</p>
+<ul class=bullet>
+      <li class="front_news">
+        Starting in this release, you can now place a Waiting
+        job <a href="/docs/hold.html">on hold</a>. If a job is placed on
+        hold, it will not run during the current day even if all its
+        dependencies are met.  The only way to make it run as normal is if
+        you first release the hold off the job.
+      </li>
+      <li class="front_news">
+        The taskforestd web server now supports
+        the <a href="/docs/configuring/options.html#default_time_zone">default_time_zone</a>
+        option.  This new configuration option will control how times are
+        displayed in the 'logs' page, when the time zone in which the job
+        ran is not known.
+      </li>
+      <li>
+        This version now gracefully handles the case where a job is marked
+        for rerun and then removed from the Family file before it has the
+        chance to rerun.
+      </li>
+      <li>
+        If a job fails, its status line on the web page is now colored.
+      </li>
+      <li>
+        The web site now prunes out carriage returns from job files. This would cause
+        interpreted scripts to fail because the '#!' line contained a \r.
+      </li>
+      <li>
+        This version fixes a few test cases that wouldn't run properly
+        during certain times of the day.
+      </li>
+</ul>
+  
+
+<div class="new_section_header"><a name="1.33"></a>1.33 Mon Jun 1 2009</div>
 <p>
   Enhancements.
 </p>

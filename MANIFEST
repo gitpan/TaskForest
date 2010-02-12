@@ -312,4 +312,16 @@ htdocs/docs/index.html
 htdocs/website/about/index.html
 htdocs/website/docs/configuring/index.html
 htdocs/website/docs/index.html
+t/000_Bailout.t
+t/family_archive/RERUN1
+t/family_archive/RERUN2
+hold
+lib/TaskForest/Hold.pm
+t/044_Hold.t
+releaseHold
+t/045_ReleaseHold.t
+htdocs/website/docs/hold.html
+htdocs/website/docs/releaseHold.html
+htdocs/docs/hold.html
+htdocs/docs/releaseHold.html
 META.yml                                 Module meta-data (added by MakeMaker)

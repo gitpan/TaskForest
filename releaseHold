@@ -4,7 +4,7 @@
 #
 # $Id$
 #
-# Release all dependencies on a job.  Make it get into the 'Ready' state
+# Hold all dependencies on a job.  Make it get into the 'Ready' state
 # immediately. 
 #
 ################################################################################
@@ -14,7 +14,7 @@ use warnings;
 use Carp;
 use TaskForest::LogDir;
 use TaskForest::Options;
-use TaskForest::Release;
+use TaskForest::Hold;
 use Getopt::Long;
 
 my $family_job_name = '';
@@ -38,13 +38,13 @@ if ($help
     or !$family_job_name
     or !$family_dir
     ) {
-    print "Usage: release --job=Ff::Jj --log_dir=log_directory --family_dir=family_directory [ --log_date=YYYYMMDD ]\n\n";
+    print "Usage: releaseHold --job=Ff::Jj --log_dir=log_directory --family_dir=family_directory [ --log_date=YYYYMMDD ]\n\n";
     exit 1;
 }
 
 
 if ($family_job_name !~ /^([a-z0-9_]+)::([a-z0-9_\-]+)$/i) {
-    print "Usage: release --job=Ff:Jj --log_dir=log_directory --family_dir=family_directory [ --log_date=YYYYMMDD ]\n\n";
+    print "Usage: releaseHold --job=Ff:Jj --log_dir=log_directory --family_dir=family_directory [ --log_date=YYYYMMDD ]\n\n";
     confess("\nThe --job command line argument must be of the form: Ff::Jj where\n",
             "Ff is the family name and Jj is the job name\n\n");
 }
@@ -55,6 +55,6 @@ if ($log_date =~ /^\d{8}$/) {
     $log_dir = "$log_dir_root/$log_date";
 }
 
-&TaskForest::Release::release($family_name, $job_name, $log_dir, $family_dir);
+&TaskForest::Hold::releaseHold($family_name, $job_name, $log_dir, $family_dir);
 
 exit 0;

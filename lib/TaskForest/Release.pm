@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Release.pm 211 2009-05-25 06:05:50Z aijaz $
+# $Id: Release.pm 269 2010-02-12 04:43:10Z aijaz $
 # 
 ################################################################################
 
@@ -44,7 +44,7 @@ use TaskForest::Family;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.30';
+    $VERSION     = '1.34';
 }
 
 
@@ -76,19 +76,21 @@ sub release {
     my $jobs;
 
 
-    $ENV{TF_JOB_DIR}     = 'unnecessary';
-    $ENV{TF_RUN_WRAPPER} = 'unnecessary';
-    $ENV{TF_LOG_DIR}     = $log_dir;
-    $ENV{TF_FAMILY_DIR}  = $family_dir;
+    $ENV{TF_JOB_DIR}     = 'unnecessary' unless $ENV{TF_JOB_DIR};
+    $ENV{TF_RUN_WRAPPER} = 'unnecessary' unless $ENV{TF_RUN_WRAPPER};
+    $ENV{TF_LOG_DIR}     = $log_dir      unless $ENV{TF_LOG_DIR};
+    $ENV{TF_FAMILY_DIR}  = $family_dir   unless $ENV{TF_FAMILY_DIR};
     
     my $family = TaskForest::Family->new(name => $family_name);
     $family->getCurrent();
     
-    if ($family->{jobs}->{$job_name} && $family->{jobs}->{$job_name}->{status} eq 'Waiting') {
+    if ($family->{jobs}->{$job_name} && ($family->{jobs}->{$job_name}->{status} eq 'Waiting')) {
         releaseHelp($family_name, $job_name, $log_dir, $quiet);
     }
     else {
-        die "Cannot release job ${family_name}::$job_name since it is not in the 'Waiting' state.\n";
+        die "Cannot release job ${family_name}::$job_name since it is not in the 'Waiting' or 'Hold' state - it's in the ".
+            $family->{jobs}->{$job_name}->{status}.
+            " state.\n";
     }
     
     

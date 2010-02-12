@@ -7,6 +7,7 @@ use TaskForest::REST;
 use TaskForest::LogDir;
 use TaskForest::Rerun;
 use TaskForest::Mark;
+use TaskForest::Hold;
 use TaskForest::Release;
 use Data::Dumper;
 
@@ -98,9 +99,35 @@ sub POST {
             $parent_hash->{http_status} = RC_INTERNAL_SERVER_ERROR;
         }
     }
+    elsif ($request eq "Hold") {
+        eval { 
+            &TaskForest::Hold::hold($family_name, $job_name, $log_dir, $family_dir, $quiet);
+        };
+        $error = $@;
+        if ($error) {
+            $hash->{message}            = "Unknown Error.  Please contact the TaskForest discussion mailing list.";
+            $hash->{error}              = $error;
+            $hash->{error}              =~ s/</&lt;/g;
+            $hash->{error}              =~ s/>/&gt;/g;
+            $parent_hash->{http_status} = RC_INTERNAL_SERVER_ERROR;
+        }
+    }
+    elsif ($request eq "Release Hold") {
+        eval { 
+            &TaskForest::Hold::releaseHold($family_name, $job_name, $log_dir, $family_dir, $quiet);
+        };
+        $error = $@;
+        if ($error) {
+            $hash->{message}            = "Unknown Error.  Please contact the TaskForest discussion mailing list.";
+            $hash->{error}              = $error;
+            $hash->{error}              =~ s/</&lt;/g;
+            $hash->{error}              =~ s/>/&gt;/g;
+            $parent_hash->{http_status} = RC_INTERNAL_SERVER_ERROR;
+        }
+    }
     else {
         $parent_hash->{http_status} = RC_BAD_REQUEST;
-        $parent_hash->{http_content} = "500 - Bad Request.  The only supported TaskForest requests are Mark, Rerun and Release.";
+        $parent_hash->{http_content} = "500 - Bad Request.  The only supported TaskForest requests are Mark, Rerun, Release, Hold and 'Release Hold'.";
     }
 
     

@@ -24,6 +24,7 @@ my $status = '';
 my $cascade = '';
 my $dependents_only = '';
 my $family_dir = '';
+my $log_date = '';
 
 my $got_options = Getopt::Long::GetOptions(
     "job=s"             => \$family_job_name,
@@ -33,6 +34,7 @@ my $got_options = Getopt::Long::GetOptions(
     "cascade"           => \$cascade,
     "dependents_only"   => \$dependents_only,
     "family_dir=s"      => \$family_dir,
+    "log_date=s"        => \$log_date,
     );
 
 
@@ -45,11 +47,12 @@ if ($help
     or ($cascade and $dependents_only)
     or (($cascade or $dependents_only) and !$family_dir)
     ) {
-    print "Usage: mark --job=Ff::Jj --log_dir=log_directory --status=[Success | Failure] [[--cascade | --dependents_only] --family_dir=family_directory]\n";
+    print "Usage: mark --job=Ff::Jj --log_dir=log_directory --status=[Success | Failure] [ --log_date=YYYYMMDD ] [[--cascade | --dependents_only] --family_dir=family_directory]\n";
     print "  Specify either --cascade or --dependents_only or neither.  You can't specify both.\n";
     print "  --cascade will mark the job and all its direct and indirect dependents.\n";
     print "  --dependents_only will not mark the job but it will mark all its direct and indirect dependents.\n";
-    print "    If you specify either of these two, you must also specify family_dir.\n\n";
+    print "    If you specify either of these two, you must also specify family_dir.\n";
+    print "  --log_date is the subdirectory of the log_dir that contains the log files.  Defaults to today. \n\n";
     exit 1;
 }
 
@@ -62,7 +65,13 @@ if ($family_job_name !~ /^([a-z0-9_]+)::([a-z0-9_\-]+)$/i) {
 my ($family_name, $job_name) = ($1, $2);
 
 
-my $log_dir      = &TaskForest::LogDir::getLogDir($log_dir_root);
+my $log_dir;
+if ($log_date =~ /^\d{8}$/) {
+    $log_dir = "$log_dir_root/$log_date";
+}
+else { 
+    $log_dir = &TaskForest::LogDir::getLogDir($log_dir_root);
+}
 
 &TaskForest::Mark::mark($family_name, $job_name, $log_dir, $status, $cascade, $dependents_only, $family_dir);
 

@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 212 2009-05-28 04:08:26Z aijaz $
+# $Id: Family.pm 269 2010-02-12 04:43:10Z aijaz $
 #
 ################################################################################
 
@@ -370,21 +370,38 @@ sub getCurrent {
         #
         my $dependencies = $self->{dependencies}->{$job->{name}};
         my $ready = 1;
+        my $hold  = 0;
 
-        # This is where we could add a check for release flag
-        foreach my $dep (@$dependencies) {
-            if ($dep->check($self->{foreign_status}) == 0) {
-                $ready = 0;
-                last;
+        my $hold_file = "$log_dir/$self->{name}.$job->{name}.hold";
+        if (-e $hold_file) {
+            $hold = 1;
+            $job->{status} = 'Hold';
+            $job->{is_hold} = 1;
+        }
+        
+        # Don't bother checking for dependencies if on hold.  Always set ready to 0;
+        if ($hold) {
+            $ready = 0;
+        }
+        else {
+            foreach my $dep (@$dependencies) {
+                if ($dep->check($self->{foreign_status}) == 0) {
+                    $ready = 0;
+                    last;
+                }
             }
         }
+        
+        # A release file does not override a hold file.
         my $release_file = "$log_dir/$self->{name}.$job->{name}.release";
-        if (-e $release_file) {
+        if (-e $release_file && ($hold == 0) ) {
             $ready = 1;
 
             # We cannot rely on the run wrapper to delete the release
             # file.  That's not its job. runReadyJobs has to do it.
         }
+
+        
 
         if ($ready) {
             # set the status of the job to be ready
@@ -501,8 +518,8 @@ sub updateJobStatuses {
         if ($job_name =~ /(^[^\-]+)--Orig/) {
             $orig = 1;
             $actual_name = $1;
-            $self->{jobs}->{$job_name} = TaskForest::Job->new('name' => $job_name);
             next unless defined $self->{jobs}->{$actual_name};  # not defined if job is no longer in family, but ran ealier.
+            $self->{jobs}->{$job_name} = TaskForest::Job->new('name' => $job_name);
         }
         else {
             next unless defined $self->{jobs}->{$job_name};  # not defined if job is no longer in family, but ran ealier.

@@ -1,6 +1,17 @@
   
 Revision history for Perl module TaskForest
 
+1.35 Thu Feb 11 2010
+o Added support for a default time zone to taskforestd.cfg
+o Fixed a problem that occurs when you rerun a job and remove it from the
+  family before the job has a chance of rerunning.
+o Added log_date option to mark, release and rerun
+o If a job fails, its status line on the web page is now colored
+o Prune out carriage returns from job files
+o Added the ability to put a job on hold, and release a hold
+o Fixed a few test cases that wouldn't run properly during certain times
+  of the day.
+
 1.33 Mon Jun 1 2009
 o Added support for external dependencies (jobs depending on jobs that are
   in other families.

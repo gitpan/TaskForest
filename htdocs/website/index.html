@@ -3,28 +3,38 @@
 <div class="width10">
   <div class="demarcated">
     <div class="width4">
-      <div class="home_page_headline">Version 1.33 released on June 1, 2009</div>
+      <div class="home_page_headline">Version 1.35 released on February 11, 2010</div>
       <p class="front_news">
-        You can now have a job in one Family depend on the completion of a job in
-        another Family.  This allows you to have one Family depend on
-        another.
+        Starting in this release, you can now place a Waiting
+        job <a href="/docs/hold.html">on hold</a>. If a job is placed on
+        hold, it will not run during the current day even if all its
+        dependencies are met.  The only way to make it run as normal is if
+        you first release the hold off the job.
+      </p>
+      <p class="front_news">
+        The taskforestd web server now supports
+        the <a href="/docs/configuring/options.html#default_time_zone">default_time_zone</a>
+        option.  This new configuration option will control how times are
+        displayed in the 'logs' page, when the time zone in which the job
+        ran is not known.
       </p>
       <p>
-        For example, job
-        J2 in Family F2 can wait on Job J1 in Family F1 by specifying the
-        dependency like this:
+        This version now gracefully handles the case where a job is marked
+        for rerun and then removed from the Family file before it has the
+        chance to rerun.
       </p>
-
-  <div class="code"><pre><code><span class=comments># This is in the F2 Family file</span>
- J1::F1()
-
-   J2()
- </code></pre></div>
       <p>
-        For more information, check out
-        the <a href="/docs/configuring/families.html">jobs and families
-        configuration documentation</a>.
+        If a job fails, its status line on the web page is now colored.
       </p>
+      <p>
+        The web site now prunes out carriage returns from job files. This would cause
+        interpreted scripts to fail because the '#!' line contained a \r.
+      </p>
+      <p>
+        This version fixes a few test cases that wouldn't run properly
+        during certain times of the day.
+      </p>
+
       
     </div>
     <div class="width6 last">
@@ -46,12 +56,13 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/releaseNotes.html">Release Notes &amp; Videos</a></div>
+    <a href="/releaseNotes.html#1.35"><b>1.35</b></a> 2010-02-11<br>
     <a href="/releaseNotes.html#1.33"><b>1.33</b></a> 2009-06-01<br>
     <a href="/releaseNotes.html#1.26"><b>1.26</b></a> 2009-05-19<br>
     <a href="/releaseNotes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
     <a href="/releaseNotes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
-    <a href="/releaseNotes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <!--
+    <a href="/releaseNotes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <a href="/releaseNotes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/releaseNotes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
     <a href="/releaseNotes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
@@ -62,12 +73,13 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/changes.html">Change Log</a></div>
+    <a href="/changes.html#1.35"><b>1.35</b></a> 2010-02-11<br>
     <a href="/changes.html#1.33"><b>1.33</b></a> 2009-06-01<br>
     <a href="/changes.html#1.26"><b>1.26</b></a> 2009-05-19<br>
     <a href="/changes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
     <a href="/changes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
-    <a href="/changes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <!--
+    <a href="/changes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <a href="/changes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/changes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
     <a href="/changes.html#1.20"><b>1.20</b></a> 2009-03-10<br>
@@ -86,20 +98,10 @@
 <div class="width4 demarcated">
   <div class="home_page_headline">Features Coming Soon</div>
   <dl>
-    <dt>Default Time Zone for Display</dt>
-    <dd>
-      This new configuration option will control how times are displayed
-      in the 'logs' page, when the time zone in which the job ran is not
-      known.
-    </dd>
     <dt>Enhancements to the included web site</dt>
     <dd>
       We plan on adding contextual menus so that you can right-click on a
       job from the status screen and select one or more actions.
-    </dd>
-    <dt>Putting Jobs on Hold</dt>
-    <dd>
-      Prevent a job from running until you manually allow it to run.
     </dd>
     <dt>Simulator</dt>
     <dd>

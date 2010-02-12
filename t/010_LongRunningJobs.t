@@ -14,6 +14,15 @@ BEGIN {
     use_ok( 'TaskForest::StringHandle',     "Can use StringHandle" );
 }
 
+&TaskForest::LocalTime::setTime( { year  => 2009,
+                                   month => 04,
+                                   day   => 12,
+                                   hour  => 22,
+                                   min   => 30,
+                                   sec   => 57,
+                                   tz    => 'America/Chicago',
+                                 });
+                                       
 my $cwd = getcwd();
 &TaskForest::Test::cleanup_files("$cwd/t/families");
 

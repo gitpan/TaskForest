@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 212 2009-05-28 04:08:26Z aijaz $
+# $Id: TaskForest.pm 271 2010-02-12 04:49:25Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -21,7 +21,7 @@ use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.33';
+    $VERSION     = '1.35';
 }
 
 
@@ -259,10 +259,11 @@ sub status {
         $family->display($display_hash);
     }
 
-    foreach my $job (@{$display_hash->{Ready}}, @{$display_hash->{Waiting}}, @{$display_hash->{TokenWait}}) {
+    foreach my $job (@{$display_hash->{Ready}}, @{$display_hash->{Waiting}}, @{$display_hash->{TokenWait}}, @{$display_hash->{Hold}}) {
         $job->{actual_start} = $job->{stop} = "--:--";
         $job->{rc} = '-';
         $job->{has_actual_start} = $job->{has_stop} = $job->{has_rc} = 0;
+        $job->{log_date} = sprintf("%4d%02d%02d", $year, $mon, $mday);
     }
 
     foreach my $job (@{$display_hash->{Success}}, @{$display_hash->{Failure}}, @{$display_hash->{Running}}) {
@@ -332,8 +333,17 @@ sub status {
             }
             if (-e "$log_dir/$job->{output_file}") {
                 $job->{has_output_file} = 1;
-                $job->{log_date} = substr($log_dir, -8);
             }
+            $job->{log_date} = substr($log_dir, -8);  
+        }
+        else {
+            if ($job->{log_dir}) {
+                $log_dir = $job->{log_dir};  # from getUnaccountedForJobs
+            }
+            else { 
+                $log_dir = &TaskForest::LogDir::getLogDir($self->{options}->{log_dir}, $tz_for_family->{$job->{family_name}});
+            }
+            $job->{log_date} = substr($log_dir, -8);  
         }
         $job->{is_waiting} = ($job->{status} eq 'Waiting') ? 1 : 0;
     }
@@ -422,9 +432,9 @@ sub hist_status {
         $job->{output_file} = "$job->{family_name}.$job->{name}.$job->{pid}.$job->{actual_start_epoch}.stdout";
         if (-e "$log_dir/$job->{output_file}") {
             $job->{has_output_file} = 1;
-            $job->{log_date} = $date;
             $job->{log_dir} = $log_dir;
         }
+        $job->{log_date} = $date;
         $job->{is_waiting} = ($job->{status} eq 'Waiting') ? 1 : 0;
     }
 
@@ -562,7 +572,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This is version 1.30.
+This is version 1.35.
 
 =head1 EXECUTIVE SUMMARY
 
@@ -585,6 +595,14 @@ rerun failed jobs
 =item *
 
 mark jobs as succeeded or failed
+
+=item *
+
+put jobs on hold and release the holds
+
+=item *
+
+release all dependencies on a job
 
 =item *
 
@@ -659,6 +677,10 @@ Svetlana Lemeshov
 =item *
 
 Teresia Arthur
+
+=item *
+
+Steve Hulet
 
 =back
 

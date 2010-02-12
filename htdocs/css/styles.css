@@ -323,6 +323,14 @@ table.status td {
 	background-color: #c0c0c0;
 }
 
+.oe_odd1  { 	background-color: #ffffff; }
+.oe_even1 { 	background-color: #c0c0c0; }
+.oe_odd0  { 	background-color: #ff0000; }
+.oe_even0 { 	background-color: #ff0000; }
+
+.oe_odd0  a { 	color: #ffff00; }
+.oe_even0 a { 	color: #ffff00; }
+
 div.error { 
  	border-top: 3px solid red;
 	padding: 1em;

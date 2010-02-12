@@ -12,6 +12,7 @@
     <li><a href="#stop">Stop the web server</a></li>
     <li><a href="#cert">Create a self-signed certificate with openssl</a></li>
     <li><a href="#release">Force a job to run NOW</a></li>
+    <li><a href="#prevent">Temporarily prevent a job from running</a></li>
   </ul>
 
   <div class="new_section_header"><a name="cron">Run taskforest all day with cron</a></div>
@@ -182,6 +183,27 @@ sign.sh server.csr
     family runs, J4 will still depend on J1, J2 and J3, just like it
     always did.
   </p>
+
+
+
+
+
+
+
+
+  <div class="new_section_header"><a name="prevent">Temporarily prevent a job from running</a></div>
+
+  <p>
+    To temporarily prevent a job from running, you need
+    to <a href="hold.html">put it on hold</a>.  When you put a job on
+    hold, it will not run even if all its dependencies are met.  It will
+    only be run after the hold is <a href="releaseHold.html">released</a>.
+    Even after the hold is released, its dependencies need to be met (or
+    you need to force a run by <a href="release.html">releasing all
+    dependencies</a>).  To hold a job, enter the following command:
+  </p>
+
+  
 
 </div>
 

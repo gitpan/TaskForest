@@ -4,7 +4,7 @@ NAME
     specify task dependencies.
 
 VERSION
-    This is version 1.30.
+    This is version 1.35.
 
 EXECUTIVE SUMMARY
     With the TaskForest Job Scheduler you can:
@@ -16,6 +16,10 @@ EXECUTIVE SUMMARY
     *   rerun failed jobs
 
     *   mark jobs as succeeded or failed
+
+    *   put jobs on hold and release the holds
+
+    *   release all dependencies on a job
 
     *   check the status of all jobs scheduled to run today
 
@@ -65,6 +69,8 @@ ACKNOWLEDGEMENTS
     *   Svetlana Lemeshov
 
     *   Teresia Arthur
+
+    *   Steve Hulet
 
     I would also like to thank Randal L. Schwartz for teaching the readers
     of the Feb 1999 issue of Web Techniques how to write a pre-forking web

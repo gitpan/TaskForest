@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Mark.pm 211 2009-05-25 06:05:50Z aijaz $
+# $Id: Mark.pm 219 2009-06-09 03:30:29Z aijaz $
 # 
 ################################################################################
 
@@ -79,10 +79,11 @@ sub mark {
     my $jobs;
     
     if ($cascade or $dependents_only) {
-        $ENV{TF_JOB_DIR}     = 'unnecessary';
-        $ENV{TF_RUN_WRAPPER} = 'unnecessary';
-        $ENV{TF_LOG_DIR}     = $log_dir;
-        $ENV{TF_FAMILY_DIR}  = $family_dir;
+
+        $ENV{TF_JOB_DIR}     = 'unnecessary' unless $ENV{TF_JOB_DIR};
+        $ENV{TF_RUN_WRAPPER} = 'unnecessary' unless $ENV{TF_RUN_WRAPPER};
+        $ENV{TF_LOG_DIR}     = $log_dir      unless $ENV{TF_LOG_DIR};
+        $ENV{TF_FAMILY_DIR}  = $family_dir   unless $ENV{TF_FAMILY_DIR};
 
         my $family = TaskForest::Family->new(name => $family_name);
 

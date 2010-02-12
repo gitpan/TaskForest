@@ -7,6 +7,11 @@ use TaskForest;
 use TaskForest::REST;
 use Data::Dumper;
 
+BEGIN {
+    use vars qw($VERSION);
+    $VERSION     = '1.34';
+}
+
 sub handle {
     my ($q, $parent_hash, $h) = @_;
     my $hash = { title => "Status" };
@@ -40,12 +45,13 @@ sub POST    { &TaskForest::REST::methodNotAllowed($_[1], 'GET'); }
 sub GET {
     my ($q, $parent_hash, $h, $hash) = @_;
 
-    $ENV{TF_RUN_WRAPPER}   = "UNNECESSARY";
-    $ENV{TF_LOG_DIR}       = $parent_hash->{config}->{log_dir};
-    $ENV{TF_JOB_DIR}       = $parent_hash->{config}->{job_dir};
-    $ENV{TF_FAMILY_DIR}    = $parent_hash->{config}->{family_dir};
-    $ENV{TF_CALENDAR_DIR}  = $parent_hash->{config}->{calendar_dir};
-    $ENV{TF_CHAINED}       = $parent_hash->{config}->{chained};
+    $ENV{TF_RUN_WRAPPER}       = "UNNECESSARY";
+    $ENV{TF_LOG_DIR}           = $parent_hash->{config}->{log_dir};
+    $ENV{TF_JOB_DIR}           = $parent_hash->{config}->{job_dir};
+    $ENV{TF_FAMILY_DIR}        = $parent_hash->{config}->{family_dir};
+    $ENV{TF_CALENDAR_DIR}      = $parent_hash->{config}->{calendar_dir};
+    $ENV{TF_CHAINED}           = $parent_hash->{config}->{chained};
+    $ENV{TF_DEFAULT_TIME_ZONE} = $parent_hash->{config}->{default_time_zone};
 
     
     my $task_forest  = TaskForest->new();

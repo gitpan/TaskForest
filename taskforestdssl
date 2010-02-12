@@ -36,7 +36,7 @@ $|++;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.30';
+    $VERSION     = '1.35';
 }
 
 
@@ -560,6 +560,11 @@ sub getConfig {
     $tainted_config{server_key_file}    = "certs/server-key.pem"          unless $tainted_config{server_key_file};
     $tainted_config{server_cert_file}   = "certs/server-cert.pem"         unless $tainted_config{server_cert_file};
     $tainted_config{chained}            = 0                               unless $tainted_config{chained};
+    $tainted_config{default_time_zone}  = 'America/Chicago'               unless $tainted_config{default_time_zone};
+
+    foreach (qw (default_time_zone) ) {
+        $tainted_config{$_} =~ /([a-z0-9\/_]+)/i; $config{$_} = $1;
+    }
 
     foreach (qw (log_threshold) ) {
         $tainted_config{$_} =~ /([a-z]+)/i; $config{$_} = $1;

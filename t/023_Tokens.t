@@ -14,6 +14,15 @@ BEGIN {
     use_ok( 'TaskForest'  );
 }
 
+&TaskForest::LocalTime::setTime( { year  => 2009,
+                                   month => 04,
+                                   day   => 12,
+                                   hour  => 22,
+                                   min   => 30,
+                                   sec   => 57,
+                                   tz    => 'America/Chicago',
+                                 });
+                                       
 my $cwd = getcwd();
 my $src_dir = "$cwd/t/family_archive";
 my $dest_dir = "$cwd/t/families";

@@ -177,8 +177,8 @@ sub getContentForTextFile {
         my @lines = <F>;
         close F;
 
-        $hash->{file_contents} = join("", @lines);
-        $hash->{full_file_name}     = $file_name;
+        $hash->{file_contents}  = join("", map { s/\r//; $_; } @lines);
+        $hash->{full_file_name} = $file_name;
     }
 }    
 
@@ -192,6 +192,7 @@ sub putContentForTextFile {
     }
 
     if (open (F, ">$file_name")) {
+        $h->{file_contents} =~ s/\r//g;
         print F $h->{file_contents};
         close F;
         return RC_OK;
