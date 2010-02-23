@@ -39,7 +39,7 @@ $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";
 $ENV{TF_ONCE_ONLY} = 1;
 
-my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR});
+my $log_dir = &TaskForest::LogDir::getLogDir($ENV{TF_LOG_DIR}, 'America/Chicago');
 &TaskForest::Test::cleanup_files($log_dir);
 
 

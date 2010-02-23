@@ -6,6 +6,7 @@ use HTTP::Status;
 use TaskForest;
 use TaskForest::REST;
 use Data::Dumper;
+use DateTime;
 
 BEGIN {
     use vars qw($VERSION);
@@ -65,6 +66,17 @@ sub GET {
         $display_hash = $task_forest->hist_status($h->{date}, $data_only);
         $hash->{date} = $h->{date};
         $hash->{title} = "Logs for $hash->{date}";
+        my ($y, $m, $d) = $h->{date} =~ /(\d{4})(\d{2})(\d{2})/;
+        my $dt = DateTime->new(year => $y,
+                               month => $m,
+                               day => $d,
+                               hour => 0,
+                               minute => 0,
+                               second => 0,
+            );
+        
+        $hash->{prev_date} = $dt->subtract(days => 1)->ymd('');
+        $hash->{next_date} = $dt->add(days => 2)->ymd('');
     }
     else {
         $display_hash = $task_forest->status($data_only);

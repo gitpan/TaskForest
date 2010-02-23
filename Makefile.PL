@@ -7,7 +7,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME         => 'TaskForest',
     #VERSION_FROM => 'lib/TaskForest.pm', # finds \$VERSION
-    VERSION      => '1.35',
+    VERSION      => '1.36',
     AUTHOR       => 'Aijaz A. Ansari (v-cpan@enoor.com)',
     ABSTRACT     => 'Simple, powerful task scheduler',
     PREREQ_PM    => {

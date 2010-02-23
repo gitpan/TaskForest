@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: TaskForest.pm 271 2010-02-12 04:49:25Z aijaz $
+# $Id: TaskForest.pm 275 2010-02-23 04:09:45Z aijaz $
 #
 # This is the primary class of this application.  Version infromation
 # is taken from this file.
@@ -21,7 +21,7 @@ use TaskForest::LocalTime;
 
 BEGIN {
     use vars qw($VERSION);
-    $VERSION     = '1.35';
+    $VERSION     = '1.36';
 }
 
 
@@ -572,7 +572,7 @@ TaskForest - A simple but expressive job scheduler that allows you to chain jobs
 
 =head1 VERSION
 
-This is version 1.35.
+This is version 1.36.
 
 =head1 EXECUTIVE SUMMARY
 
@@ -646,10 +646,24 @@ For support, please visit our website at http://www.taskforest.com/ or
 send an email to the TaskForest Discussion Mailing List at
 "taskforest-discuss at lists dot sourceforge dot net"
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Aijaz A. Ansari
 http://www.taskforest.com/
+
+The following developers have graciously contributed patches to enhance TaskForest:
+
+=over 4
+
+=item *
+
+Steve Hulet
+
+=back
+
+Please see the 'Changes' file for details.  If you have contributed
+code, and your name is not on the above list, please accept my
+apologies and let me know, so that I may give you credit.
 
 If you're using this program, I would love to hear from you.  Please
 send an email to the TaskForest Discussion Mailing List at

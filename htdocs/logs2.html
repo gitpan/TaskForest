@@ -1,6 +1,11 @@
 <include TaskForest::REST::PassThrough /head.html />
 
-<div class="title">Logs for $date</div>
+<div class="title" style="display:inline;">Logs for $date</div>
+<span style="padding-left:10px;">
+    <a href="/logs.html?date=$prev_date">&lt; previous day</a>
+    &nbsp;
+    <a href="/logs.html?date=$next_date">next day &gt;</a>
+</span>
 
 <table cellspacing=0 class=status>
   <tr>

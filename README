@@ -4,7 +4,7 @@ NAME
     specify task dependencies.
 
 VERSION
-    This is version 1.35.
+    This is version 1.36.
 
 EXECUTIVE SUMMARY
     With the TaskForest Job Scheduler you can:
@@ -51,8 +51,17 @@ SUPPORT
     send an email to the TaskForest Discussion Mailing List at
     "taskforest-discuss at lists dot sourceforge dot net"
 
-AUTHOR
+AUTHORS
     Aijaz A. Ansari http://www.taskforest.com/
+
+    The following developers have graciously contributed patches to enhance
+    TaskForest:
+
+    *   Steve Hulet
+
+    Please see the 'Changes' file for details. If you have contributed code,
+    and your name is not on the above list, please accept my apologies and
+    let me know, so that I may give you credit.
 
     If you're using this program, I would love to hear from you. Please send
     an email to the TaskForest Discussion Mailing List at
