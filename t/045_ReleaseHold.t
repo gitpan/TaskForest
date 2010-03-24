@@ -41,7 +41,7 @@ copy("$src_dir/SMALL_CASCADE", $dest_dir);
                                        
 
 
-$ENV{TF_RUN_WRAPPER} = "$cwd/run";
+$ENV{TF_RUN_WRAPPER} = "$cwd/blib/script/run";
 $ENV{TF_LOG_DIR}     = "$cwd/t/logs";
 $ENV{TF_JOB_DIR}     = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR}  = "$cwd/t/families";

@@ -12,7 +12,7 @@
   </p>
 
   <p>
-    When a job is run by the run wrapper (bin/run), two status semaphore files are
+    When a job is run by the run wrapper (bin/run_with_log), two status semaphore files are
     created in the <a href="/docs/configuring/options.html#log_dir">log directory</a>.  The first is created when a job starts
     and has a name of <code>&#036;FamilyName.&#036;JobName.pid</code>.  This file contains some
     attributes of the job.  When the job completes, more attributes are
@@ -448,6 +448,12 @@
   
   <div class="new_section_header">EXAMPLE 6 - Calendars</div>
   <include TaskForest::REST::PassThrough /docs/configuring/calendars_text.html />  
+  
+  <div class="new_section_header">EXAMPLE 7 - Automatic Retries</div>
+  <include TaskForest::REST::PassThrough /docs/configuring/retry_text.html />  
+  
+  <div class="new_section_header">EXAMPLE 8 - Emails</div>
+  <include TaskForest::REST::PassThrough /docs/configuring/email_text.html />  
   
   
 

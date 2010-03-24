@@ -20,6 +20,14 @@ div#thin_bar {
    margin: 0px 0 10px 0;
 }
 
+dt {
+	font-weight: bold;
+}
+dd { 
+	margin: 4px 0 1em 2em;
+}
+
+
 
 div.logo { 
    font-size: 197%;
@@ -93,7 +101,7 @@ div.linkh {
 }
 
 div.link_last { 
-	width: 318px; 
+	width: 236px; 
 	height: 16px;
 	padding: 4px 0 4px 0;
 	float: left;
@@ -241,6 +249,15 @@ div.code {
 	   */
 }
 
+div.codecode { 
+	border: 1px solid #be9090;
+	padding: 4px;
+	background-color: #fef8f0;
+	margin: 1em 0 1em 0 ;
+	/* 
+	   */
+}
+
 div.config_file { 
 	border: 1px solid #be9090;
 	padding: 4px;
@@ -266,6 +283,7 @@ input {
 
 div.family_title,
 div.job_title,
+div.instructions_title,
 div.title
 { 
 	font-size: 116%;

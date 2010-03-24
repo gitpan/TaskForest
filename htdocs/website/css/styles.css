@@ -383,6 +383,15 @@ div.code {
 	   */
 }
 
+div.codecode { 
+	border: 1px solid #be9090;
+	padding: 4px;
+	background-color: #fef8f0;
+	margin: 1em 0 1em 0 ;
+	/* 
+	   */
+}
+
 div.config_file { 
 	border: 1px solid #be9090;
 	padding: 4px;

@@ -28,8 +28,8 @@ copy("$src_dir/TOKENS2", $dest_dir);
 copy("$src_dir/TOKENS3", $dest_dir);
 
 
-$ENV{TF_RUN_WRAPPER} = "$cwd/bin/run";
-$ENV{TF_RUN_WRAPPER} = "$cwd/run";
+$ENV{TF_RUN_WRAPPER} = "$cwd/blib/script/run";
+$ENV{TF_RUN_WRAPPER} = "$cwd/blib/script/run";
 $ENV{TF_LOG_DIR}     = "$cwd/t/logs";
 $ENV{TF_JOB_DIR}     = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR}  = "$cwd/t/families";

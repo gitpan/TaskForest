@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                TaskForest
-version:             1.36
+version:             1.37
 abstract:            Simple, powerful task scheduler
 license:             ~
 author:              
@@ -15,6 +15,7 @@ requires:
     HTTP::Response:                5.82
     HTTP::Status:                  5.817
     Log::Log4perl:                 1.16
+    Net::SMTP:                     2.31
     Test::Simple:                  0.44
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html

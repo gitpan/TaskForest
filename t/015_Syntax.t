@@ -31,7 +31,7 @@ copy("$src_dir/SYNTAX_4", $dest_dir);
 copy("$src_dir/SYNTAX_5", $dest_dir);
 copy("$src_dir/SYNTAX_6", $dest_dir);
 
-$ENV{TF_RUN_WRAPPER} = "$cwd/bin/run";
+$ENV{TF_RUN_WRAPPER} = "$cwd/blib/script/run";
 $ENV{TF_LOG_DIR} = "$cwd/t/logs";
 $ENV{TF_JOB_DIR} = "$cwd/t/jobs";
 $ENV{TF_FAMILY_DIR} = "$cwd/t/families";

@@ -7,7 +7,56 @@
 <div class="width6 last">
 
 
-<div class="section_header"><a name="1.35"></a>1.35 Thu February 11 2010</div>
+<div class="section_header"><a name="1.37"></a>1.37 Tue March 23 2010</div>
+<p>
+  Enhancements
+</p>
+      <p class="front_news">
+        There are two main enhancements in this release.  The first is
+        that now you can configure TaskForest to <a href="/docs/configuring/retry.html">automatically retry</a>
+        running a job if it fails.  The number of times it retries, as
+        well as the amount of time between retries is configurable on a
+        per-job basis.
+      </p>
+      <p class="front_news">
+        TaskForest now also features a very powerful email system.  You
+        can configure TaskForest to <a href="/docs/configuring/email.html">email you when a job fails</a>, when a job
+        is retried, and when a job suceeds after failing and being
+        retried.  Each kind of email can be sent to a different email
+        address, and these email addresses can be configured system-wide,
+        or for each job, or for anything in the middle.
+      </p>
+      <p>
+        If you have developed your own run wrapper, please be advised that
+        the interface to the run wrappers has changed.  Instead of being
+        passed parameters as command line arguments, the wrappers now look
+        for environment variables.  
+      </p>
+  
+
+<div class="new_section_header"><a name="1.36"></a>1.36 Tue February 23 2010</div>
+<p>
+  Enhancements
+</p>
+<ul class=bullet>
+      <li class="front_news">
+        We've added a button to the logs form on the website that pops up
+        a calendar window to help you select a date.  Many thanks to Steve Hulet
+        for providing the patch.
+      </li>
+      <li class="front_news">
+        The logs display page on the website now has links to navigate to the
+        previous and next days.  Many thanks to Steve Hulet for providing the
+        patch.
+      </li>
+      <li class="front_news">
+        This version fixes a few more test cases that wouldn't run properly
+        during certain times of the day.
+      </li>
+</ul>
+  
+
+<div class="new_section_header"><a name="1.35"></a>1.35 Thu February 11 2010</div>
 <p>
   Enhancements and Minor Bug Fixes
 </p>

@@ -3,36 +3,30 @@
 <div class="width10">
   <div class="demarcated">
     <div class="width4">
-      <div class="home_page_headline">Version 1.35 released on February 11, 2010</div>
+      <div class="home_page_headline">Version 1.37 released on March 23, 2010</div>
       <p class="front_news">
-        Starting in this release, you can now place a Waiting
-        job <a href="/docs/hold.html">on hold</a>. If a job is placed on
-        hold, it will not run during the current day even if all its
-        dependencies are met.  The only way to make it run as normal is if
-        you first release the hold off the job.
+        There are two main enhancements in this release.  The first is
+        that now you can configure TaskForest to <a href="/docs/configuring/retry.html">automatically retry</a>
+        running a job if it fails.  The number of times it retries, as
+        well as the amount of time between retries is configurable on a
+        per-job basis.
       </p>
       <p class="front_news">
-        The taskforestd web server now supports
-        the <a href="/docs/configuring/options.html#default_time_zone">default_time_zone</a>
-        option.  This new configuration option will control how times are
-        displayed in the 'logs' page, when the time zone in which the job
-        ran is not known.
+        TaskForest now also features a very powerful email system.  You
+        can configure TaskForest to <a href="/docs/configuring/email.html">email you when a job fails</a>, when a job
+        is retried, and when a job suceeds after failing and being
+        retried.  Each kind of email can be sent to a different email
+        address, and these email addresses can be configured system-wide,
+        or for each job, or for anything in the middle.
       </p>
       <p>
-        This version now gracefully handles the case where a job is marked
-        for rerun and then removed from the Family file before it has the
-        chance to rerun.
+        If you have developed your own run wrapper, please be advised that
+        the interface to the run wrappers has changed.  Instead of being
+        passed parameters as command line arguments, the wrappers now look
+        for environment variables.  
       </p>
       <p>
-        If a job fails, its status line on the web page is now colored.
-      </p>
-      <p>
-        The web site now prunes out carriage returns from job files. This would cause
-        interpreted scripts to fail because the '#!' line contained a \r.
-      </p>
-      <p>
-        This version fixes a few test cases that wouldn't run properly
-        during certain times of the day.
+
       </p>
 
       
@@ -47,6 +41,8 @@
 <div class="width2 last">
   <div class="width2 last demarcated">
     <div class="section_header">Quick Links</div>
+    <a href="/docs/configuring/retry.html">Auto-Retries</a><br >
+    <a href="/docs/configuring/email.html">Sending Emails</a><br >
     <a href="/docs/configuring/calendars.html">Calendars</a><br >
     <a href="/docs/faq.html">FAQ</a><br >
     <a href="/docs/tokens.html">Tokens</a><br >
@@ -56,12 +52,14 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/releaseNotes.html">Release Notes &amp; Videos</a></div>
+    <a href="/releaseNotes.html#1.37"><b>1.37</b></a> 2010-03-29<br>
+    <a href="/releaseNotes.html#1.36"><b>1.36</b></a> 2010-02-23<br>
     <a href="/releaseNotes.html#1.35"><b>1.35</b></a> 2010-02-11<br>
     <a href="/releaseNotes.html#1.33"><b>1.33</b></a> 2009-06-01<br>
     <a href="/releaseNotes.html#1.26"><b>1.26</b></a> 2009-05-19<br>
+    <!--
     <a href="/releaseNotes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
     <a href="/releaseNotes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
-    <!--
     <a href="/releaseNotes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <a href="/releaseNotes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/releaseNotes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
@@ -73,12 +71,14 @@
   </div>
   <div class="width2 last demarcated">
     <div class="section_header"><a href="/changes.html">Change Log</a></div>
+    <a href="/changes.html#1.37"><b>1.37</b></a> 2010-03-29<br>
+    <a href="/changes.html#1.36"><b>1.36</b></a> 2010-02-23<br>
     <a href="/changes.html#1.35"><b>1.35</b></a> 2010-02-11<br>
     <a href="/changes.html#1.33"><b>1.33</b></a> 2009-06-01<br>
     <a href="/changes.html#1.26"><b>1.26</b></a> 2009-05-19<br>
+    <!--
     <a href="/changes.html#1.25"><b>1.25</b></a> 2009-05-18<br>
     <a href="/changes.html#1.24"><b>1.24</b></a> 2009-04-26<br>
-    <!--
     <a href="/changes.html#1.23"><b>1.23</b></a> 2009-03-24<br>
     <a href="/changes.html#1.22"><b>1.22</b></a> 2009-03-23<br>
     <a href="/changes.html#1.21"><b>1.21</b></a> 2009-03-12<br>
@@ -102,13 +102,6 @@
     <dd>
       We plan on adding contextual menus so that you can right-click on a
       job from the status screen and select one or more actions.
-    </dd>
-    <dt>Simulator</dt>
-    <dd>
-      The simulator would show you how your jobs would run on dates that
-      you specify, so that you can see what will happen rather than wait
-      for the jobs to be run.  You will also be able to change the exit
-      codes of jobs, to see what would happen if a certain job failed.
     </dd>
     <dt>Multiple Hosts</dt>
     <dd>Specify which host on a network a job should run on, and what

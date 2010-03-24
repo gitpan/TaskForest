@@ -129,8 +129,73 @@ sub waitForFiles {
     }
     return 0;
 }
-    
 
+
+sub parseSMTPFile {
+    my $file = shift;
+
+    my @emails = ();
+
+    open (F, $file);
+    my $email;
+    my $mode;
+    while (<F>) {
+        s/[\r\n]//;
+        if (/^Accepted Connection/) {
+            $mode = 'smtp';
+            $email = {
+                mail_from   => '',
+                rcpt_to     => '',
+                ehlo        => '',
+                from        => '',
+                to          => '',
+                return_path => '',
+                reply_to    => '',
+                subject     => '',
+                body        => [],
+            };
+        }
+        elsif (/^C: < (.*)/) {
+            my $line = $1;
+            if ($mode eq 'smtp' && $line eq 'DATA') {
+                $mode = 'header';
+                next;
+            }
+            elsif ($mode eq 'header' && $line !~ /\S/) {
+                $mode = 'message';
+                next;
+            }
+            elsif ($mode eq 'message' && $line eq '.') {
+                push (@emails, $email);
+                $mode = '';
+                next;
+            }
+            elsif ($mode eq 'smtp' && $line =~ /^(EHLO) (.*)/) {
+                $email->{ehlo} = $2;
+            }
+            elsif ($mode eq 'smtp' && $line =~ /^(HELO) (.*)/) {
+                $email->{ehlo} = $2;
+            }
+            elsif ($mode eq 'smtp' && $line =~ /^(MAIL FROM:)(.*)/) {
+                $email->{mail_from} = $2;
+            }
+            elsif ($mode eq 'smtp' && $line =~ /^(RCPT TO:)(.*)/) {
+                $email->{rcpt_to} = $2;
+            }
+            elsif ($mode eq 'header' && $line =~ /^([^:]+): (.*)/) {
+                my $h = lc($1);
+                my $v = $2;
+                $h =~ s/\-/\_/g;
+                $email->{$h} = $v;
+            }
+            elsif ($mode eq 'message') {
+                push (@{$email->{body}}, $line);
+            }
+        }                
+    }
+
+    return \@emails;
+}
 
 
 1;

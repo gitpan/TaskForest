@@ -15,12 +15,12 @@
 export TF_JOB_DIR=/foo/jobs
 export TF_LOG_DIR=/foo/logs
 export TF_FAMILY_DIR=/foo/families
-export TF_RUN_WRAPPER=/foo/bin/run
+export TF_RUN_WRAPPER=/foo/bin/run_with_log
 taskforest
 
 OR
 
-taskforest <a href="/docs/configuring/options.html#run_wrapper">--run_wrapper</a>=/foo/bin/run \
+taskforest <a href="/docs/configuring/options.html#run_wrapper">--run_wrapper</a>=/foo/bin/run_with_log \
  <a href="/docs/configuring/options.html#log_dir">--log_dir</a>=/foo/logs \
  <a href="/docs/configuring/options.html#job_dir">--job_dir</a>=/foo/jobs \
  <a href="/docs/configuring/options.html#family_dir">--family_dir</a>=/foo/families

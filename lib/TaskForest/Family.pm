@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Family.pm 269 2010-02-12 04:43:10Z aijaz $
+# $Id: Family.pm 292 2010-03-24 03:43:40Z aijaz $
 #
 ################################################################################
 
@@ -653,17 +653,33 @@ sub runReadyJobs {
             #
             my $time = time();
             my $run_id = "$$.$time";
+
+            $ENV{TASKFOREST_FAMILY_NAME}            = $self->{name};
+            $ENV{TASKFOREST_JOB_NAME}               = $job->{name};
+            $ENV{TASKFOREST_JOB_FILE_NAME}          = $job_file_name;
+            $ENV{TASKFOREST_LOG_DIR}                = $log_dir;
+            $ENV{TASKFOREST_JOB_DIR}                = $self->{options}->{job_dir};
+            $ENV{TASKFOREST_PID_FILE}               = "$log_dir/$self->{name}.$job->{name}.pid";
+            $ENV{TASKFOREST_SUCCESS_FILE}           = "$log_dir/$self->{name}.$job->{name}.0";
+            $ENV{TASKFOREST_FAILURE_FILE}           = "$log_dir/$self->{name}.$job->{name}.1";
+            $ENV{TASKFOREST_UNIQUE_ID}              = $job->{unique_id};
+            $ENV{TASKFOREST_NUM_RETRIES}            = defOr($job->{num_retries}, 0);
+            $ENV{TASKFOREST_RETRY_SLEEP}            = defOr($job->{retry_sleep}, 0);
+            $ENV{TASKFOREST_EMAIL}                  = defOr($job->{email}, "");
+            $ENV{TASKFOREST_RETRY_EMAIL}            = defOr($job->{retry_email}, "");
+            $ENV{TASKFOREST_NO_RETRY_EMAIL}         = defOr($job->{no_retry_email}, "");
+            $ENV{TASKFOREST_INSTRUCTIONS_DIR}       = defOr($job->{instructions_dir}, "");
+            $ENV{TASKFOREST_SMTP_SERVER}            = defOr($self->{options}->{smtp_server}, "");
+            $ENV{TASKFOREST_SMTP_PORT}              = defOr($self->{options}->{smtp_port}, 0);
+            $ENV{TASKFOREST_SMTP_SENDER}            = defOr($self->{options}->{smtp_sender}, "");
+            $ENV{TASKFOREST_MAIL_FROM}              = defOr($self->{options}->{mail_from}, "");
+            $ENV{TASKFOREST_MAIL_REPLY_TO}          = defOr($self->{options}->{mail_reply_to}, "");
+            $ENV{TASKFOREST_MAIL_RETURN_PATH}       = defOr($self->{options}->{mail_return_path}, "");
+            $ENV{TASKFOREST_SMTP_TIMEOUT}           = defOr($self->{options}->{smtp_timeout}, 0);
+            $ENV{TASKFOREST_RETRY_SUCCESS_EMAIL}    = defOr($job->{retry_success_email}, "");
+            $ENV{TASKFOREST_NO_RETRY_SUCCESS_EMAIL} = defOr($job->{no_retry_success_email}, "");
             
             exec("$wrapper",
-                 "$self->{name}",
-                 "$job->{name}",
-                 "$job_file_name",
-                 "$log_dir",
-                 "$self->{options}->{job_dir}",
-                 "$log_dir/$self->{name}.$job->{name}.pid",
-                 "$log_dir/$self->{name}.$job->{name}.0",
-                 "$log_dir/$self->{name}.$job->{name}.1",
-                 "$job->{unique_id}",
                 ) or croak "Can't exec: $!\n";
         }
     }
@@ -1206,6 +1222,63 @@ sub _parseJob {
                 }
             }
         }
+
+        if ($args{email}) {
+            $job_object->{email} = $args{email};
+        }
+        else {
+            $job_object->{email} = $self->{options}->{email};
+        }
+
+        if ($args{retry_email}) {
+            $job_object->{retry_email} = $args{retry_email};
+        }
+        else {
+            $job_object->{retry_email} = $self->{options}->{retry_email};
+        }
+
+        if ($args{num_retries}) {
+            $job_object->{num_retries} = $args{num_retries};
+        }
+        else {
+            $job_object->{num_retries} = $self->{options}->{num_retries};
+        }
+
+        if ($args{retry_sleep}) {
+            $job_object->{retry_sleep} = $args{retry_sleep};
+        }
+        else {
+            $job_object->{retry_sleep} = $self->{options}->{retry_sleep};
+        }
+
+        if ($args{no_retry_email}) {
+            $job_object->{no_retry_email} = $args{no_retry_email};
+        }
+        else {
+            $job_object->{no_retry_email} = $self->{options}->{no_retry_email};
+        }
+
+        if ($args{instructions_dir}) {
+            $job_object->{instructions_dir} = $args{instructions_dir};
+        }
+        else {
+            $job_object->{instructions_dir} = $self->{options}->{instructions_dir};
+        }
+
+        if ($args{retry_success_email}) {
+            $job_object->{retry_success_email} = $args{retry_success_email};
+        }
+        else {
+            $job_object->{retry_success_email} = $self->{options}->{retry_success_email};
+        }
+        
+        if ($args{no_retry_success_email}) {
+            $job_object->{no_retry_success_email} = $args{no_retry_success_email};
+        }
+        else {
+            $job_object->{no_retry_success_email} = $self->{options}->{no_retry_success_email};
+        }
+        
     }
     
     # push this job into the dependency array for the jobs in the next line
@@ -1240,12 +1313,24 @@ sub _verifyJobHash {
     my ($self, $args) = @_;
     
     my $valid_job_args = {
-        "start"   => 1,
-        "tz"      => 1,
-        "every"   => 1,
-        "until"   => 1,
-        "chained" => 1,
-        "token"   => 1,
+        "start"                  => 1,
+        "tz"                     => 1,
+        "every"                  => 1,
+        "until"                  => 1,
+        "chained"                => 1,
+        "token"                  => 1,
+        
+        "email"                  => 1,
+        "retry_email"            => 1,
+        "no_retry_email"         => 1,
+        "num_retries"            => 1,
+        "retry_sleep"            => 1,
+        "instructions_dir"       => 1,
+        "params"                 => 1,
+        "retry_success_email"    => 1,
+        "no_retry_success_email" => 1,
+
+        
     };
 
     my @errors = ();
@@ -1628,7 +1713,11 @@ sub createTokenFile {
 }
 
 
-
+sub defOr {
+    my ($value, $or) = @_;
+    return $value if defined($value);
+    return $or;
+}
 
 
 

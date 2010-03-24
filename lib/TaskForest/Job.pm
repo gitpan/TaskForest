@@ -1,6 +1,6 @@
 ################################################################################
 #
-# $Id: Job.pm 211 2009-05-25 06:05:50Z aijaz $
+# $Id: Job.pm 280 2010-03-17 02:20:17Z aijaz $
 #
 ################################################################################
 
@@ -150,10 +150,13 @@ sub new {
     my $unique_id = join("_", time, $pid, $n);
 
     my $self = {
-        name  => '',
-        rc  => '',                       # exit code
-        status => 'Waiting',
-        unique_id => $unique_id,
+        name         => '',
+        rc           => '',                       # exit code
+        status       => 'Waiting',
+        unique_id    => $unique_id,
+        
+        params       => '',
+        
     };
 
     my %args = @_;

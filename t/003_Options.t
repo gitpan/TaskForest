@@ -23,7 +23,7 @@ my $exception = $@;
 like($exception, qr/run_wrapper, log_dir, job_dir, family_dir/,  'Cannot create options without required fields');
 
 
-$ENV{TF_RUN_WRAPPER} = "$cwd/bin/run";
+$ENV{TF_RUN_WRAPPER} = "$cwd/blib/script/run";
 eval { my $o = &TaskForest::Options::getOptions(); };
 $exception = $@;
 like($exception, qr/log_dir, job_dir, family_dir/,  'Cannot create options without required fields');
@@ -47,7 +47,7 @@ is(ref($options),                'HASH',             'Option created');
 cmp_ok(scalar(keys(%$options)),  '>', 0,             '  and has more than 1 key');
 is($options->{end_time},         '2355',             '  end time');
 is($options->{wait_time},        '60',               '  wait time');
-is($options->{run_wrapper},      "$cwd/bin/run",     "  run_wrapper");
+is($options->{run_wrapper},      "$cwd/blib/script/run",     "  run_wrapper");
 is($options->{family_dir},       "$cwd/t/families",  "  families");
 is($options->{job_dir},          "$cwd/t/jobs",      "  jobs");
 is($options->{log_dir},          "$cwd/t/logs",      "  logs");
